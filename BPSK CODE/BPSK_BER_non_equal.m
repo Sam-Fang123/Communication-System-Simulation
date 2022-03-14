@@ -1,5 +1,5 @@
 clear
-bits_num=10^7;      % The number of bits
+bits_num=10^6;      % The number of bits
 input=rand(1,bits_num);     
 Eb=10;      % Bit energy = 10W
 T=1;        % Bit duration = 1s;

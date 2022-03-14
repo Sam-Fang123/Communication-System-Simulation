@@ -10,11 +10,23 @@ w1=transpose((noise_pow).^(1/2))*randn(1,bits_num);     % Noise pdf
 w2=transpose((noise_pow).^(1/2))*randn(1,bits_num);
 r1=w1+S0;
 r2=w2+S1;
-for i=1:3
-    subplot(3,1,i);
-    histogram(r1(i,:));
-    hold on
-    histogram(r2(i,:));
-    hold off
-    title('SNR =',10*log10(SNR(i)));
-end
+subplot(3,1,1);
+histogram(r1(1,:));
+hold on
+histogram(r2(1,:));
+hold off
+title('SNR =1');
+subplot(3,1,2);
+histogram(r1(2,:));
+hold on
+histogram(r2(2,:));
+hold off
+title('SNR =3');
+subplot(3,1,3);
+histogram(r1(3,:));
+hold on
+histogram(r2(3,:));
+hold off
+title('SNR =10');
+
+  
