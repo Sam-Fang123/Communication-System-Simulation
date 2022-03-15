@@ -9,7 +9,7 @@
 
 velocity = 1000;      % mobile velocity in km/hr
 Fc = 900;           % carrier freq in MHz
-Fs = 10^(-5);      % sampling freq MHZ 
+Fs = 1;      % sampling freq MHZ 
                     % (we have 4 samples per pn chip, thus 1.2288*4)
 N0 = 20;
 

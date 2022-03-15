@@ -1,11 +1,11 @@
 clc
 clear
-bitnum = 10^3;
+bitnum = 10^6;
 t=1:bitnum;
 %Flat Fading Channel
 velocity = 100;      % mobile velocity in km/hr
 Fc = 900;           % carrier freq in MHz
-Fs = 10^(-3);      % sampling freq MHZ 
+Fs = 1;      % sampling freq MHZ 
                     % (we have 4 samples per pn chip, thus 1.2288*4)
 N0 = 20;
 fade_coeff = zeros(1, bitnum);
