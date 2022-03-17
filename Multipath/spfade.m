@@ -16,7 +16,7 @@
 %   - N0 = normally set to be 20 (# of sinusoids used for approximating Gaussian)
 %   - Nsample:     Nsample-by-1 complecx coefficients
 
-function [fade_coeff,inphase] = spfade(velocity,Fc,Fs,N0,Nsample,inphase)
+function [temp_re temp_im fade_coeff,inphase] = spfade(velocity,Fc,Fs,N0,Nsample,inphase)
 
 % parameters
 scale_const = 1.08*10^9;     % used to compute doppler spread in Hz
@@ -27,7 +27,10 @@ fade_coeff = zeros(1,Nsample);  % will store the output
 % fd=v*cos(theta)/wavelength, wavelength=C/freq, C is light velocity 
 % w=WTs=W/fs(By dsp, w is digit freq and W is analog freq), so
 % fd=v*freq*cos/C/fs
-fd = velocity*Fc/Fs/scale_const;       
+Doppler_shift = velocity*(Fc*10^6)/scale_const
+Coherence_time = 1/Doppler_shift
+Ts = 1/(Fs*10^6)
+fd = velocity*Fc/Fs/scale_const       
 wm = 2*pi*fd;
 N = 2*(2*N0+1); 
 
