@@ -30,7 +30,7 @@ fade_coeff = zeros(1,Nsample);  % will store the output
 Doppler_shift = velocity*(Fc*10^6)/scale_const
 Coherence_time = 1/Doppler_shift
 Ts = 1/(Fs*10^6)
-fd = velocity*Fc/Fs/scale_const       
+fd = velocity*Fc/Fs/scale_const;       
 wm = 2*pi*fd;
 N = 2*(2*N0+1); 
 

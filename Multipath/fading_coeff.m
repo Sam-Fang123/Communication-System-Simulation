@@ -1,4 +1,3 @@
-clc
 clear
 bitnum = 10^6;
 t=1:bitnum;
@@ -35,7 +34,7 @@ subplot(3,1,3)
 histogram(temp_im);
 mean_of_X=mean(rms(fade_coeff,1));
 var_of_Xr=var(temp_re);
-mean_of_X-sqrt(var_of_Xr)*(sqrt(pi/2))
+mean_of_X-sqrt(var_of_Xr)*(sqrt(pi/2));
 
 
 
