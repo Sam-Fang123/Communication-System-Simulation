@@ -1,2 +1,2 @@
 # MATLAB-Simulation
-Digital communication algorithm using Matlab
+Communication system simulation using Matlab
