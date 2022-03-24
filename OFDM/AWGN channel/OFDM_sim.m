@@ -58,4 +58,3 @@ xlabel('SNR(dB)');ylabel('BER');
 grid minor
 grid on
 ylim([10^-4 1]);
-
