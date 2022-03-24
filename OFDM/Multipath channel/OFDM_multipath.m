@@ -2,7 +2,7 @@
 
 %%  Assumption on data
 clear all
-bits_num=10^3;    % # of bits
+bits_num=10^4;    % # of bits
 fft_size=64;          % fft size
 input=rand(64,bits_num)>0.5;     
 X=input*2-1;       % X:Input bits
@@ -27,7 +27,8 @@ for j=1:length(SNR)
         x=ifft(X(:,i),fft_size)*sqrt(fft_size);     % x = ifft(X)
         x=[x(fft_size-CP_size+1:end);x];       % add CP
         %% Channel, y: Received signal, Q: Convolution matrix
-        y=conv(h,x)+sqrt(noise_pow(j))*randn(fft_size+CP_size+length(h)-1,1)+sqrt(-1)*sqrt(noise_pow(j))*randn(fft_size+CP_size+length(h)-1,1); 
+        w=sqrt(noise_pow(j))*randn(fft_size+CP_size+length(h)-1,1)+sqrt(-1)*sqrt(noise_pow(j))*randn(fft_size+CP_size+length(h)-1,1); 
+        y=conv(h,x)+w;
         
         %% RX
         Y=fft(y(CP_size+1:end),fft_size)/sqrt(fft_size);     % Y = fft(y)
