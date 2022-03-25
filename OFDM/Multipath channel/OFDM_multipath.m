@@ -1,5 +1,3 @@
-
-
 %%  Assumption on data
 clear all
 bits_num = 5*10^5;    % # of bits
@@ -65,21 +63,20 @@ figure(2)
 semilogy(10*log10(SNR),theoretical_BER([1 20 30 40 50 60],:),'-*');
 hold on
 semilogy(10*log10(SNR),BER([1 20 30 40 50 60],:),'-o');
-legend('Theoretical BER of each subcarriers','Simulation BER of every subcarriers')
-title('BER curve of every subcarriers');
+title('BER curve of each subcarrier');
 xlabel('SNR(dB)');ylabel('BER');
 grid minor
 grid on
 ylim([10^-4 1]);
 
 figure(3)
-title('|H| of each subcarrier')
 stem((1:fft_size),abs(H))
+title('|H| of each channel')
 ylabel('|H|');xlabel('Channel')
 xlim([1 64])
+
 figure(4)
-title('BER of each subcarrier in fixed SNR')
 stem((1:fft_size),BER(:,1));
+title('BER of each subcarrier in fixed SNR')
 ylabel('BER');xlabel('Subcarrier')
 xlim([1 64])
-
