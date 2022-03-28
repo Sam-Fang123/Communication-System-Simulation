@@ -16,3 +16,4 @@ f=factorial(10)*(0.6.^y).*(0.4.^(10-y))./factorial(y)./factorial(10-y);
 bar(y,f);
 xlabel('Data y')
 ylabel('f(y|n=10,w=0.6)')
+y_mean=sum(f.*y)
