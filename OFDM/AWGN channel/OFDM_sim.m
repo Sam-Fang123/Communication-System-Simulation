@@ -22,8 +22,9 @@ for j=1:length(SNR)
     for i=1:bits_num
         %% TX
         x=ifft(X(:,i),fft_size)*sqrt(fft_size);     % x = ifft(X)
-        %% Channel, y: Received signal, Q: Convolution matrix
-        y=conv(h,x)+sqrt(noise_pow(j))*randn(fft_size,1)+sqrt(-1)*sqrt(noise_pow(j))*randn(fft_size,1); 
+        %% Channel, y: Received signal
+        w=sqrt(noise_pow(j))*randn(fft_size,1)+sqrt(-1)*sqrt(noise_pow(j))*randn(fft_size,1); 
+        y=conv(h,x)+w; 
         
         %% RX
         Y=fft(y,fft_size)/sqrt(fft_size);     % Y = fft(y)

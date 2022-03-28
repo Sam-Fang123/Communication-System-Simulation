@@ -24,7 +24,7 @@ for j=1:length(SNR)
         %% TX
         x = ifft(X(:,i),fft_size)*sqrt(fft_size);     % x = ifft(X) (Unitary)
         x = [x(fft_size-CP_size+1:end);x];            % add CP
-        %% Channel, y: Received signal, Q: Convolution matrix
+        %% Channel, y: Received signal
         y = conv(h,x);    
         w = sqrt(noise_pow(j))*randn(length(y),1)+sqrt(-1)*sqrt(noise_pow(j))*randn(length(y),1);
         y = y+w;      % w : AWGN noise
