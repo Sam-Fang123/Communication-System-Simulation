@@ -13,8 +13,8 @@ H_matrix=diag(H);    % Frequency domain matrix
 
 %% SNR
 OFDM_symbol_power=1;
-SNR=1:25;                % SNR = 1/(2*noise power on each part)
-noise_pow=1./(SNR);  % noise power = 1/(2*SNR)
+SNR=1:25;                % SNR = symbol power/(noise power on each part)
+noise_pow=1./(SNR);  % noise power = 1/(SNR)
 BER = zeros(fft_size,length(SNR));
 %%
 for j=1:length(SNR)
