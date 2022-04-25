@@ -27,15 +27,16 @@ end
     
 
 theoretical_BER=qfunc(SNR.^(1/2));  % Theoretical BER
-approx_BER1=exp(-(SNR)/2)./(sqrt(2*pi*SNR));    %approximate BER1
-approx_BER2=(1/2)*exp(-(SNR)/2);                %approximate BER2
-semilogy(10*log10(SNR),approx_BER1,'g',10*log10(SNR),approx_BER2,'y','LineWidth',1.3);
-hold on
-semilogy(10*log10(SNR),theoretical_BER,'k',10*log10(SNR),BER,'b','LineWidth',1.3);
-hold off
-legend('approximate1','approximate2','theoretical','simulated');
-title('BER curve(Equal probability)');
-xlabel('SNR(dB)');ylabel('BER');
+%approx_BER1=exp(-(SNR)/2)./(sqrt(2*pi*SNR));    %approximate BER1
+%approx_BER2=(1/2)*exp(-(SNR)/2);                %approximate BER2
+%semilogy(10*log10(SNR),approx_BER1,'g',10*log10(SNR),approx_BER2,'y','LineWidth',1.3);
+%hold on
+semilogy(10*log10(SNR),theoretical_BER,'-*',10*log10(SNR),BER,'-o');
+%hold off
+%legend('approximate1','approximate2','theoretical','simulated');
+legend('Theoretical BER=Q(sqrt(SNR))','Simulated BER');
+title('BER curve(Equal a priori probability)');
+xlabel('SNR(dB)=2Eb/N0');ylabel('BER');
 ylim([10^-5 1]);
 grid minor
 grid on

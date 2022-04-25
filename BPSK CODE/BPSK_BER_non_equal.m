@@ -35,16 +35,16 @@ A=(S0-MAP_threshold)./sqrt(noise_pow);
 B=(MAP_threshold-S1)./sqrt(noise_pow);
 
 theoretical_BER=P0*qfunc(A)+(1-P0)*qfunc(B); % Theoretical BER
-approx_BER1=P0*exp(-(A.^2)/2)./(sqrt(2*pi*A.^2))+(1-P0)*exp(-(B.^2)/2)./(sqrt(2*pi*B.^2));    %approximate BER
-approx_BER2=P0*(1/2)*exp(-(A.^2)/2)+(1-P0)*exp(-(B.^2)/2);
+%approx_BER1=P0*exp(-(A.^2)/2)./(sqrt(2*pi*A.^2))+(1-P0)*exp(-(B.^2)/2)./(sqrt(2*pi*B.^2));    %approximate BER
+%approx_BER2=P0*(1/2)*exp(-(A.^2)/2)+(1-P0)*exp(-(B.^2)/2);
 
-semilogy(10*log10(SNR),approx_BER1,'g',10*log10(SNR),approx_BER2,'y','LineWidth',1.1);
-hold on
-semilogy(10*log10(SNR),theoretical_BER,'k',10*log10(SNR),BER_ML,'r',10*log10(SNR),BER_MAP,'b','LineWidth',1.3);
-hold off
-legend('approximate1','approximate2','theoretical','simulated(ML)','simulated(MAP)');
-title('BER curve(Non equal probability)');
-xlabel('SNR(dB)');ylabel('BER');
+%semilogy(10*log10(SNR),approx_BER1,'g',10*log10(SNR),approx_BER2,'y','LineWidth',1.1);
+%hold on
+semilogy(10*log10(SNR),theoretical_BER,'-*',10*log10(SNR),BER_ML,'-o',10*log10(SNR),BER_MAP,'-d');
+%hold off
+legend('Theoretical BER of MAP','Simulated BER(ML)','Simulated BER(MAP)');
+title('BER curve(Non equal a priori probability)');
+xlabel('SNR(dB)=2Eb/N0');ylabel('BER');
 ylim([10^-5 1]);
 grid minor
 grid on
