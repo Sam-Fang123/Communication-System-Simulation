@@ -23,6 +23,7 @@ db_rms=10*log10(rms(fade_coeff,1));
 %db_im=10*log10(rms(temp_im,1));
 figure(1)
 plot(t,db_rms);
+title('Rayleigh fading channel with Doppler shift 100 Hz (velocity = 120km/h)')
 xlabel('time(s)')
 ylabel('Signal Level(dB about rms)')
 figure(2)
