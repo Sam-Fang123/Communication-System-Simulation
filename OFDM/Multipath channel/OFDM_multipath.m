@@ -14,7 +14,8 @@ CP_size = 4;           % Length of CP (must > lenth of h)
 
 %% SNR
 OFDM_symbol_power = 1;
-SNR = 1:25;            % SNR = symbol power/(noise power on each part)
+SNR_db = 1:14;
+SNR = 10.^(SNR_db/10);            % SNR = symbol power/(noise power on each part)
 noise_pow = OFDM_symbol_power./(SNR);  % noise power = 1/(SNR)
 BER = zeros(fft_size,length(SNR));
 %%
@@ -60,10 +61,11 @@ ylim([10^-4 1]);
 
 
 figure(2)
-semilogy(10*log10(SNR),theoretical_BER([1 20 30 40 50 60],:),'-*');
+semilogy(10*log10(SNR),BER(1:64,:),'-*');
 hold on
-semilogy(10*log10(SNR),BER([1 20 30 40 50 60],:),'-o');
+%semilogy(10*log10(SNR),theoretical_BER([1 20 30],:),'-ko');
 title('BER curve of each subcarrier');
+%legend('1st subcarrier ber','20th subcarrier ber','30th subcarrier ber')
 xlabel('SNR(dB)');ylabel('BER');
 grid minor
 grid on

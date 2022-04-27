@@ -1,12 +1,12 @@
 
 clear
-bitnum = 100;
+bitnum = 10^6;
 block_num = bitnum/2;
 t=1:bitnum/2;
 % Flat fading channel
-velocity = 90;      % mobile velocity in km/hr
+velocity = 30;      % mobile velocity in km/hr
 Fc = 900;           % carrier freq in MHz
-Fs = 10^(-5);      % sampling freq MHZ 
+Fs = 1;      % sampling freq MHZ 
 N0 = 20;
 
 rx_num = 2;
@@ -22,12 +22,12 @@ for i = 1:channel_num
     [fade_coeff(i,:),inphase(i,:)] = spfade(velocity,Fc,Fs,N0,block_num,inphase(i,:));
 end
 
-db_abs=10*log10(abs(fade_coeff));
+db_abs=(abs(fade_coeff));
 plot(t,db_abs(1,:));
 hold on
 plot(t,db_abs(2,:));
 plot(t,db_abs(3,:));
-plot(t,db_abs(4,:));
-title('Rayleigh fading channel with Doppler shift 100 Hz (velocity = 120km/h)')
+%plot(t,db_abs(4,:));
+title('Rayleigh fading channels with Doppler shift 25 Hz (velocity = 30km/h)')
 xlabel('time(s)')
 ylabel('Signal Level(dB about rms)')
