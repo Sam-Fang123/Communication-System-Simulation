@@ -17,7 +17,7 @@ for i=2:M
 end
 
 u=conv(h,x);
-u=u(4:end)+sqrt(noise_power)*randn(length(u(4:end)),1);
+u=u(4:end-3)+sqrt(noise_power)*randn(length(u(4:end-3)),1);
 R=H*H.'+noise_power*eye(M);
 e=[1 zeros(1,length(x)-1)].';
 
