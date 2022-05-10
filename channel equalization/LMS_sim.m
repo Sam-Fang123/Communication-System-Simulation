@@ -21,16 +21,17 @@ for ii=1:length(W)
     eigen_spread = max(eigen_v)/min(eigen_v);
     
     u=conv(h,x);
-    u=u(4:end-3)+sqrt(noise_power)*randn(length(u(4:end-3)),1);
+    u=u+sqrt(noise_power)*randn(length(u),1);
+    u2=u(4:end-3)
     w = zeros(M,1);
     for kk=1:length(s_size)
         for zz=1:1500
             h_eq = conv(w,h);
-            x_out=conv(x,h_eq);
+            x_out=conv(u,w);
             x_out=x_out(delay+1:delay+length(x));
-            %這裡要改一下 看學長的code似乎是每個每個慢慢比???
-            e = x(1)-x_out(1);
-            w = w + s_size(kk)*u*e;
+            
+            e = mean(abs(x-x_out));
+            w = w + s_size(kk)*u2*e;
             J(zz)=abs(e)^2;
         end
         semilogy(1:1500,J);
