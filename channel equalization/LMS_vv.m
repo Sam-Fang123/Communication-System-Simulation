@@ -13,7 +13,7 @@ h=(1/2)*(1+cos(2*pi*(h-2)/W));
 
 mmse = zeros(1,8);
 
-for delay= 0:8;
+for delay= 8;
 
     for j=1:K
         x=rand(1,N)>0.5;
@@ -58,6 +58,7 @@ end
 %figure(1)
 %semilogy(mse);
 %grid;
+semilogy(1:2000,mse);
 
 %figure(2)
 %stem(w);
