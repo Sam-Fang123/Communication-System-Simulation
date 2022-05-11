@@ -38,6 +38,9 @@ for delay=0:13
     if MSE(delay+1)==min(MSE)
         w_opt=w;
         hh_opt=h_eq;
+        p_opt=p;
+        e_opt=e;
+        delay_opt=delay;
     end
 end
 
@@ -61,5 +64,5 @@ figure(4)
 stem(0:length(MSE)-1,MSE);
 title('MSE');
 xlabel('delay');
-
+w_opt=w_opt.'
 min(MSE)

@@ -1,18 +1,26 @@
 
 clear all
-W=[2.9 3.3 3.5];
-step_size=0.025;
+W=3.1;
+%W=[2.9 3.3 3.5]
+step_size=[0.075 0.025 0.0075];
+%step_size=0.025
+
+SNR_db=1:14;
+SNR_lin=10.^(SNR_db/10); % SNR=symbol power=1/noise_power
+noise_pow=1./SNR_lin;
+%noise_power=noise_pow(1);
 noise_power=0.001;
 M = 11;
 N = 2001;
 K=200;
 delay = 7;
 J = zeros(length(step_size),N);
-
-for s=1:length(W)
+w_LMS=zeros(length(step_size),M);
+for s=1:length(step_size)
     n = 1:3;
-    h1 = 0.5*(1+cos((2*pi/W(s))*(n-2)));    
+    h1 = 0.5*(1+cos((2*pi/W)*(n-2)));    
     h = [zeros(1) h1];
+    ww=zeros(K,M);
     JJ= zeros(K,N);
     H=[h zeros(1,M-1)];
     for jj=2:M
@@ -38,18 +46,21 @@ for s=1:length(W)
             y=w*u2';
             if n>delay
                 e=x(n-delay)-y;
-                w=w+step_size*e*u2;
+                w=w+step_size(s)*e*u2;
                 JJ(i,n)=abs(e)^2;
             end
         end
+        ww(i,:)=w;
     end
-    
+    w_LMS(s,:)=ww(1,:);
     J(s,:)=sum(JJ,1)/K;
 end
 
 semilogy(0:N-1,J);
-%legend('step size=0.075','step size=0.025','step size=0.0075')
-legend('eigenvalue spread=6.0782','eigenvalue spread=21.7132','eigenvalue spread=48.8216')
+legend('step size=0.075','step size=0.025','step size=0.0075')
+title('Eigenvlaue spread=11.1238 with different step size')
+%title('Step size=0.025 with different eigenvalue spread')
+%legend('eigenvalue spread=6.0782','eigenvalue spread=21.7132','eigenvalue spread=46.8216')
 xlabel('Number of iterations')
 ylabel('Ensemble-average-square error')
 axis([0 N-1 10^-3 10^1]);
