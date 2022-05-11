@@ -5,13 +5,9 @@ W=3.1;
 step_size=[0.075 0.025 0.0075];
 %step_size=0.025
 
-SNR_db=1:14;
-SNR_lin=10.^(SNR_db/10); % SNR=symbol power=1/noise_power
-noise_pow=1./SNR_lin;
-%noise_power=noise_pow(1);
 noise_power=0.001;
 M = 11;
-N = 2001;
+N = 3001;
 K=200;
 delay = 7;
 J = zeros(length(step_size),N);
@@ -64,13 +60,3 @@ title('Eigenvlaue spread=11.1238 with different step size')
 xlabel('Number of iterations')
 ylabel('Ensemble-average-square error')
 axis([0 N-1 10^-3 10^1]);
-
-H=[h zeros(1,M-1)];
-for jj=2:M
-    H(jj,:)=circshift(H(jj-1,:),1);
-end
-R=H*H.'+noise_power*eye(M);
-    
-[V D] = eig(R);
-eigen_v = diag(D);
-eigen_spread = max(eigen_v)/min(eigen_v);
