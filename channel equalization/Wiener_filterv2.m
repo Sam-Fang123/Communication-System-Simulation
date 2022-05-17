@@ -47,22 +47,26 @@ end
 figure(1)
 stem(0:length(h)-1,h);
 axis([0, 5,-inf, inf]);
-title('Channel impulse response');
+title('Channel impulse response, W=3.1');
+xticks(0:5);
 xlabel('n');ylabel('h[n]');
 
 figure(2)
 stem(0:length(w_opt)-1,w_opt)
-title('w_optimum');
+title('Impulse response of optimum FIR equalizer w0');
+xticks(0:length(w_opt)-1);
 xlabel('n');ylabel('w[n]');
 
 figure(3)
 stem(0:length(hh_opt)-1,hh_opt)
-title('Equalized channel')
+title('Equalized channel (Convolution of w0 and h)')
+xticks(0:length(hh_opt)-1);
 xlabel('n');ylabel('hh[n]');
 
 figure(4)
 stem(0:length(MSE)-1,MSE);
 title('MSE with different delay');
+xticks(0:length(MSE)-1);
 xlabel('delay');
 w_opt=w_opt.'
 min(MSE)
