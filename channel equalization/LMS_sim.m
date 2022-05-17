@@ -51,7 +51,7 @@ for s=1:length(step_size)
     w_LMS(s,:)=ww(1,:);
     J(s,:)=sum(JJ,1)/K;
 end
-
+figure(1)
 semilogy(0:N-1,J);
 legend('step size=0.075','step size=0.025','step size=0.0075')
 title('Eigenvlaue spread=11.1238 with different step size')
@@ -60,3 +60,14 @@ title('Eigenvlaue spread=11.1238 with different step size')
 xlabel('Number of iterations')
 ylabel('Ensemble-average-square error')
 axis([0 N-1 10^-3 10^1]);
+
+figure(2)
+subplot(3,1,1)
+stem(0:length(conv(w_LMS(1,:),h))-1,conv(w_LMS(1,:),h));
+title('Equalized channel, step size=0.075');
+subplot(3,1,2)
+stem(0:length(conv(w_LMS(2,:),h))-1,conv(w_LMS(2,:),h));
+title('Equalized channel, step size=0.025');
+subplot(3,1,3)
+stem(0:length(conv(w_LMS(3,:),h))-1,conv(w_LMS(3,:),h));
+title('Equalized channel, step size=0.0075');

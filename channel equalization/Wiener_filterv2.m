@@ -62,7 +62,7 @@ xlabel('n');ylabel('hh[n]');
 
 figure(4)
 stem(0:length(MSE)-1,MSE);
-title('MSE');
+title('MSE with different delay');
 xlabel('delay');
 w_opt=w_opt.'
 min(MSE)
