@@ -71,3 +71,14 @@ title('Equalized channel, step size=0.025');
 subplot(3,1,3)
 stem(0:length(conv(w_LMS(3,:),h))-1,conv(w_LMS(3,:),h));
 title('Equalized channel, step size=0.0075');
+
+figure(3)
+subplot(3,1,1)
+stem(0:length(w_LMS(1,:))-1,w_LMS(1,:));
+title('w0, step size=0.075');
+subplot(3,1,2)
+stem(0:length(w_LMS(2,:))-1,w_LMS(2,:));
+title('w0, step size=0.025');
+subplot(3,1,3)
+stem(0:length(w_LMS(3,:))-1,w_LMS(3,:));
+title('w0, step size=0.0075');
