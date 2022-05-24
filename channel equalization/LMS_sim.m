@@ -49,6 +49,7 @@ for s=1:length(step_size)
         ww(i,:)=w;
     end
     w_LMS(s,:)=ww(1,:);
+    %w_LMS(s,:)=mean(ww,1);
     J(s,:)=sum(JJ,1)/K;
 end
 figure(1)
