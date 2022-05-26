@@ -28,8 +28,7 @@ int main(){
 	int i=7;
 	int j=0;
 	printf("%d\n",dist(i,j));
-	//int c=INT_MAX;
-	//printf("%d",c);
+	printf("%d %d",i,j);
 		
 	system("pause");
 	return 0;

@@ -112,9 +112,7 @@ int main(){
 			r_dec[i]=r_dec[i]+2;
 		if(r[3*i+2]=='1')
 			r_dec[i]=r_dec[i]+1;
-		
-		printf("%d ",r_dec[i]);
-		
+		//printf("%d ",r_dec[i]);
 		}
 	
 	
@@ -130,13 +128,57 @@ int main(){
 		}
 	}
 	S[0][0].d=0;
+	int D1,D2;
+	
+	//
+	for(i=0;i<path_length;i++)
+		printf("%d ",r_dec[i]);
+	printf("\n");
 	
 	for(i=1;i<=path_length;i++){
 		for(j=0;j<s_num;j++){
-
-			
-			
+			//D1=0;
+			//D2=1;
+			printf("%d ",r_dec[i-1]);
+			D1=dist(S_b[j].prev_out[0],r_dec[i-1])+S[i-1][S_b[j].prev_s[0]].d;
+			D2=dist(S_b[j].prev_out[1],r_dec[i-1])+S[i-1][S_b[j].prev_s[1]].d;
+			if(D1<D2){
+				S[i][j].prev=S_b[j].prev_s[0];
+				S[i][j].d=D1;
+			}
+			else{
+				S[i][j].prev=S_b[j].prev_s[1];
+				S[i][j].d=D2;
+			}	
 		}
+		printf("    %d",r_dec[i-1]);
+		printf("\n");
+		
+	}
+	//
+	printf("\n");
+	for(i=0;i<path_length;i++)
+		printf("%d ",r_dec[i]);
+	printf("\n");
+	
+	for(j=0;j<s_num;j++){
+		printf("%dªº:",j);
+		for(i=0;i<=path_length;i++){
+			if(S[i][j].d>1000)
+				printf("n  ");
+			else
+			printf("%d  ",S[i][j].d);}
+		printf("\n");
+	}
+	printf("\n");
+	for(j=0;j<s_num;j++){
+		printf("%dªº:",j);
+		for(i=0;i<=path_length;i++){
+			if(S[i][j].prev>1000)
+				printf("n  ");
+			else
+			printf("%d  ",S[i][j].prev);}
+		printf("\n");
 	}
 	
 	
