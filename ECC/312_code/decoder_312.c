@@ -50,20 +50,47 @@ int main(){
 	int g2=0b101;
 	int g3=0b111;
 	
-	// Initialize connecting condition and output of every path
-	struct state{
+	// Initialize connecting condition and output of every forward path
+	struct state_f{
 		int next_s[2];
 		int next_out[2];
 		
-	}S[s_num];
+	}S_f[s_num];
 	
-	// Initialize connecting condition and output of every path
+	// Initialize connecting condition and output of every forward path
 	for(i=0;i<s_num;i++){
-		S[i].next_s[0]=(i<<1)%s_num;
-		S[i].next_s[1]=((i<<1)+1)%s_num;
-		S[i].next_out[0]=(mod_2((i<<1)&g1))*4+(mod_2((i<<1)&g2))*2+(mod_2((i<<1)&g3))*1;
-		S[i].next_out[1]=(mod_2(((i<<1)+1)&g1))*4+(mod_2(((i<<1)+1)&g2))*2+(mod_2(((i<<1)+1)&g3))*1;
+		S_f[i].next_s[0]=(i<<1)%s_num;
+		S_f[i].next_s[1]=((i<<1)+1)%s_num;
+		S_f[i].next_out[0]=(mod_2((i<<1)&g1))*4+(mod_2((i<<1)&g2))*2+(mod_2((i<<1)&g3))*1;
+		S_f[i].next_out[1]=(mod_2(((i<<1)+1)&g1))*4+(mod_2(((i<<1)+1)&g2))*2+(mod_2(((i<<1)+1)&g3))*1;
 	}
+	
+	struct state_b{
+		int prev_s[2];
+		int prev_out[2];
+	}S_b[s_num];
+	
+	for(i=0;i<s_num;i++){
+		S_b[i].prev_s[0]=(i>>1);
+		S_b[i].prev_s[1]=(i>>1)+2;
+		S_b[i].prev_out[0]=mod_2(S_b[i].prev_s[0]&g1)*4+mod_2(S_b[i].prev_s[0]&g2)*2+mod_2(S_b[i].prev_s[0]&g3)*1;
+		S_b[i].prev_out[1]=mod_2(S_b[i].prev_s[1]&g1)*4+mod_2(S_b[i].prev_s[1]&g2)*2+mod_2(S_b[i].prev_s[1]&g3)*1;
+	}
+	
+	for(i=0;i<s_num;i++){
+		//show_binary(i);
+		printf("%d",i);
+		printf(" 的上一個stat分別為: ");
+		//show_binary(S_b[i].prev_s[0]);
+		printf("%d 和 %d  ",S_b[i].prev_s[0],S_b[i].prev_s[1]);
+		//show_binary(S_b[i].prev_s[1]);
+		printf(" 他們的path分別為: ");
+		show_binary(S_b[i].prev_out[0]);
+		printf(" 和 ");
+		show_binary(S_b[i].prev_out[1]);
+		printf("\n");
+	}
+	
 	
 	char r[100];
 	gets(r);
@@ -71,28 +98,41 @@ int main(){
 	int r_length;
 	for(r_length=0;r[r_length]!='\0';r_length++){
 	}
+	int path_length;
+	path_length=r_length/3;
+	int r_dec[path_length];
+	for(i=0;i<path_length;i++)
+		r_dec[i]=0;
+	// Turn r_binary into r_decimal
+	for(i=0;i<path_length;i++){
+		
+		if(r[3*i]=='1')
+			r_dec[i]=r_dec[i]+4;
+		if(r[3*i+1]=='1')
+			r_dec[i]=r_dec[i]+2;
+		if(r[3*i+2]=='1')
+			r_dec[i]=r_dec[i]+1;
+		
+		printf("%d ",r_dec[i]);
+		
+		}
+	
 	
 	// Initialize the state used to store overall distance
-	struct state2{
+	struct state{
 		int prev;
 		int d;
-	}SS[s_num][r_length/3];
-	for(i=0;i<s_sum;i++){
-		S[i][0].d=0;
-		S[i][0].prev=INT_MAX;
-	}
+	}S[s_num][path_length+1];
 	for(i=0;i<s_num;i++){
-		for(j=1;j<r_length/3;j++){
-			SS[i][j].prev=INT_MAX;
-			SS[i][j].d=INT_MAX;
+		for(j=0;j<=path_length;j++){
+			S[i][j].prev=10000000;
+			S[i][j].d=10000000;
 		}
 	}
+	S[0][0].d=0;
 	
-	for(i=0;i<r_length/3;i++){
-		for(j=0;j<s_sum;j++){
-			if(i<2){
-				
-			}
+	for(i=0;i<=path_length;i++){
+		for(j=0;j<s_num;j++){
 			
 			
 			
@@ -102,7 +142,6 @@ int main(){
 	
 	int v_dec[r_length/3];
 	int v_bin[r_length];  
-	printf("%d\n",r_length);
 	//Decoding
 	
 		
