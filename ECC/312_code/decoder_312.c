@@ -64,7 +64,7 @@ int main(){
 		S_f[i].next_out[0]=(mod_2((i<<1)&g1))*4+(mod_2((i<<1)&g2))*2+(mod_2((i<<1)&g3))*1;
 		S_f[i].next_out[1]=(mod_2(((i<<1)+1)&g1))*4+(mod_2(((i<<1)+1)&g2))*2+(mod_2(((i<<1)+1)&g3))*1;
 	}
-	
+	// Initialize connecting condition and output of every backward path
 	struct state_b{
 		int prev_s[2];
 		int prev_out[2];
@@ -73,8 +73,8 @@ int main(){
 	for(i=0;i<s_num;i++){
 		S_b[i].prev_s[0]=(i>>1);
 		S_b[i].prev_s[1]=(i>>1)+2;
-		S_b[i].prev_out[0]=mod_2(S_b[i].prev_s[0]&g1)*4+mod_2(S_b[i].prev_s[0]&g2)*2+mod_2(S_b[i].prev_s[0]&g3)*1;
-		S_b[i].prev_out[1]=mod_2(S_b[i].prev_s[1]&g1)*4+mod_2(S_b[i].prev_s[1]&g2)*2+mod_2(S_b[i].prev_s[1]&g3)*1;
+		S_b[i].prev_out[0]=S_f[S_b[i].prev_s[0]].next_out[i%2];
+		S_b[i].prev_out[1]=S_f[S_b[i].prev_s[1]].next_out[i%2];
 	}
 	
 	for(i=0;i<s_num;i++){
@@ -131,9 +131,9 @@ int main(){
 	}
 	S[0][0].d=0;
 	
-	for(i=0;i<=path_length;i++){
+	for(i=1;i<=path_length;i++){
 		for(j=0;j<s_num;j++){
-			
+
 			
 			
 		}

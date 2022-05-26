@@ -23,8 +23,9 @@ int mod_2(int num){
 	for(i=1;i<=10;i++){
 		sum=sum+num%2;
 		num=num/2;
+		printf("%d ",num);
 	}
-	printf("%d\n",sum);
+	printf("\n");
 	return sum%2;
 }
 int limit_output(int num){
@@ -41,12 +42,18 @@ int limit_output(int num){
 int main(){
 
 	int s_num=256;
-	int a=0b111111111;
-	int b=0b111011111;
+	//g1=561=1 0111 0001, g2=1 1110 1011
+	int g1=0b100011101;
+	int g2=0b110101111;
+	int a2=0b111001111;
 	
-	show_binary(a&b);
-	printf("%d\n",a&b);
- 	printf("%d\n",mod_2(a&b));
+	show_binary(a2&g1);
+	show_binary(a2&g2);
+	int a,b;
+	a=mod_2(a2&g1);
+	b=mod_2(a2&g2);
+ 	printf("%d",a);
+ 	printf("%d\n",b);
 	system("pause");
 	return 0;
 }

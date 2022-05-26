@@ -25,11 +25,11 @@ int dist(int num1,int num2){
 }
 int main(){
 	
-	int i=0b101;
-	int j=0b111;
-	//printf("%d\n",dist(i,j));
-	int c=INT_MAX;
-	printf("%d",c);
+	int i=7;
+	int j=0;
+	printf("%d\n",dist(i,j));
+	//int c=INT_MAX;
+	//printf("%d",c);
 		
 	system("pause");
 	return 0;
