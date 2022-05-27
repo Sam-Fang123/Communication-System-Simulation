@@ -150,32 +150,6 @@ int main(){
 		}
 	}
 	
-	for(i=0;i<path_length;i++)
-		printf("%d ",r_dec[i]);
-	printf("\n");
-	
-	/*
-	for(j=0;j<s_num;j++){
-		printf("%dªº:",j);
-		for(i=0;i<=path_length;i++){
-			if(S[j][i].d>1000)
-				printf("n  ");
-			else
-			printf("%d  ",S[j][i].d);}
-		printf("\n");
-	}
-	printf("\n");
-	for(j=0;j<s_num;j++){
-		printf("%dªº:",j);
-		for(i=0;i<=path_length;i++){
-			if(S[j][i].prev>1000)
-				printf("n  ");
-			else
-			printf("%d  ",S[j][i].prev);}
-		printf("\n");
-	}
-	*/
-	
 	// Store the traveled state
 	int pass_s[path_length+1];
 	pass_s[path_length]=0;
@@ -223,6 +197,25 @@ int main(){
 		}
 	printf("\n");
 	
+	printf("error position: ");
+	int err_pos[2*path_length];
+	int err_num=0;
+	for(i=0;i<2*path_length;i++){
+		if(r[i]=='1'&&v[i]==1)
+			err_pos[i]=0;
+		else if(r[i]=='0'&&v[i]==0)
+			err_pos[i]=0;
+		else{
+			err_pos[i]=1; 
+			printf("%d ",i+1);
+			err_num=err_num+1;
+			}
+
+	}
+	printf("\nThere are %d errors. \nerror: ",err_num);
+	for(i=0;i<2*path_length;i++){
+		printf("%d",err_pos[i]);
+	}
 	
 	
 	system("pause");

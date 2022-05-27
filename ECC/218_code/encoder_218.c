@@ -53,7 +53,7 @@ int main(){
 	}
 	
 	
-	char u[100];
+	char u[10000];
 	gets(u);
 	int next=0;
 	int n;

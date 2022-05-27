@@ -24,3 +24,29 @@ for(i=0;i<s_num;i++){
 		show_binary2(S_b[i].prev_out[1]);
 		printf("\n");
 	}
+
+/*
+	for(j=0;j<s_num;j++){
+		printf("%d的:",j);
+		for(i=0;i<=path_length;i++){
+			if(S[j][i].d>1000)
+				printf("n  ");
+			else
+			printf("%d  ",S[j][i].d);}
+		printf("\n");
+	}
+	printf("\n");
+	for(j=0;j<s_num;j++){
+		printf("%d的:",j);
+		for(i=0;i<=path_length;i++){
+			if(S[j][i].prev>1000)
+				printf("n  ");
+			else
+			printf("%d  ",S[j][i].prev);}
+		printf("\n");
+	}
+	*/
+
+for(i=0;i<path_length;i++)
+		printf("%d ",r_dec[i]);
+	printf("\n");
