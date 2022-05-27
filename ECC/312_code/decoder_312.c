@@ -129,31 +129,27 @@ int main(){
 	}
 	S[0][0].d=0;
 	int D1,D2;
-	
-	//
+	printf("\n");
 	for(i=0;i<path_length;i++)
 		printf("%d ",r_dec[i]);
 	printf("\n");
-	
+	//
+	int r_d;
 	for(i=1;i<=path_length;i++){
+		r_d=r_dec[i-1];
 		for(j=0;j<s_num;j++){
-			//D1=0;
-			//D2=1;
-			printf("%d ",r_dec[i-1]);
-			D1=dist(S_b[j].prev_out[0],r_dec[i-1])+S[i-1][S_b[j].prev_s[0]].d;
-			D2=dist(S_b[j].prev_out[1],r_dec[i-1])+S[i-1][S_b[j].prev_s[1]].d;
+			D1=dist(S_b[j].prev_out[0],r_d)+S[S_b[j].prev_s[0]][i-1].d;
+			D2=dist(S_b[j].prev_out[1],r_d)+S[S_b[j].prev_s[1]][i-1].d;
+			
 			if(D1<D2){
-				S[i][j].prev=S_b[j].prev_s[0];
-				S[i][j].d=D1;
+				S[j][i].prev=S_b[j].prev_s[0];
+				S[j][i].d=D1;
 			}
 			else{
-				S[i][j].prev=S_b[j].prev_s[1];
-				S[i][j].d=D2;
-			}	
+				S[j][i].prev=S_b[j].prev_s[1];
+				S[j][i].d=D2;
+			}
 		}
-		printf("    %d",r_dec[i-1]);
-		printf("\n");
-		
 	}
 	//
 	printf("\n");

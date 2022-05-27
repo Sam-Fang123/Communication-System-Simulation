@@ -89,7 +89,8 @@ int main(){
 	for(i=0;i<u_length;i++){
 		printf("%d",out_bin[2*i]);
 		printf("%d",out_bin[2*i+1]);
-		printf(" ");	}
+	//	printf(" ");
+			}
 	
 	printf("\n");
 	

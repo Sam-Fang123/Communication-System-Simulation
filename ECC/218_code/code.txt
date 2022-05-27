@@ -1,0 +1,26 @@
+for(i=0;i<s_num;i++){
+		printf("state:");
+		show_binary(i);
+		printf(" 輸入0到: ");
+		show_binary(S_f[i].next_s[0]);
+		printf(", 且輸出: ");
+		show_binary2(S_f[i].next_out[0]); 
+		printf(", 輸入1到: ");
+		show_binary(S_f[i].next_s[1]);
+		printf(", 且輸出: ");
+		show_binary2(S_f[i].next_out[1]);
+		printf("\n"); 
+	} 
+
+for(i=0;i<s_num;i++){
+		show_binary(i);
+		printf(" 的上一個stat分別為: ");
+		show_binary(S_b[i].prev_s[0]);
+		printf(" 和 "); 
+		show_binary(S_b[i].prev_s[1]);
+		printf(" 他們的path分別為: ");
+		show_binary2(S_b[i].prev_out[0]);
+		printf(" 和 ");
+		show_binary2(S_b[i].prev_out[1]);
+		printf("\n");
+	}
