@@ -139,10 +139,7 @@ int main(){
 		index=pass_s[i+1]*path_length+i+1;
 		pass_s[i]=S[index].prev;
 	}
-//	printf("Traveled path: ");
-//	for(i=0;i<=path_length;i++)
-//		printf("%d ",pass_s[i]);
-//	printf("\n");
+
 	
 	printf("Information sequence after decoding u: ");
 	int u[path_length];
@@ -196,22 +193,9 @@ int main(){
 
 	}
 	printf("\n\nThere are %d errors. \n\n",err_num);
-///	for(i=0;i<2*path_length;i++){
-//		printf("%d",err_pos[i]);
-//	}
 	
-	//for(i=0;i<s_num;i++){
-	//	for(j=0;j<=path_length;j++){
-	//		index=i*path_length+j;
-	//		printf("%d     ",S[index].prev);
-	//	}
-	//	printf("\n");
-	//}
-	
-	for(i=0;i<s_num;i++){
-		//printf("%d ",S_b[i].prev_s[0]);
-		printf("%d ",S_b[i].prev_s[0]);
-	}
+	for(i=0;i<path_length+1;i++)
+		printf("%d  ",pass_s[i]);
 	
 	free(S);
 	system("pause");
