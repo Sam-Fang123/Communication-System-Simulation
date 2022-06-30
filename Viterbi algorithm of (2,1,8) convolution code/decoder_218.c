@@ -200,6 +200,19 @@ int main(){
 //		printf("%d",err_pos[i]);
 //	}
 	
+	//for(i=0;i<s_num;i++){
+	//	for(j=0;j<=path_length;j++){
+	//		index=i*path_length+j;
+	//		printf("%d     ",S[index].prev);
+	//	}
+	//	printf("\n");
+	//}
+	
+	for(i=0;i<s_num;i++){
+		//printf("%d ",S_b[i].prev_s[0]);
+		printf("%d ",S_b[i].prev_s[0]);
+	}
+	
 	free(S);
 	system("pause");
 	return 0;
