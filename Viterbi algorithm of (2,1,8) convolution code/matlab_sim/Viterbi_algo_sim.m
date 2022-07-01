@@ -1,4 +1,5 @@
 
+% This file is used to simulate convolution code
 clear all
 clc
 bits_num=10^6;

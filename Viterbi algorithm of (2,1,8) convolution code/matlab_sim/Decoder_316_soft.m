@@ -2,7 +2,7 @@
 function [u] = Decoder_316_soft(r)
 
 % (3,1,6) Convolution code with g1=117=1001111,g2=127=1010111, g3=155=1101101
-% Using Viterbi algorithm
+% Using Viterbi algorithm (Soft decision version)
 g1=[1 0 0 1 1 1 1];
 g1=flip(g1);
 g2=[1 0 1 0 1 1 1];
