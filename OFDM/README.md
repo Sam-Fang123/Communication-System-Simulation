@@ -1,2 +1,6 @@
-# MATLAB-Simulation
-Communication system simulation using Matlab
+# OFDM-Simulation
+OFDM simulation using MATLAB
+
+There AWGN verison and Multipath verison.
+
+Some results are in .pptx file.
