@@ -2,7 +2,7 @@
 % This file is used to simulate convolution code
 clear all
 clc
-bits_num=10^4;
+bits_num=10^7;
 u=rand(1,bits_num)>0.5;
 uu=u*2-1;
 SNR_db=1:7;
@@ -40,10 +40,10 @@ for i=1:length(SNR)
 end
 semilogy(SNR_db,BER_uncoded);
 hold on
-semilogy(SNR_db,BER_218_soft);
-semilogy(SNR_db,BER_318_soft);
-semilogy(SNR_db,BER_218);
-semilogy(SNR_db,BER_318);
+semilogy(SNR_db,BER_216_soft);
+semilogy(SNR_db,BER_316_soft);
+semilogy(SNR_db,BER_216);
+semilogy(SNR_db,BER_316);
 xlabel('SNR(dB)');ylabel('BER');
 grid minor
 grid on
