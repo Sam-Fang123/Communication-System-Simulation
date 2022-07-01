@@ -1,7 +1,7 @@
 
 clear all
 clc
-bits_num=10^5;
+bits_num=10^6;
 u=rand(1,bits_num)>0.5;
 uu=u*2-1;
 SNR_db=1:7;
@@ -20,23 +20,26 @@ for i=1:length(SNR)
         v=Encoder_216(u(k:k+block_length-1));
         vv=v*2-1;
         r2=vv+(noise_pow(i))^(1/2)*randn(1,length(vv));
-        r22=r2>0;
-        out2(k:k+block_length-1)=Decoder_216(r22);
+        %r22=r2>0;
+        out2(k:k+block_length-1)=Decoder_216_soft(r2);
     end
     
     for k=1:block_length:length(u)
         v2=Encoder_316(u(k:k+block_length-1));
         vv2=v2*2-1;
         r3=vv2+(noise_pow(i))^(1/2)*randn(1,length(vv2));
-        r33=r3>0;
-        out3(k:k+block_length-1)=Decoder_316(r33);
+        %r33=r3>0;
+        out3(k:k+block_length-1)=Decoder_316_soft(r3);
     end
-    BER_218(i)=sum(out2~=u)/bits_num;
-    BER_318(i)=sum(out3~=u)/bits_num;
+    BER_218_soft(i)=sum(out2~=u)/bits_num;
+    BER_318_soft(i)=sum(out3~=u)/bits_num;
 
 end
 figure(2)
 semilogy(SNR_db,BER_uncoded,'-*');
 hold on
-semilogy(SNR_db,BER_218,'-o');
-semilogy(SNR_db,BER_318,'-d');
+semilogy(SNR_db,BER_218_soft,'-o');
+semilogy(SNR_db,BER_318_soft,'-d');
+xlabel('SNR(dB)');ylabel('BER');
+grid minor
+grid on
