@@ -19,7 +19,7 @@ for i=1:s_num
     S_f(i).next_s(1)=bi2de(flip(i_bin_0(2:end)));
     S_f(i).next_s(2)=bi2de(flip(i_bin_1(2:end)));
     S_f(i).next_out(1,:)=[mod(sum(and(i_bin_0,g1)),2) mod(sum(and(i_bin_0,g2)),2) mod(sum(and(i_bin_0,g3)),2)];
-    S_f(i).next_out(2,:)=[mod(sum(and(i_bin_1,g1)),2) mod(sum(and(i_bin_1,g2)),2) mod(sum(and(i_bin_0,g3)),2)];
+    S_f(i).next_out(2,:)=[mod(sum(and(i_bin_1,g1)),2) mod(sum(and(i_bin_1,g2)),2) mod(sum(and(i_bin_1,g3)),2)];
 end
 
 

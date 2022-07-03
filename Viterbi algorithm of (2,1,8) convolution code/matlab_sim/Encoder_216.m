@@ -16,17 +16,17 @@ for i=1:s_num
     i_bin_0(end)=0;
     i_bin_1=circshift(i_bin,-1);
     i_bin_1(end)=1;
-    S(i).next_s(1,:)=i_bin_0(2:end);
-    S(i).next_s(2,:)=i_bin_1(2:end);
-    S(i).next_out(1,:)=[mod(sum(and(i_bin_0,g1)),2) mod(sum(and(i_bin_0,g2)),2)];
-    S(i).next_out(2,:)=[mod(sum(and(i_bin_1,g1)),2) mod(sum(and(i_bin_1,g2)),2)];
+    S_f(i).next_s(1)=bi2de(flip(i_bin_0(2:end)));
+    S_f(i).next_s(2)=bi2de(flip(i_bin_1(2:end)));
+    S_f(i).next_out(1,:)=[mod(sum(and(i_bin_0,g1)),2) mod(sum(and(i_bin_0,g2)),2)];
+    S_f(i).next_out(2,:)=[mod(sum(and(i_bin_1,g1)),2) mod(sum(and(i_bin_1,g2)),2)];
 end
 
 v=zeros(1,2*length(u));
 next=0;
 for i=1:length(u)
-    v(2*i-1:2*i)=S(next+1).next_out(u(i)+1,:);
-    next=bi2de(flip(S(next+1).next_s(u(i)+1,:)));
+    v(2*i-1:2*i)=S_f(next+1).next_out(u(i)+1,:);
+    next=S_f(next+1).next_s(u(i)+1);
 end
 
 
