@@ -47,8 +47,8 @@ D2=0;
 
 for j=1:length(r)/3
     for i=1:s_num
-        D1=sum(abs([r(3*j-2) r(3*j-1) r(3*j)]-(S_b(i).prev_out(1,:)*2-1)))+S(S_b(i).prev_s(1)+1,j).d;
-        D2=sum(abs([r(3*j-2) r(3*j-1) r(3*j)]-(S_b(i).prev_out(2,:)*2-1)))+S(S_b(i).prev_s(2)+1,j).d;
+        D1=sum(([r(3*j-2) r(3*j-1) r(3*j)]-(S_b(i).prev_out(1,:)*2-1)).^2)+S(S_b(i).prev_s(1)+1,j).d;
+        D2=sum(([r(3*j-2) r(3*j-1) r(3*j)]-(S_b(i).prev_out(2,:)*2-1)).^2)+S(S_b(i).prev_s(2)+1,j).d;
         if(D1<D2)
             S(i,j+1).d=D1;
             S(i,j+1).prev=S_b(i).prev_s(1);

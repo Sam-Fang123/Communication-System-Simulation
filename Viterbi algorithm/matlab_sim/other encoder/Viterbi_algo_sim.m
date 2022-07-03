@@ -5,7 +5,7 @@ clc
 bits_num=10^7;
 u=rand(1,bits_num)>0.5;
 uu=u*2-1;
-SNR_db=1:7;
+SNR_db=0:6;
 SNR=10.^(SNR_db/10);
 noise_pow=1./SNR;
 block_length=1000;
