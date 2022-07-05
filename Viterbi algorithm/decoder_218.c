@@ -194,9 +194,6 @@ int main(){
 	}
 	printf("\n\nThere are %d errors. \n\n",err_num);
 	
-	for(i=0;i<path_length+1;i++)
-		printf("%d  ",pass_s[i]);
-	
 	free(S);
 	system("pause");
 	return 0;
