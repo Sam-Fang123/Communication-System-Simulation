@@ -39,8 +39,9 @@ int main(){
 	char ch;
 	int next=0;
 	int first,second,out_dec;
-	fptr=fopen("b.txt","r");
-	fptr2=fopen("out.txt","w");
+	fptr=fopen("u.txt","r");
+	fptr2=fopen("v.txt","w");
+	int B=0;
 	if(fptr!=NULL){
 		while((ch=getc(fptr))!=EOF)
 		{
@@ -63,12 +64,31 @@ int main(){
 				putc('0',fptr2);
 			else
 				putc('1',fptr2);
+			B=B+1;
+			if(B==1000){
+				for(i=0;i<9;i++){
+					out_dec=S[next].next_out[0];
+					next=S[next].next_s[0];
+					second=out_dec%2;
+					out_dec=out_dec/2;
+					first=out_dec%2;
+					if(first==0)
+						putc('0',fptr2);
+					else
+						putc('1',fptr2);
+					if(second==0)
+						putc('0',fptr2);
+					else
+						putc('1',fptr2);
+					B=0;
+					next=0;
+				}
+			}
 		}
 	}
 	
 	fclose(fptr);	
 	fclose(fptr2);
 	printf("\n");
-	system("pause");
 	return 0;
 }
