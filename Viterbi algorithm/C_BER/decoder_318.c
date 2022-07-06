@@ -40,16 +40,16 @@ int main(){
 		
 	}S_f[s_num];
 	
-	//g1=561=1 0111 0001, g2=1 1110 1011
-	int g1=0b100011101;
-	int g2=0b110101111;
+	//g1=575=1 0111 1101, g2=623=1 1001 0011 g3=727=1 1101 0111
+	int g1=0b101111101;
+	int g2=0b110010011;
+	int g3=0b111010111;
 	int i,j;
-	// Initialize connecting condition and output of every forward path
 	for(i=0;i<s_num;i++){
 		S_f[i].next_s[0]=(i<<1)%s_num;
 		S_f[i].next_s[1]=((i<<1)+1)%s_num;
-		S_f[i].next_out[0]=(mod_2((i<<1)&g1))*2+(mod_2((i<<1)&g2))*1;
-		S_f[i].next_out[1]=(mod_2(((i<<1)+1)&g1))*2+(mod_2(((i<<1)+1)&g2))*1;
+		S_f[i].next_out[0]=(mod_2((i<<1)&g1))*4+(mod_2((i<<1)&g2))*2+(mod_2((i<<1)&g3))*1;
+		S_f[i].next_out[1]=(mod_2(((i<<1)+1)&g1))*4+(mod_2(((i<<1)+1)&g2))*2+(mod_2(((i<<1)+1)&g3))*1;
 	}
 	
 	// Initialize connecting condition and output of every backward path
@@ -66,28 +66,30 @@ int main(){
 	}
 	
 	FILE *fptr_u,*fptr;
-	fptr=fopen("r_218.txt","r");
-	fptr_u=fopen("u2.txt","w");
+	fptr=fopen("r_318.txt","r");
+	fptr_u=fopen("u_318.txt","w");
 	struct state{
 			int prev;
 			int d;
 	};
 	int r_dec[1009];
-	int r[2018];
+	int r[3027];
 	int k=0;
 	char ch;
 	if(fptr!=NULL){
 		while((ch=getc(fptr))!=EOF){
 			r[k]=ch;
 			k=k+1;
-			if(k==2018){
+			if(k==3027){
 				k=0;
 				for(i=0;i<1009;i++)
-				r_dec[i]=0;
+					r_dec[i]=0;
 				for(i=0;i<1009;i++){
-					if(r[2*i]=='1')
+					if(r[3*i]=='1')
+					r_dec[i]=r_dec[i]+4;
+					if(r[3*i+1]=='1')
 						r_dec[i]=r_dec[i]+2;
-					if(r[2*i+1]=='1')
+					if(r[3*i+2]=='1')
 						r_dec[i]=r_dec[i]+1;
 					}
 				static struct state *S;

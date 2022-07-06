@@ -1,5 +1,5 @@
 clear all
-bits_num=2*10^3;
+bits_num=10^7;
 u=rand(1,bits_num)>0.5;
 i=1;
 j=1;
@@ -15,3 +15,4 @@ end
 fid = fopen('u.txt','wt');
 fprintf(fid,'%s',uu);
 fclose(fid);
+clear all

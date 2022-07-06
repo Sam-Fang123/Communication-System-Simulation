@@ -24,23 +24,24 @@ int main(){
 		
 	}S[s_num];
 	
-	//g1=561=1 0111 0001, g2=1 1110 1011
-	int g1=0b100011101;
-	int g2=0b110101111;
+	//g1=575=1 0111 1101, g2=623=1 1001 0011 g3=727=1 1101 0111
+	int g1=0b101111101;
+	int g2=0b110010011;
+	int g3=0b111010111;
 	int i,j;
 	for(i=0;i<s_num;i++){
 		S[i].next_s[0]=(i<<1)%s_num;
 		S[i].next_s[1]=((i<<1)+1)%s_num;
-		S[i].next_out[0]=(mod_2((i<<1)&g1))*2+(mod_2((i<<1)&g2))*1;
-		S[i].next_out[1]=(mod_2(((i<<1)+1)&g1))*2+(mod_2(((i<<1)+1)&g2))*1;
+		S[i].next_out[0]=(mod_2((i<<1)&g1))*4+(mod_2((i<<1)&g2))*2+(mod_2((i<<1)&g3))*1;
+		S[i].next_out[1]=(mod_2(((i<<1)+1)&g1))*4+(mod_2(((i<<1)+1)&g2))*2+(mod_2(((i<<1)+1)&g3))*1;
 	}
 	
 	FILE *fptr,*fptr2;
 	char ch;
 	int next=0;
-	int first,second,out_dec;
+	int first,second,out_dec,third;
 	fptr=fopen("u.txt","r");
-	fptr2=fopen("v_218.txt","w");
+	fptr2=fopen("v_318.txt","w");
 	int B=0;
 	if(fptr!=NULL){
 		while((ch=getc(fptr))!=EOF)
@@ -53,6 +54,8 @@ int main(){
 				out_dec=S[next].next_out[1];
 				next=S[next].next_s[1];
 				}
+			third=out_dec%2;
+			out_dec=out_dec/2;
 			second=out_dec%2;
 			out_dec=out_dec/2;
 			first=out_dec%2;
@@ -64,22 +67,32 @@ int main(){
 				putc('0',fptr2);
 			else
 				putc('1',fptr2);
+			if(third==0)
+				putc('0',fptr2);
+			else
+				putc('1',fptr2);
 			B=B+1;
 			if(B==1000){
 				for(i=0;i<9;i++){
 					out_dec=S[next].next_out[0];
 					next=S[next].next_s[0];
-					second=out_dec%2;
-					out_dec=out_dec/2;
-					first=out_dec%2;
-					if(first==0)
-						putc('0',fptr2);
-					else
-						putc('1',fptr2);
-					if(second==0)
-						putc('0',fptr2);
-					else
-						putc('1',fptr2);
+					third=out_dec%2;
+				out_dec=out_dec/2;
+				second=out_dec%2;
+				out_dec=out_dec/2;
+				first=out_dec%2;
+				if(first==0)
+					putc('0',fptr2);
+				else
+					putc('1',fptr2);
+				if(second==0)
+					putc('0',fptr2);
+				else
+					putc('1',fptr2);
+				if(third==0)
+					putc('0',fptr2);
+				else
+					putc('1',fptr2);
 				}
 				B=0;
 				next=0;
