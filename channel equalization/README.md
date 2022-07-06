@@ -17,4 +17,4 @@ The result of LMS and Wiener filter and zero forcing is in channel equalization 
 
 The BER curve is in BER_curve_fig.
 
-The result of steepest descent is in asp_HW.
+The result of steepest descent is in /Steepest_descent_HW.
