@@ -22,7 +22,7 @@ semilogy(SNR_db(1:5),qfunc(sqrt(SNR(1:5))),'-o');
 hold on
 semilogy(SNR_db(1:5),BER_218(1:5),'-d');
 semilogy(SNR_db(1:5),BER_318(1:5),'-*');
-legend('Uncoded','(2,1,8) code','(3,1,8) code');
+legend('Uncoded BPSK','Rate=1/2, m=8, Viterbi, hard decision','Rate=1/3, m=8, Viterbi, hard decision');
 xlabel('SNR(dB)');ylabel('BER');
 grid minor
 grid on
