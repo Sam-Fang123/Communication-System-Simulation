@@ -6,9 +6,9 @@ And decoder_218.c is the decoder of (2,1,8) convolution code using Viterbi algo.
 
 And the .txt file is using to test decoder_218.c to detect the error position.
 
-There are also some MATLAB verison of convolution code in matlab_sim.
+There are also some simulation of BER of Viterbi algorithm in the file /ber_sim.
 
-There are different verison convolution code, also have soft decision verison.
+Compare the (2,1,8) code and (3,1,8) code.
 
-Viterbi_algo_sim.m is used to simulate all of them and plot the BER.
+The result are in /ber_sim/result
 
