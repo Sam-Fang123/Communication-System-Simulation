@@ -22,6 +22,7 @@ semilogy(SNR_db(1:5),qfunc(sqrt(SNR(1:5))),'-o');
 hold on
 semilogy(SNR_db(1:5),BER_218(1:5),'-d');
 semilogy(SNR_db(1:5),BER_318(1:5),'-*');
+title('Viterbi Algorithm Performance');
 legend('Uncoded BPSK','Rate=1/2, m=8, Viterbi, hard decision','Rate=1/3, m=8, Viterbi, hard decision');
 xlabel('SNR(dB)');ylabel('BER');
 grid minor
