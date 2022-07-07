@@ -11,10 +11,6 @@ LMS_bpsk_v2.m is used to plot BER of LMS in different SNR.
 
 Zero_forcing_bpsk.m is used to plot BER of zero forcing in different SNR.
 
-Steepest_desenct.m is used to simulate steepest desenct.
-
 The result of LMS and Wiener filter and zero forcing is in channel equalization report.pptx.
 
 The BER curve is in BER_curve_fig.
-
-The result of steepest descent is in /Steepest_descent_HW.
