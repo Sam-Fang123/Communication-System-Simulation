@@ -1,4 +1,5 @@
 clear
+clc
 bitnum = 10^6;
 t=1:bitnum;
 
@@ -28,7 +29,8 @@ xlabel('time(s)')
 ylabel('Attenuation gain')
 figure(2)
 subplot(3,1,1)
-histogram(rms(fade_coeff,1));
+%histogram(rms(fade_coeff,1));
+histogram(sqrt(temp_re.^2+temp_im.^2));
 subplot(3,1,2)
 histogram(temp_re);
 subplot(3,1,3)
