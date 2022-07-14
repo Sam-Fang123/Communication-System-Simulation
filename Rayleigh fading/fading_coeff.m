@@ -24,21 +24,44 @@ c_gain=(abs(fade_coeff));
 %db_im=10*log10(rms(temp_im,1));
 figure(1)
 plot(t,c_gain);
-title('Rayleigh fading channel with Doppler shift 100 Hz (velocity = 120km/h)')
+title('Rayleigh fading channel when vehicle velocity = 120km/h)')
 xlabel('time(s)')
-ylabel('Attenuation gain')
+ylabel('Attenuation gain |h|')
+
+grid = -2.5:0.01:2.5;
+grid2 = 0:0.01:3;
 figure(2)
-subplot(3,1,1)
-%histogram(rms(fade_coeff,1));
-histogram(sqrt(temp_re.^2+temp_im.^2));
-subplot(3,1,2)
-histogram(temp_re);
-subplot(3,1,3)
-histogram(temp_im);
-mean_of_X=mean(rms(fade_coeff,1));
-var_of_Xr=var(temp_re);
-mean_of_X-sqrt(var_of_Xr)*(sqrt(pi/2));
+histogram(sqrt(temp_re.^2+temp_im.^2),'Normalization','pdf');
+ylabel('Probability Density');
+xlabel('X')
+title('PDF of X')
+hold on
+plot( grid2, grid2/(1/2).*exp(-grid2.^2/2/(1/2)),'b-','LineWidth',2);
+hold off
+
+figure(3)
+histogram(temp_re,'Normalization','pdf');
+ylabel('Probability Density');
+xlabel('Xi')
+title('PDF of Xi')
+hold on
+plot( grid, 1/sqrt(2*pi*(1/2))*exp(-grid.^2/2/(1/2)),'b-','LineWidth',2);
+hold off
+
+figure(4)
+histogram(temp_im,'Normalization','pdf');
+ylabel('Probability Density');
+xlabel('Xq')
+title('PDF of Xq')
+hold on
+plot(grid, 1/sqrt(2*pi*(1/2))*exp(-grid.^2/2/(1/2)),'b-','LineWidth',2);
+hold off
 
 
+re_mean=mean(temp_re)
+re_power=mean(temp_re.^2)
+
+im_mean=mean(temp_im)
+im_power=mean(temp_im.^2)
 
 
