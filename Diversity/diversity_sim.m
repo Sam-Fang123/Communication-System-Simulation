@@ -1,12 +1,12 @@
 
 clear
-bitnum = 2*10^7;
+bitnum = 10^5;
 block_num = bitnum/2;
 
 % Flat fading channel
 velocity = 90;      % mobile velocity in km/hr
 Fc = 900;           % carrier freq in MHz
-Fs = 10^(-5);      % sampling freq MHZ 
+Fs = 10^-5;      % sampling freq MHZ   % This sampling freq is to match the coherence time ??
 N0 = 20;
 
 rx_num = 2;

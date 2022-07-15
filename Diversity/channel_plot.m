@@ -22,12 +22,13 @@ for i = 1:channel_num
     [fade_coeff(i,:),inphase(i,:)] = spfade(velocity,Fc,Fs,N0,block_num,inphase(i,:));
 end
 
-db_abs=(abs(fade_coeff));
+db_abs=(20*log10(abs(fade_coeff)));
 plot(t,db_abs(1,:));
 hold on
 plot(t,db_abs(2,:));
 plot(t,db_abs(3,:));
-%plot(t,db_abs(4,:));
+plot(t,db_abs(4,:));
 title('Rayleigh fading channels with Doppler shift 25 Hz (velocity = 30km/h)')
 xlabel('time(s)')
 ylabel('Signal Level(dB about rms)')
+legend('Channel 1','Channel 2','Channel 3','Channel 4')
