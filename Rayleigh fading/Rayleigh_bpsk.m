@@ -1,6 +1,6 @@
 
 clear
-bitnum = 10^5;
+bitnum = 10^7;
 block_num = bitnum/2;
 
 % Flat fading channel
@@ -30,10 +30,13 @@ for i=1:length(SNR_db)
     
     % bpsk and mrrc
     w = sqrt(noise_pow(i))*randn(1,bitnum)+sqrt(-1)*sqrt(noise_pow(i))*randn(1,bitnum); 
+    r_bpsk_no_fading = input1+w;
     r_bpsk = input1.*fade_coeff + w;
     s0_bpsk = r_bpsk ./ fade_coeff;
     output_bpsk = ((s0_bpsk > 0)*2-1);
+    output_bpsk_no_fading = (r_bpsk_no_fading > 0)*2-1;
     BER_bpsk(i) = sum(output_bpsk~=input1)/bitnum;
+    BER_bpsk_no_fading(i) = sum(output_bpsk_no_fading~=input1)/bitnum;
   
  
 end
@@ -41,11 +44,18 @@ end
 figure(2);
 semilogy(SNR_db, BER_bpsk,'o-');
 hold on;
-semilogy(SNR_db, (1-sqrt((SNR_lin/2)./((SNR_lin/2)+1)))/2);
-% Check the relationship of SNR and transmission power!!!
-
-legend("No Diversity BPSK(1 Tx, 1 Rx)","the");
-title("BPSK over Rayleigh Fading Channel with MRRC and Alamouti Code");
+semilogy(SNR_db, (1-sqrt((SNR_lin)./((SNR_lin)+2)))/2);
+legend("Simulation BER","Theoretical BER");
+title("BPSK BER of Rayleigh Fading Channel");
 xlabel("SNR(dB)");
 ylabel("BER");
+grid on
+
+%{
+figure(3);
+semilogy(SNR_db, BER_bpsk_no_fading,'o-');
+hold on;
+semilogy(SNR_db, qfunc(sqrt(SNR_lin)),'d-');
+grid on
+%}
     
