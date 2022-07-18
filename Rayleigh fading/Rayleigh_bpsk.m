@@ -42,10 +42,11 @@ for i=1:length(SNR_db)
 end
 
 figure(2);
-semilogy(SNR_db, BER_bpsk,'o-');
+semilogy(SNR_db, BER_bpsk,'-o');
 hold on;
-semilogy(SNR_db, (1-sqrt((SNR_lin)./((SNR_lin)+2)))/2);
-legend("Simulation BER","Theoretical BER");
+semilogy(SNR_db, (1-sqrt((SNR_lin)./((SNR_lin)+2)))/2,'-*');
+semilogy(SNR_db, 1./(2*SNR_lin));
+legend("Simulation BER","Theoretical BER","Approximation BER");
 title("BPSK BER of Rayleigh Fading Channel");
 xlabel("SNR(dB)");
 ylabel("BER");

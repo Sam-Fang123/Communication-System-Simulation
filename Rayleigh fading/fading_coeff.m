@@ -29,15 +29,15 @@ ylabel('Signal Level(dB about rms)')
 grid on
 %ylabel('Attenuation gain |h|')
 
-grid = -2.5:0.01:2.5;
-grid2 = 0:0.01:3;
+x1 = -2.5:0.01:2.5;
+x2 = 0:0.01:3;
 figure(2)
 histogram(abs(fade_coeff),'Normalization','pdf');
 ylabel('Probability Density');
 xlabel('X')
 title('PDF of X')
 hold on
-plot( grid2, grid2/(1/2).*exp(-grid2.^2/2/(1/2)),'b-','LineWidth',2);
+plot( x2, x2/(1/2).*exp(-x2.^2/2/(1/2)),'b-','LineWidth',2);
 hold off
 
 figure(3)
@@ -46,7 +46,7 @@ ylabel('Probability Density');
 xlabel('Xi')
 title('PDF of Xi')
 hold on
-plot( grid, 1/sqrt(2*pi*(1/2))*exp(-grid.^2/2/(1/2)),'b-','LineWidth',2);
+plot( x1, 1/sqrt(2*pi*(1/2))*exp(-x1.^2/2/(1/2)),'b-','LineWidth',2);
 hold off
 
 figure(4)
@@ -55,7 +55,7 @@ ylabel('Probability Density');
 xlabel('Xq')
 title('PDF of Xq')
 hold on
-plot(grid, 1/sqrt(2*pi*(1/2))*exp(-grid.^2/2/(1/2)),'b-','LineWidth',2);
+plot(x1, 1/sqrt(2*pi*(1/2))*exp(-x1.^2/2/(1/2)),'b-','LineWidth',2);
 hold off
 %re_mean=mean(temp_re)
 %re_power=mean(temp_re.^2)
@@ -63,3 +63,4 @@ hold off
 %im_power=mean(temp_im.^2)
 
 channel_power=mean(temp_re.^2+temp_im.^2)
+channel_correlation=mean(temp_re.*temp_im)
