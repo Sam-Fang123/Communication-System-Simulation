@@ -18,7 +18,7 @@ inphase = zeros(1, N0+1);
 rng('default');
 inphase = 2*pi*rand(1, N0+1);
 
-for i=1:bitnum:bitnum*100
+for i=1:bitnum:bitnum*10
     [temp_re temp_im fade_coeff,inphase] = spfade(velocity,Fc,Fs,N0,bitnum,inphase);
     fade_coeff_out(i:bitnum+i-1)=fade_coeff;
 end

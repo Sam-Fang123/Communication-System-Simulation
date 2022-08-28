@@ -30,7 +30,7 @@ subplot(3,1,1)
 histogram(Chi_n_2,'Normalization','pdf');
 ylabel('Probability Density');
 xlabel('X')
-title('PDF of 2 degree of freedom Chi-Square (1 channel power)')
+title('PDF of one channel power')
 ylim([0 1])
 xlim([0 8])
 hold on
@@ -41,7 +41,7 @@ subplot(3,1,2)
 histogram(Chi_n_4,'Normalization','pdf');
 ylabel('Probability Density');
 xlabel('X')
-title('PDF of 4 degree of freedom Chi-Square (Sum of 2 channel power)')
+title('PDF of sum of 2 channel power')
 ylim([0 1])
 xlim([0 8])
 hold on
@@ -52,7 +52,7 @@ subplot(3,1,3)
 histogram(Chi_n_8,'Normalization','pdf');
 ylabel('Probability Density');
 xlabel('X')
-title('PDF of 8 degree of freedom Chi-Square (Sum of 4 channel power)')
+title('PDF of sum of 4 channel power')
 ylim([0 1])
 xlim([0 8])
 hold on
