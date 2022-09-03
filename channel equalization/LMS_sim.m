@@ -55,7 +55,7 @@ end
 figure(1)
 semilogy(0:N-1,J);
 legend('step size=0.075','step size=0.025','step size=0.0075')
-title('Eigenvlaue spread=11.1238 with different step size')
+title('Comparison of LMS with different step size')
 %title('Step size=0.025 with different eigenvalue spread')
 %legend('eigenvalue spread=6.0782','eigenvalue spread=21.7132','eigenvalue spread=46.8216')
 xlabel('Number of iterations')
