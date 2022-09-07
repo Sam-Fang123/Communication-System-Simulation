@@ -26,7 +26,7 @@ for j=1:size(noise_pow,2)
 end
     
 
-theoretical_BER=qfunc(SNR.^(1/2));  % Theoretical BER
+theoretical_BER=qfunc((SNR).^(1/2));  % Theoretical BER
 %approx_BER1=exp(-(SNR)/2)./(sqrt(2*pi*SNR));    %approximate BER1
 %approx_BER2=(1/2)*exp(-(SNR)/2);                %approximate BER2
 %semilogy(10*log10(SNR),approx_BER1,'g',10*log10(SNR),approx_BER2,'y','LineWidth',1.3);
