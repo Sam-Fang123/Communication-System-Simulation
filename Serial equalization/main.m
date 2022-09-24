@@ -3,8 +3,7 @@ clear all;
 clc;
 
 %% Options(Channel Estimation & Detection)
-DE_option.estimation_on = 1;
-DE_option.detection_on = 0;
+DE_option.detection_on = 1;
 
 %% System parameters(Frame structure)
 sys_par.tblock = 128; %Blocksize
@@ -12,7 +11,7 @@ sys_par.M = 5;%CP length + 1: M
 sys_par.pilot_random_seed = 0;
 sys_par.pilot_scheme = 1;
 sys_par.random_seed = 0;
-sys_par.ndata = sys_par.tblock  % Number of data symbols
+sys_par.ndata = sys_par.tblock;  % Number of data symbols
 
 %% SNR parameters(Noise) Âø°T
 snr.db = 10;
@@ -80,12 +79,47 @@ for kk = 1:size(indv.range,2)
     randn('state',sys_par.random_seed);
     dv.bit_error_count = zeros(size(dv.BER,1),1);
     dv.sym_error_count = zeros(size(dv.SER,1),1);
+    display(indv.str(indv.option)+num2str(indv.range(kk)));
     for ii=1:tx_par.nblock
         
-        display(indv.str(indv.option)+' & block index  '+num2str(indv.range(kk))+'_'+num2str(ii));
-        
+        trans_block=zeros(1,sys_par.tblock); % transmission (constellation) block
         [data.const_data data.dec_data data.bit_data]=block_sym_mapping(sys_par.ndata,tx_par);% generate data block
-    end
+        trans_block = data.const_data;
+        trans_block = trans_block.';%column vector
+        
+        noise_block=sqrt(snr.noise_pwr/2)*(randn(1,sys_par.tblock)+1j*randn(1,sys_par.tblock));
+        noise_block = noise_block.';%column vector
+        
+        [h,h_taps] = gen_ch_imp(fade_struct, sys_par,ii);
+        
+        trans_block_FD = fft(trans_block,sys_par.tblock)/sqrt(sys_par.tblock);%column vector
+        noise_block_FD=fft(noise_block,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
+        
+        y = h*trans_block + noise_block;
+        Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
+        %H_est = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
+        H=dftmtx(128)*h*conj(dftmtx(128))/128;
+        
+        %Detection...
+        if(DE_option.detection_on ==1)
+            
+            switch(rx_par.type)
+                case(1) % Serial equalation MMES 
+                     [data.hat_dec data.hat_bit] = SE_MMSE(sys_par,tx_par,rx_par,H,Y,snr.noise_pwr,data);
+                case(2) % Serial equalization DFE 
+                     [data.hat_dec data.hat_bit] = SE_DFE(sys_par,tx_par,rx_par,H,Y,snr.noise_pwr,data);
+            end% end rx_par.type
+
+            dv.sym_error_count(:,1) = dv.sym_error_count(:,1) + sum((data.hat_dec-data.dec_data)~=0,2);
+            dv.bit_error_count(:,1) = dv.bit_error_count(:,1) + sum((data.hat_bit-data.bit_data)~=0,2);
+        end
+    end % end ii=1:tx_par.nblock
+    
+    dv.SER(:,kk) = dv.sym_error_count/(tx_par.nblock*sys_par.ndata);
+    dv.BER(:,kk) = dv.bit_error_count/(tx_par.nblock*sys_par.ndata*tx_par.nbits_per_sym);
+
+        
+        
 end
     
     
