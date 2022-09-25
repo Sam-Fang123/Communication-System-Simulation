@@ -23,7 +23,7 @@ fade_struct.fading_flag=1;
 fade_struct.ch_model=3;
 fade_struct.nrms = 10;
 
-fade_struct.fd = 0.2;% Doppler frequency
+fade_struct.fd = 0.3;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 
 %% Tx parameters 傳送端參數
@@ -36,7 +36,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 1; % Number of transmitted blocks
+tx_par.nblock= 10; % Number of transmitted blocks
 
 %% Rx parameter 接收端參數
 
@@ -45,7 +45,7 @@ rx_par.type_str={
     'Serial equalization DFE'
     };
 rx_par.type = 1;
-rx_par.K = 5;
+rx_par.K = [1 5 15 25];
 
 %% Independent variable 控制變因
 indv.str = ["SNR(Es/No)","fd","Serial Equalization K"];
@@ -53,8 +53,8 @@ indv.option = 1;
 indv.range = 1:30;
 %% Dependent variable 應變變因
 %BER,SER
-dv.BER = zeros(1,size(indv.range,2));
-dv.SER = zeros(1,size(indv.range,2));
+dv.BER = zeros(size(rx_par.K,2),size(indv.range,2));
+dv.SER = zeros(size(rx_par.K,2),size(indv.range,2));
 
 
 
@@ -84,28 +84,32 @@ for kk = 1:size(indv.range,2)
         
         trans_block=zeros(1,sys_par.tblock); % transmission (constellation) block
         [data.const_data data.dec_data data.bit_data]=block_sym_mapping(sys_par.ndata,tx_par);% generate data block
-        trans_block = data.const_data;
+        trans_data = data.const_data;
+        trans_block = ifft(trans_data,sys_par.tblock)*sqrt(sys_par.tblock);     % OFDM
         trans_block = trans_block.';%column vector
         
-        noise_block=sqrt(snr.noise_pwr/2)*(randn(1,sys_par.tblock)+1j*randn(1,sys_par.tblock));
+        noise_block = sqrt(snr.noise_pwr/2)*(randn(1,sys_par.tblock)+1j*randn(1,sys_par.tblock));
         noise_block = noise_block.';%column vector
         
         [h,h_taps] = gen_ch_imp(fade_struct, sys_par,ii);
         
-        trans_block_FD = fft(trans_block,sys_par.tblock)/sqrt(sys_par.tblock);%column vector
-        noise_block_FD=fft(noise_block,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
+        %trans_block_FD = fft(trans_block,sys_par.tblock)/sqrt(sys_par.tblock);%column vector
+        %noise_block_FD=fft(noise_block,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
         
         y = h*trans_block + noise_block;
         Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
         %H_est = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
-        H=dftmtx(128)*h*conj(dftmtx(128))/128;
+        H = dftmtx(128)*h*conj(dftmtx(128))/128;
         
         %Detection...
         if(DE_option.detection_on ==1)
             
             switch(rx_par.type)
                 case(1) % Serial equalation MMES 
-                     [data.hat_dec data.hat_bit] = SE_MMSE(sys_par,tx_par,rx_par,H,Y,snr.noise_pwr,data);
+                     for i=1:size(rx_par.K,2)
+                        K = rx_par.K(i);
+                        [data.hat_dec(i,:) data.hat_bit(i,:)] = SE_MMSE(sys_par,tx_par,K,H,Y,snr.noise_pwr,data);
+                     end
                 case(2) % Serial equalization DFE 
                      [data.hat_dec data.hat_bit] = SE_DFE(sys_par,tx_par,rx_par,H,Y,snr.noise_pwr,data);
             end% end rx_par.type
@@ -122,4 +126,14 @@ for kk = 1:size(indv.range,2)
         
 end
     
-    
+semilogy(indv.range,dv.BER(1,:),'-d');
+xlabel('SNR');
+ylabel('BER');
+grid on;
+hold on;
+semilogy(indv.range,dv.BER(2,:),'-^');
+semilogy(indv.range,dv.BER(3,:),'-*');
+semilogy(indv.range,dv.BER(4,:),'-o');
+legend('1 tap MMSE','5 tap MMSE','15 tap MMSE','25 tap MMSE')
+
+
