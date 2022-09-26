@@ -11,7 +11,7 @@ if (fade_struct.fading_flag==1)
         quasi_ch=rand(1,fade_struct.ch_length);
         h=quasi_ch/norm(quasi_ch);
         
-    elseif (fade_struct.ch_model==3 || fade_struct.ch_model==4)% 3: fast fading exponential PDP  4:fast fading uniform PDP
+    elseif (fade_struct.ch_model==3 || fade_struct.ch_model==4 || fade_struct.ch_model==5)% 3: fast fading exponential PDP  4:fast fading uniform PDP 5:SE MMSE
         N0=100;
         Nsample=sys_par.tblock;
         fd=fade_struct.nor_fd;
@@ -22,7 +22,8 @@ if (fade_struct.fading_flag==1)
             avg_pwr=var0*exp(-(0:fade_struct.ch_length-1)*inv_nrms);
         elseif(fade_struct.ch_model==4)
             avg_pwr = 1/fade_struct.ch_length*ones(1,fade_struct.ch_length);
-        
+        elseif(fade_struct.ch_model==5)
+            avg_pwr = exp(-(0:fade_struct.ch_length-1)/fade_struct.ch_length);
         end    
         h=zeros(fade_struct.ch_length,Nsample);
         inphase=zeros(fade_struct.ch_length,N0+1);

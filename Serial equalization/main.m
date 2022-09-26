@@ -7,7 +7,7 @@ DE_option.detection_on = 1;
 
 %% System parameters(Frame structure)
 sys_par.tblock = 128; %Blocksize
-sys_par.M = 5;%CP length + 1: M
+sys_par.M = 2;%CP length + 1: M
 sys_par.pilot_random_seed = 0;
 sys_par.pilot_scheme = 1;
 sys_par.random_seed = 0;
@@ -20,6 +20,7 @@ snr.noise_pwr=10^(-snr.db/10);
 %% Channel parameters 通道參數
 fade_struct.ch_length = sys_par.M;
 fade_struct.fading_flag=1;
+fade_struct.ch_model_str={'slow fading exponential PDP','slow fading uniform PDP','fast fading exponential PDP','fast fading uniform PDP','SE MMSE'};
 fade_struct.ch_model=3;
 fade_struct.nrms = 10;
 
