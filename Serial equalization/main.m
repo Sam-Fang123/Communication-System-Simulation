@@ -44,7 +44,7 @@ rx_par.type_str={
     'Serial equalation MMES'
     'Serial equalization DFE'
     };
-rx_par.type = 1;
+rx_par.type = 2;
 rx_par.K = [1 5 15 25];
 
 %% Independent variable ±±®Ó≈‹¶]
@@ -111,7 +111,10 @@ for kk = 1:size(indv.range,2)
                         [data.hat_dec(i,:) data.hat_bit(i,:)] = SE_MMSE(sys_par,tx_par,K,H,Y,snr.noise_pwr,data);
                      end
                 case(2) % Serial equalization DFE 
-                     [data.hat_dec data.hat_bit] = SE_DFE(sys_par,tx_par,rx_par,H,Y,snr.noise_pwr,data);
+                     for i=1:size(rx_par.K,2)
+                        K = rx_par.K(i);
+                        [data.hat_dec(i,:) data.hat_bit(i,:)] = SE_DFE(sys_par,tx_par,K,H,Y,snr.noise_pwr,data);
+                     end
             end% end rx_par.type
 
             dv.sym_error_count(:,1) = dv.sym_error_count(:,1) + sum((data.hat_dec-data.dec_data)~=0,2);
