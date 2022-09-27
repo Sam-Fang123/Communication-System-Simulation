@@ -1,7 +1,7 @@
 
 indv.range = 1:30;
 semilogy(indv.range,dv.BER(1,:),'-d');
-title('Two path channel(Same as paper), normalize Doppler Frequency = 0.3');
+title('Five path channel, normalize Doppler Frequency = 0.3');
 xlabel('SNR');
 ylabel('BER');
 grid on;
