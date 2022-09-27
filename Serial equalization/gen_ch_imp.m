@@ -19,11 +19,11 @@ if (fade_struct.fading_flag==1)
         if(fade_struct.ch_model==3)
             inv_nrms=1/fade_struct.nrms;
             var0=((1-exp(-inv_nrms))/(1-exp(-fade_struct.ch_length*inv_nrms))); % c value
-            avg_pwr=var0*exp(-(0:fade_struct.ch_length-1)*inv_nrms);
+            avg_pwr=var0*exp(-(0:fade_struct.ch_length-1)*inv_nrms)
         elseif(fade_struct.ch_model==4)
             avg_pwr = 1/fade_struct.ch_length*ones(1,fade_struct.ch_length);
         elseif(fade_struct.ch_model==5)
-            avg_pwr = exp(-(0:fade_struct.ch_length-1)/fade_struct.ch_length);
+            avg_pwr = exp(-(0:fade_struct.ch_length-1)/fade_struct.ch_length)/sum(exp(-(0:fade_struct.ch_length-1)/fade_struct.ch_length));
         end    
         h=zeros(fade_struct.ch_length,Nsample);
         inphase=zeros(fade_struct.ch_length,N0+1);
