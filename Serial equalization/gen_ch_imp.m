@@ -16,29 +16,28 @@ if (fade_struct.fading_flag==1)
         Nsample=sys_par.tblock;
         fd=fade_struct.nor_fd;
         avg_pwr = exp(-(0:1)/2)/sum(exp(-(0:1)/2));
-        rand_pos = floor((sys_par.tblock/8-1)*rand(1,sys_par.tblock))+2;
-        
+        %rand_pos = floor((sys_par.tblock/8-1)*rand(1,sys_par.tblock))+2;
+        rand_pos = floor((sys_par.tblock/8-1)*rand(1)+2);
         h=zeros(fade_struct.ch_length,Nsample);
         inphase=zeros(2,N0+1);
         for n=0:1
             rand('state',fade_struct.ch_length*NoB+n);
             inphase_init=2*pi*rand(1,N0+1);
-            [h(1,:) inphase(1,:)] = fastfade(fd,N0,Nsample,inphase_init);
-            for ii=1:sys_par.tblock
-                h(rand_pos(ii),ii)=h(1,ii)*sqrt(avg_pwr(2));
-            end
-            h(1,:)= sqrt(avg_pwr(1)).*h(1,:);
-            %{
+            %[h(1,:) inphase(1,:)] = fastfade(fd,N0,Nsample,inphase_init);
+            %for ii=1:sys_par.tblock
+            %    h(rand_pos(ii),ii)=h(1,ii)*sqrt(avg_pwr(2));
+            %end
+            %h(1,:)= sqrt(avg_pwr(1)).*h(1,:);
+            
             if(n==0)
                 [h(n+1,:),inphase(n+1,:)]=fastfade(fd,N0,Nsample,inphase_init);
                 h(n+1,:)= sqrt(avg_pwr(1)).*h(n+1,:);
             else
                 [h_coeff,inphase(n+1,:)]=fastfade(fd,N0,Nsample,inphase_init);
                 for ii=1:sys_par.tblock
-                    h(rand_pos(ii),ii)=h_coeff(ii)*sqrt(avg_pwr(2));
+                    h(rand_pos,ii)=h_coeff(ii)*sqrt(avg_pwr(2));
                 end
-            end
-            %}
+            end 
         end %end n=0:1
         varargout{2} = h.';
         hh=[fliplr(h.') zeros(Nsample,Nsample-fade_struct.ch_length)];

@@ -24,7 +24,7 @@ fade_struct.ch_model_str={'slow fading exponential PDP','slow fading uniform PDP
 fade_struct.ch_model=5;
 fade_struct.nrms = 10;
 
-fade_struct.fd = 0.3;% Doppler frequency
+fade_struct.fd = 0.1;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 
 %% Tx parameters ¶Ç°eºÝ°Ñ¼Æ
@@ -99,7 +99,7 @@ for kk = 1:size(indv.range,2)
         
         y = h*trans_block + noise_block;
         Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
-        %H_est = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
+        %H = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
         H = dftmtx(128)*h*conj(dftmtx(128))/128;
         
         %Detection...
