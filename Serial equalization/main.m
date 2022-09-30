@@ -7,7 +7,7 @@ DE_option.detection_on = 1;
 
 %% System parameters(Frame structure)
 sys_par.tblock = 128; %Blocksize
-sys_par.M = 5;%CP length + 1: M
+sys_par.M = sys_par.tblock/8;%CP length + 1: M
 sys_par.pilot_random_seed = 0;
 sys_par.pilot_scheme = 1;
 sys_par.random_seed = 0;
@@ -46,7 +46,7 @@ rx_par.type_str={
     'Serial equalization DFE'
     };
 rx_par.type = 2;
-rx_par.K = [1 5 15 25];
+rx_par.K = [1 5 25];
 
 %% Independent variable ±±®Ó≈‹¶]
 indv.str = ["SNR(Es/No)","fd","Serial Equalization K"];
@@ -137,6 +137,6 @@ grid on;
 hold on;
 semilogy(indv.range,dv.BER(2,:),'-^');
 semilogy(indv.range,dv.BER(3,:),'-*');
-semilogy(indv.range,dv.BER(4,:),'-o');
-legend('1 tap MMSE','5 tap MMSE','15 tap MMSE','25 tap MMSE')
+%semilogy(indv.range,dv.BER(4,:),'-o');
+legend('1 tap MMSE','5 tap MMSE','25 tap MMSE')
 
