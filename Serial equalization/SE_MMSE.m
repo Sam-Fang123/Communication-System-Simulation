@@ -7,9 +7,9 @@ Q = (K-1)/2;
 for k=0:sys_par.tblock-1
     rho = mod(k-Q-1+(1:K),sys_par.tblock)+1;
     A_k = H(rho,:);
-    R_k = A_k*A_k.' + noise_pwr*eye(K);
+    R_k = A_k*conj(A_k.') + noise_pwr*eye(K);
     m_k = R_k\A_k(:,k+1);
-    s_hat_k(k+1) = sc_symbol_slicing((m_k.')*Y(rho),tx_par);
+    s_hat_k(k+1) = sc_symbol_slicing(conj(m_k.')*Y(rho),tx_par);
 end
 
 data_hat_dec = s_hat_k;

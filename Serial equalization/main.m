@@ -51,7 +51,7 @@ rx_par.K = [1 5 25];
 %% Independent variable 控制變因
 indv.str = ["SNR(Es/No)","fd","Serial Equalization K"];
 indv.option = 1;
-indv.range = 1:2:60;
+indv.range = 0:10:60;
 %% Dependent variable 應變變因
 %BER,SER
 dv.BER = zeros(size(rx_par.K,2),size(indv.range,2));
