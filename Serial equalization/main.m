@@ -20,7 +20,7 @@ snr.noise_pwr=10^(-snr.db/10);
 %% Channel parameters 硄笵把计
 fade_struct.ch_length = sys_par.M;
 fade_struct.fading_flag=1;
-fade_struct.ch_model_str={'slow fading exponential PDP','slow fading uniform PDP','fast fading exponential PDP','fast fading uniform PDP','SE MMSE'};
+fade_struct.ch_model_str={'slow fading exponential PDP','slow fading uniform PDP','fast fading exponential PDP','fast fading uniform PDP','Two_path_ch'};
 fade_struct.ch_model=5;
 fade_struct.nrms = 10;
 
@@ -37,13 +37,13 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 100; % Number of transmitted blocks
+tx_par.nblock= 10; % Number of transmitted blocks
 
 %% Rx parameter 钡Μ狠把计
 
 rx_par.type_str={
-    'Serial equalation MMES'
-    'Serial equalization DFE'
+    'SE_MMES'
+    'SE_DFE'
     };
 rx_par.type = 2;
 rx_par.K = [1 5 25];
@@ -140,3 +140,11 @@ semilogy(indv.range,dv.BER(3,:),'-*');
 %semilogy(indv.range,dv.BER(4,:),'-o');
 legend('1 tap MMSE','5 tap MMSE','25 tap MMSE')
 
+filename = "";
+filename = filename + rx_par.type_str(rx_par.type);
+filename = filename + "_" + tx_par.mod_type_str(tx_par.mod_type);
+filename = filename + "_" + fade_struct.ch_model_str(fade_struct.ch_model);
+filename = filename + "_fd=" + num2str(fade_struct.fd);
+filename = filename + "_Nblock=" + num2str(tx_par.nblock);
+filename = filename + ".mat";
+save(filename,'indv','dv','sys_par','tx_par','rx_par','snr','fade_struct');
