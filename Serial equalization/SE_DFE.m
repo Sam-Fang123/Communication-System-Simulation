@@ -5,8 +5,9 @@ function [data_hat_dec_out data_hat_bit]=SE_MMSE(sys_par,tx_par,K,H,Y,noise_pwr,
 Q = (K-1)/2;
 [max_norm m] = max(vecnorm(H));
 m = m-1; % Symbol index is from 0 to N-1
-s_hat_k = zeros(3,sys_par.tblock);
-data_hat_dec = zeros(3,sys_par.tblock);
+iter_num = 2;
+s_hat_k = zeros(iter_num+1,sys_par.tblock);
+data_hat_dec = zeros(iter_num+1,sys_par.tblock);
 % first iteration
 rho = mod(m-Q-1+(1:K),sys_par.tblock)+1;
 A_k = H(rho,:);
@@ -30,7 +31,7 @@ for k=rho2(2:end)
     [data_hat_dec(1,k+1) s_hat_k(1,k+1)] = sc_symbol_slicing(conj(m_k.')*Y_tilde_k,tx_par);
 end
 
-for ii = 1:2
+for ii = 1:iter_num
     for kk = 0:sys_par.tblock-1
         rho3 = mod(kk-Q-1+(1:K),sys_par.tblock)+1;
         Y_k = Y(rho3);
@@ -47,5 +48,5 @@ end
     
 data_hat_dec_out = data_hat_dec(3,:);
 for ii=1:sys_par.ndata
-    data_hat_bit((ii-1)*tx_par.nbits_per_sym+1:ii*tx_par.nbits_per_sym ) = my_dec2base(data_hat_dec(3,ii),2,tx_par.nbits_per_sym);
+    data_hat_bit((ii-1)*tx_par.nbits_per_sym+1:ii*tx_par.nbits_per_sym ) = my_dec2base(data_hat_dec(iter_num+1,ii),2,tx_par.nbits_per_sym);
 end% end ii=1:sys_par.ndata
