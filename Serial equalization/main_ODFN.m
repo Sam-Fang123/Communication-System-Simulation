@@ -37,7 +37,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 100; % Number of transmitted blocks
+tx_par.nblock= 10; % Number of transmitted blocks
 
 %% Rx parameter 接收端參數
 
@@ -67,7 +67,9 @@ for kk = 1:size(indv.range,2)
     switch(indv.option) %adjust the independent variable
         case(1)
             snr.db = indv.range(kk);
-            snr.noise_pwr = 10^(-snr.db/10);
+            snr.snr = 10^(snr.db/10);
+            snr.noise_pwr = 0.5/snr.snr;    % Eb/N0
+            %snr.noise_pwr = 1/snr.snr;      % Es/N0
         case(2)
             fade_struct.fd = indv.range(kk);
             fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
