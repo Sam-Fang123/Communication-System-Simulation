@@ -1,11 +1,11 @@
 
-range = 11:23;
+range = 1:15;
 semilogy(indv.range(range),dv.BER(1,range),'-d');
-title('Five path channel, normalize Doppler Frequency = 0.2');
+title('Two path channel, normalize Doppler Frequency = 0.3');
 xlabel('SNR');
 ylabel('BER');
-%xlim([plot_snr(1) plot_snr(end)])
-ylim ([8*10^-5 10^-1])
+xlim([indv.range(range(1)) indv.range(range(end))])
+ylim ([8*10^-6 0.2])
 grid on;
 hold on;
 semilogy(indv.range(range),dv.BER(2,range),'-^');
