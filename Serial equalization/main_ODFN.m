@@ -6,8 +6,8 @@ clc;
 DE_option.detection_on = 1;
 
 %% System parameters(Frame structure)
-sys_par.tblock = 128; %Blocksize
-sys_par.M = sys_par.tblock/8;%CP length + 1: M
+sys_par.tblock = 128;   %Blocksize
+sys_par.M = sys_par.tblock/8;   %CP length + 1: M
 sys_par.pilot_random_seed = 0;
 sys_par.pilot_scheme = 1;
 sys_par.random_seed = 0;
@@ -24,7 +24,7 @@ fade_struct.ch_model_str={'slow fading exponential PDP','slow fading uniform PDP
 fade_struct.ch_model=5;
 fade_struct.nrms = 10;
 
-fade_struct.fd = 0.3;% Doppler frequency
+fade_struct.fd = 0.05;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 
 %% Tx parameters 傳送端參數
@@ -37,7 +37,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 10; % Number of transmitted blocks
+tx_par.nblock= 10000; % Number of transmitted blocks
 
 %% Rx parameter 接收端參數
 
@@ -51,13 +51,21 @@ rx_par.K = [1 5 25];
 %% Independent variable 控制變因
 indv.str = ["SNR(Es/No)","fd","Serial Equalization K"];
 indv.option = 1;
-indv.range = 1:5:30;
+indv.range = 0:2:34;
 %% Dependent variable 應變變因
 %BER,SER
 dv.BER = zeros(size(rx_par.K,2),size(indv.range,2));
 dv.SER = zeros(size(rx_par.K,2),size(indv.range,2));
 
-
+filename = "";
+filename = filename + rx_par.type_str(rx_par.type);
+filename = filename + "_" + tx_par.mod_type_str(tx_par.mod_type);
+filename = filename + "_" + fade_struct.ch_model_str(fade_struct.ch_model);
+filename = filename + "_ch_num=" + num2str(sys_par.M);
+filename = filename + "_fd=" + num2str(fade_struct.fd);
+filename = filename + "_Nblock=" + num2str(tx_par.nblock);
+filename = filename + ".mat";
+filename
 
 %% initialization
 trans_block=zeros(1,sys_par.tblock); % transmission (constellation) block
@@ -101,8 +109,8 @@ for kk = 1:size(indv.range,2)
         
         y = h*trans_block + noise_block;
         Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
-        %H = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
-        H = dftmtx(128)*h*conj(dftmtx(128))/128;
+        H = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
+        %H = dftmtx(128)*h*conj(dftmtx(128))/128;
         
         %Detection...
         if(DE_option.detection_on ==1)
@@ -142,11 +150,5 @@ semilogy(indv.range,dv.BER(3,:),'-*');
 %semilogy(indv.range,dv.BER(4,:),'-o');
 legend('1 tap MMSE','5 tap MMSE','25 tap MMSE')
 
-filename = "";
-filename = filename + rx_par.type_str(rx_par.type);
-filename = filename + "_" + tx_par.mod_type_str(tx_par.mod_type);
-filename = filename + "_" + fade_struct.ch_model_str(fade_struct.ch_model);
-filename = filename + "_fd=" + num2str(fade_struct.fd);
-filename = filename + "_Nblock=" + num2str(tx_par.nblock);
-filename = filename + ".mat";
+
 save(filename,'indv','dv','sys_par','tx_par','rx_par','snr','fade_struct');
