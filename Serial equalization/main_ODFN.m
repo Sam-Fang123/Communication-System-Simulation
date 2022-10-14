@@ -16,6 +16,8 @@ sys_par.ndata = sys_par.tblock;  % Number of data symbols
 %% SNR parameters(Noise) 馒癟
 snr.db = 10;
 snr.noise_pwr=10^(-snr.db/10);
+snr.type = 2;
+snr.type_str={'Es_N0','Eb_N0'};
 
 %% Channel parameters 硄笵把计
 fade_struct.ch_length = sys_par.M;
@@ -24,7 +26,7 @@ fade_struct.ch_model_str={'slow fading exponential PDP','slow fading uniform PDP
 fade_struct.ch_model=5;
 fade_struct.nrms = 10;
 
-fade_struct.fd = 0.05;% Doppler frequency
+fade_struct.fd = 0.5;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 
 %% Tx parameters 肚癳狠把计
@@ -37,7 +39,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 10000; % Number of transmitted blocks
+tx_par.nblock= 10; % Number of transmitted blocks
 
 %% Rx parameter 钡Μ狠把计
 
@@ -64,6 +66,7 @@ filename = filename + "_" + fade_struct.ch_model_str(fade_struct.ch_model);
 filename = filename + "_ch_num=" + num2str(sys_par.M);
 filename = filename + "_fd=" + num2str(fade_struct.fd);
 filename = filename + "_Nblock=" + num2str(tx_par.nblock);
+filename = filename + "_snr=" + snr.type_str(snr.type);
 filename = filename + ".mat";
 filename
 
@@ -76,8 +79,12 @@ for kk = 1:size(indv.range,2)
         case(1)
             snr.db = indv.range(kk);
             snr.snr = 10^(snr.db/10);
-            snr.noise_pwr = 0.5/snr.snr;    % Eb/N0
-            %snr.noise_pwr = 1/snr.snr;      % Es/N0
+            switch(indv.option)
+                case(1) %Es/N0
+                    snr.noise_pwr = 1/snr.snr;
+                case(2) %Eb/N0
+                    snr.noise_pwr = 1/tx_par.nbits_per_sym/snr.snr; 
+            end
         case(2)
             fade_struct.fd = indv.range(kk);
             fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
