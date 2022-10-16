@@ -7,7 +7,7 @@ DE_option.detection_on = 1;
 
 %% System parameters(Frame structure)
 sys_par.tblock = 128;   %Blocksize
-sys_par.M = sys_par.tblock/8;   %CP length + 1: M
+sys_par.M = sys_par.tblock/4;   %CP length + 1: M
 sys_par.pilot_random_seed = 0;
 sys_par.pilot_scheme = 1;
 sys_par.random_seed = 0;
@@ -23,15 +23,15 @@ snr.type_str={'Es_N0','Eb_N0'};
 fade_struct.ch_length = sys_par.M;
 fade_struct.fading_flag=1;
 fade_struct.ch_model_str={'slow fading exponential PDP','slow fading uniform PDP','fast fading exponential PDP','fast fading uniform PDP','Two_path_ch'};
-fade_struct.ch_model=5;
+fade_struct.ch_model=4;
 fade_struct.nrms = 10;
 
-fade_struct.fd = 0.5;% Doppler frequency
+fade_struct.fd = 0.03;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 
 %% Tx parameters 傳送端參數
 tx_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
-tx_par.mod_type = 2; % 1: BPSK
+tx_par.mod_type = 1; % 1: BPSK
                      % 2: QPSK
                      % 3: 16QAM
                    
@@ -46,9 +46,10 @@ tx_par.nblock= 10; % Number of transmitted blocks
 rx_par.type_str={
     'SE_MMES'
     'SE_DFE'
+    'Iter_SC'
     };
-rx_par.type = 2;
-rx_par.K = [1 5 25];
+rx_par.type = 3;
+rx_par.K = [11];
 
 %% Independent variable 控制變因
 indv.str = ["SNR(Es/No)","fd","Serial Equalization K"];
@@ -133,6 +134,9 @@ for kk = 1:size(indv.range,2)
                         K = rx_par.K(i);
                         [data.hat_dec(i,:) data.hat_bit(i,:)] = SE_DFE(sys_par,tx_par,K,H,Y,snr.noise_pwr,data);
                      end
+                case(3)
+                    K = rx_par.K;
+                    [data.hat_dec(i,:) data.hat_bit(i,:)] = Iter_SC(sys_par,tx_par,K,H,Y,snr.noise_pwr,data);
             end% end rx_par.type
 
             dv.sym_error_count(:,1) = dv.sym_error_count(:,1) + sum((data.hat_dec-data.dec_data)~=0,2);
