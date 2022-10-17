@@ -16,7 +16,7 @@ sys_par.ndata = sys_par.tblock;  % Number of data symbols
 %% SNR parameters(Noise) 雜訊
 snr.db = 10;
 snr.noise_pwr=10^(-snr.db/10);
-snr.type = 2;
+snr.type = 1;
 snr.type_str={'Es_N0','Eb_N0'};
 
 %% Channel parameters 通道參數
@@ -39,7 +39,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 10; % Number of transmitted blocks
+tx_par.nblock= 1; % Number of transmitted blocks
 
 %% Rx parameter 接收端參數
 
@@ -54,7 +54,7 @@ rx_par.K = [11];
 %% Independent variable 控制變因
 indv.str = ["SNR(Es/No)","fd","Serial Equalization K"];
 indv.option = 1;
-indv.range = 0:2:34;
+indv.range = 0:5:15;
 %% Dependent variable 應變變因
 %BER,SER
 dv.BER = zeros(size(rx_par.K,2),size(indv.range,2));
@@ -136,7 +136,7 @@ for kk = 1:size(indv.range,2)
                      end
                 case(3)
                     K = rx_par.K;
-                    [data.hat_dec(i,:) data.hat_bit(i,:)] = Iter_SC(sys_par,tx_par,K,H,Y,snr.noise_pwr,data);
+                    [data.hat_dec data.hat_bit] = Iter_SC(sys_par,tx_par,K,H,Y,snr.noise_pwr,data);
             end% end rx_par.type
 
             dv.sym_error_count(:,1) = dv.sym_error_count(:,1) + sum((data.hat_dec-data.dec_data)~=0,2);
@@ -151,15 +151,15 @@ for kk = 1:size(indv.range,2)
         
 end
     
-semilogy(indv.range,dv.BER(1,:),'-d');
+semilogy(indv.range,dv.SER(1,:),'-d');
 xlabel('SNR');
 ylabel('BER');
 grid on;
 hold on;
-semilogy(indv.range,dv.BER(2,:),'-^');
-semilogy(indv.range,dv.BER(3,:),'-*');
+%semilogy(indv.range,dv.BER(2,:),'-^');
+%semilogy(indv.range,dv.BER(3,:),'-*');
 %semilogy(indv.range,dv.BER(4,:),'-o');
-legend('1 tap MMSE','5 tap MMSE','25 tap MMSE')
+%legend('1 tap MMSE','5 tap MMSE','25 tap MMSE')
 
 
-save(filename,'indv','dv','sys_par','tx_par','rx_par','snr','fade_struct');
+%save(filename,'indv','dv','sys_par','tx_par','rx_par','snr','fade_struct');
