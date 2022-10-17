@@ -49,7 +49,16 @@ rx_par.type_str={
     'Iter_SC'
     };
 rx_par.type = 3;
-rx_par.K = [11];
+if(rx_par.type==3)
+    rx_par.K = (ceil(fade_struct.fd*sys_par.tblock)+1)*2+1
+else
+    rx_par.K = [11];
+end
+
+%% Window 參數
+
+window_par.type_str={'Iter_SC'}
+window_par.type = 1;
 
 %% Independent variable 控制變因
 indv.str = ["SNR(Es/No)","fd","Serial Equalization K"];
@@ -99,6 +108,11 @@ for kk = 1:size(indv.range,2)
     dv.bit_error_count = zeros(size(dv.BER,1),1);
     dv.sym_error_count = zeros(size(dv.SER,1),1);
     display(indv.str(indv.option)+num2str(indv.range(kk)));
+    
+    switch(window_par.type)
+        case(1)
+            b_hat=Iter_SC_window(sys_par,rx_par,fade_struct,snr);
+        end
     for ii=1:tx_par.nblock
         
         trans_block=zeros(1,sys_par.tblock); % transmission (constellation) block
@@ -115,9 +129,12 @@ for kk = 1:size(indv.range,2)
         %trans_block_FD = fft(trans_block,sys_par.tblock)/sqrt(sys_par.tblock);%column vector
         %noise_block_FD=fft(noise_block,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
         
+        % Window
+        
         y = h*trans_block + noise_block;
+        y = diag(b_hat)*y;
         Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
-        H = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
+        H = fft(diag(b_hat)*h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
         %H = dftmtx(128)*h*conj(dftmtx(128))/128;
         
         %Detection...

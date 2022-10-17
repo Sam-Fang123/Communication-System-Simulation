@@ -9,12 +9,7 @@ C = eye(sys_par.tblock);
 F = dftmtx(sys_par.tblock)/sqrt(sys_par.tblock);
 t_hat_i = zeros(sys_par.tblock,1);
 
-Mask = zeros(sys_par.tblock,sys_par.tblock);
-for k=0:sys_par.tblock-1
-    rho = mod(k-Q-1+(1:K),sys_par.tblock)+1;
-    Mask(rho,k+1) = 1;
-end
-%H = H.*Mask;
+
 
 for i = 0:iter_time
    
