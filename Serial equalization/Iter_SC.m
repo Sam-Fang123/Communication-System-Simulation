@@ -14,7 +14,7 @@ for k=0:sys_par.tblock-1
     rho = mod(k-Q-1+(1:K),sys_par.tblock)+1;
     Mask(rho,k+1) = 1;
 end
-H = H.*Mask;
+%H = H.*Mask;
 
 for i = 0:iter_time
    
@@ -25,7 +25,7 @@ for i = 0:iter_time
         rho = mod(k-Q-1+(1:K),sys_par.tblock)+1;
         H_k = H(rho,:);
         C_k = C(rho,:);
-        g_k_i = (H_k*F*diag(v_i)*conj(F.')*conj(H_k.') + C_k*conj(C_k.')*noise_pwr^2)\H_k*F*diag(v_i)*conj(F.')*C(:,k+1);
+        g_k_i = (H_k*F*diag(v_i)*conj(F.')*conj(H_k.') + C_k*conj(C_k.')*noise_pwr)\(H_k*F*diag(v_i)*conj(F.')*C(:,k+1));
         t_hat_i(k+1) = t_bar_i(k+1)+conj(g_k_i.')*(Y(rho)-H_k*t_bar_i);
     end
     
@@ -35,7 +35,7 @@ for i = 0:iter_time
         rho = mod(k-Q-1+(1:K),sys_par.tblock)+1;
         H_k = H(rho,:);
         C_k = C(rho,:);
-        g_k_i = (H_k*F*diag(v_i)*conj(F.')*conj(H_k.') + C_k*conj(C_k.')*noise_pwr^2)\H_k*F*diag(v_i)*conj(F.')*C(:,k+1);
+        g_k_i = (H_k*F*diag(v_i)*conj(F.')*conj(H_k.') + C_k*conj(C_k.')*noise_pwr)\(H_k*F*diag(v_i)*conj(F.')*C(:,k+1));
         q_sum = q_sum + conj(H_k.')*g_k_i*conj(C(:,k+1).');
         p_sum = p_sum + conj(C_k.')*g_k_i*conj(C(:,k+1).');
     end

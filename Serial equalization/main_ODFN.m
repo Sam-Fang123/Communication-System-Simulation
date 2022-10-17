@@ -39,7 +39,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 1; % Number of transmitted blocks
+tx_par.nblock= 10; % Number of transmitted blocks
 
 %% Rx parameter 接收端參數
 
@@ -54,7 +54,7 @@ rx_par.K = [11];
 %% Independent variable 控制變因
 indv.str = ["SNR(Es/No)","fd","Serial Equalization K"];
 indv.option = 1;
-indv.range = 0:5:15;
+indv.range = 0:2:10;
 %% Dependent variable 應變變因
 %BER,SER
 dv.BER = zeros(size(rx_par.K,2),size(indv.range,2));
@@ -103,8 +103,8 @@ for kk = 1:size(indv.range,2)
         
         trans_block=zeros(1,sys_par.tblock); % transmission (constellation) block
         [data.const_data data.dec_data data.bit_data]=block_sym_mapping(sys_par.ndata,tx_par);% generate data block
-        trans_data = data.const_data;
-        trans_block = ifft(trans_data,sys_par.tblock)*sqrt(sys_par.tblock);     % OFDM
+        trans_block = data.const_data;
+        %trans_block = ifft(trans_data,sys_par.tblock)*sqrt(sys_par.tblock);     % OFDM
         trans_block = trans_block.';%column vector
         
         noise_block = sqrt(snr.noise_pwr/2)*(randn(1,sys_par.tblock)+1j*randn(1,sys_par.tblock));
