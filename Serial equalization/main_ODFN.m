@@ -111,7 +111,7 @@ for kk = 1:size(indv.range,2)
     
     switch(window_par.type)
         case(1)
-            b_hat=Iter_SC_window(sys_par,rx_par,fade_struct,snr);
+            [b_hat C_beta]=Iter_SC_window(sys_par,rx_par,fade_struct,snr);
         end
     for ii=1:tx_par.nblock
         
@@ -121,7 +121,8 @@ for kk = 1:size(indv.range,2)
         %trans_block = ifft(trans_data,sys_par.tblock)*sqrt(sys_par.tblock);     % OFDM
         trans_block = trans_block.';%column vector
         
-        noise_block = sqrt(snr.noise_pwr/2)*(randn(1,sys_par.tblock)+1j*randn(1,sys_par.tblock));
+        %noise_block = sqrt(snr.noise_pwr/2)*(randn(1,sys_par.tblock)+1j*randn(1,sys_par.tblock));
+        noise_block = sqrt(snr.noise_pwr)*randn(1,sys_par.tblock);    % Noise for BPSK
         noise_block = noise_block.';%column vector
         
         [h,h_taps] = gen_ch_imp(fade_struct, sys_par,ii);
@@ -134,7 +135,8 @@ for kk = 1:size(indv.range,2)
         y = h*trans_block + noise_block;
         y = diag(b_hat)*y;
         Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
-        H = fft(diag(b_hat)*h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
+        H = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
+        H = C_beta*H;
         %H = dftmtx(128)*h*conj(dftmtx(128))/128;
         
         %Detection...
