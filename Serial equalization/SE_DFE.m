@@ -1,6 +1,6 @@
 
 
-function [data_hat_dec_out data_hat_bit]=SE_MMSE(sys_par,tx_par,K,H,Y,noise_pwr,data)
+function [data_hat_dec_out data_hat_bit]=SE_DFE(sys_par,tx_par,K,H,Y,noise_pwr,data)
 
 Q = (K-1)/2;
 [max_norm m] = max(vecnorm(H));

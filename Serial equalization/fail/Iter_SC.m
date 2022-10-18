@@ -1,10 +1,11 @@
 
-function [data_hat_dec data_hat_bit]=Iter_SC(sys_par,tx_par,K,H,Y,noise_pwr,data)
+function [data_hat_dec data_hat_bit]=Iter_SC(sys_par,tx_par,K,H,Y,noise_pwr,data,C_beta)
 
 
 Q = (K-1)/2;
 L = zeros(sys_par.tblock,1);
 iter_time = 10;
+%C = C_beta;
 C = eye(sys_par.tblock);
 F = dftmtx(sys_par.tblock)/sqrt(sys_par.tblock);
 t_hat_i = zeros(sys_par.tblock,1);
@@ -38,8 +39,8 @@ for i = 0:iter_time
     P_i = conj(F.')*p_sum*F;
     s_hat_i = conj(F.')*t_hat_i;
     for ll = 0:sys_par.tblock-1
-        L(ll+1) = L(ll+1) + (4*real(Q_i(ll+1,ll+1)*(s_hat_i(ll+1)-s_bar_i(ll+1))) + (abs(Q_i(ll+1,ll+1))^2)*s_bar_i(ll+1))/(conj(Q_i(:,ll+1).')*diag(v_i)*Q_i(:,ll+1) ...
-            -(abs(Q_i(ll+1,ll+1))^2)*v_i(ll+1)+conj(P_i(:,ll+1).')*P_i(:,ll+1)*noise_pwr^2);
+        L(ll+1) = L(ll+1) + (4*(real(Q_i(ll+1,ll+1)*(s_hat_i(ll+1)-s_bar_i(ll+1))) + (abs(Q_i(ll+1,ll+1))^2)*s_bar_i(ll+1)))/(conj(Q_i(:,ll+1).')*diag(v_i)*Q_i(:,ll+1) ...
+            -(abs(Q_i(ll+1,ll+1))^2)*v_i(ll+1)+conj(P_i(:,ll+1).')*P_i(:,ll+1)*noise_pwr);
     end
 end
    

@@ -10,13 +10,13 @@ F = dftmtx(sys_par.tblock)/sqrt(sys_par.tblock);
 for m = 1:sys_par.tblock
     for n = 1:sys_par.tblock
         if(m==n)
-            A(m,n) = 1;
+            A(m,n) = (pi/N)*(2*D+1)/pi;
         else
             A(m,n) = sin((pi/N)*(2*D+1)*(n-m))/(N*sin(pi*(n-m)/N));
         end
-        R(m,n) = besselj(0,2*pi*fade_struct.fd*(m-n));
+        R(m,n) = besselj(0,2*pi*fade_struct.nor_fd*(m-n));
     end
 end
 b_hat = eig(A.*R,(snr.noise_pwr+1)*eye(N)-A.*R);
 Beta = F*b_hat/sqrt(sys_par.tblock);
-C_beta = F*diag(sqrt(sys_par.tblock)*conj(F.')*Beta)*conj(F.')
+C_beta = F*diag(sqrt(sys_par.tblock)*conj(F.')*Beta)*conj(F.');

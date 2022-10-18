@@ -7,7 +7,7 @@ DE_option.detection_on = 1;
 
 %% System parameters(Frame structure)
 sys_par.tblock = 128;   %Blocksize
-sys_par.M = sys_par.tblock/4;   %CP length + 1: M
+sys_par.M = sys_par.tblock/8;   %CP length + 1: M
 sys_par.pilot_random_seed = 0;
 sys_par.pilot_scheme = 1;
 sys_par.random_seed = 0;
@@ -23,10 +23,10 @@ snr.type_str={'Es_N0','Eb_N0'};
 fade_struct.ch_length = sys_par.M;
 fade_struct.fading_flag=1;
 fade_struct.ch_model_str={'slow fading exponential PDP','slow fading uniform PDP','fast fading exponential PDP','fast fading uniform PDP','Two_path_ch'};
-fade_struct.ch_model=4;
+fade_struct.ch_model=5;
 fade_struct.nrms = 10;
 
-fade_struct.fd = 0.03;% Doppler frequency
+fade_struct.fd = 0.3;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 
 %% Tx parameters 傳送端參數
@@ -39,31 +39,26 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 10; % Number of transmitted blocks
+tx_par.nblock= 1000; % Number of transmitted blocks
 
 %% Rx parameter 接收端參數
 
 rx_par.type_str={
     'SE_MMES'
     'SE_DFE'
-    'Iter_SC'
     };
-rx_par.type = 3;
-if(rx_par.type==3)
-    rx_par.K = (ceil(fade_struct.fd*sys_par.tblock)+1)*2+1
-else
-    rx_par.K = [11];
-end
+rx_par.type = 2;
+
+rx_par.K = [1 5 25];
+
 
 %% Window 參數
 
-window_par.type_str={'Iter_SC'}
-window_par.type = 1;
 
 %% Independent variable 控制變因
 indv.str = ["SNR(Es/No)","fd","Serial Equalization K"];
 indv.option = 1;
-indv.range = 0:2:10;
+indv.range = 0:5:30;
 %% Dependent variable 應變變因
 %BER,SER
 dv.BER = zeros(size(rx_par.K,2),size(indv.range,2));
@@ -109,20 +104,16 @@ for kk = 1:size(indv.range,2)
     dv.sym_error_count = zeros(size(dv.SER,1),1);
     display(indv.str(indv.option)+num2str(indv.range(kk)));
     
-    switch(window_par.type)
-        case(1)
-            [b_hat C_beta]=Iter_SC_window(sys_par,rx_par,fade_struct,snr);
-        end
     for ii=1:tx_par.nblock
         
         trans_block=zeros(1,sys_par.tblock); % transmission (constellation) block
         [data.const_data data.dec_data data.bit_data]=block_sym_mapping(sys_par.ndata,tx_par);% generate data block
-        trans_block = data.const_data;
-        %trans_block = ifft(trans_data,sys_par.tblock)*sqrt(sys_par.tblock);     % OFDM
+        trans_data = data.const_data;
+        trans_block = ifft(trans_data,sys_par.tblock)*sqrt(sys_par.tblock);     % OFDM
         trans_block = trans_block.';%column vector
         
-        %noise_block = sqrt(snr.noise_pwr/2)*(randn(1,sys_par.tblock)+1j*randn(1,sys_par.tblock));
-        noise_block = sqrt(snr.noise_pwr)*randn(1,sys_par.tblock);    % Noise for BPSK
+        noise_block = sqrt(snr.noise_pwr/2)*(randn(1,sys_par.tblock)+1j*randn(1,sys_par.tblock));
+        %noise_block = sqrt(snr.noise_pwr)*randn(1,sys_par.tblock);    % Noise for BPSK
         noise_block = noise_block.';%column vector
         
         [h,h_taps] = gen_ch_imp(fade_struct, sys_par,ii);
@@ -133,10 +124,10 @@ for kk = 1:size(indv.range,2)
         % Window
         
         y = h*trans_block + noise_block;
-        y = diag(b_hat)*y;
+     
         Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
         H = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
-        H = C_beta*H;
+
         %H = dftmtx(128)*h*conj(dftmtx(128))/128;
         
         %Detection...
@@ -153,10 +144,7 @@ for kk = 1:size(indv.range,2)
                         K = rx_par.K(i);
                         [data.hat_dec(i,:) data.hat_bit(i,:)] = SE_DFE(sys_par,tx_par,K,H,Y,snr.noise_pwr,data);
                      end
-                case(3)
-                    K = rx_par.K;
-                    [data.hat_dec data.hat_bit] = Iter_SC(sys_par,tx_par,K,H,Y,snr.noise_pwr,data);
-            end% end rx_par.type
+            end
 
             dv.sym_error_count(:,1) = dv.sym_error_count(:,1) + sum((data.hat_dec-data.dec_data)~=0,2);
             dv.bit_error_count(:,1) = dv.bit_error_count(:,1) + sum((data.hat_bit-data.bit_data)~=0,2);
@@ -175,10 +163,10 @@ xlabel('SNR');
 ylabel('BER');
 grid on;
 hold on;
-%semilogy(indv.range,dv.BER(2,:),'-^');
-%semilogy(indv.range,dv.BER(3,:),'-*');
+semilogy(indv.range,dv.BER(2,:),'-^');
+semilogy(indv.range,dv.BER(3,:),'-*');
 %semilogy(indv.range,dv.BER(4,:),'-o');
-%legend('1 tap MMSE','5 tap MMSE','25 tap MMSE')
+legend('1 tap MMSE','5 tap MMSE','25 tap MMSE')
 
 
 %save(filename,'indv','dv','sys_par','tx_par','rx_par','snr','fade_struct');
