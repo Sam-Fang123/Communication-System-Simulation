@@ -28,7 +28,7 @@ fade_struct.nrms = 10;
 
 %fade_struct.fd = 0.3;% Doppler frequency
 %fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
-fade_struct.nor_fd = 0.002;
+fade_struct.nor_fd = 0.004;
 fade_struct.fd = fade_struct.nor_fd*sys_par.tblock;
 
 
@@ -107,6 +107,7 @@ for kk = 1:size(indv.range,2)
     dv.bit_error_count = zeros(size(dv.BER,1),1);
     dv.sym_error_count = zeros(size(dv.SER,1),1);
     display(indv.str(indv.option)+num2str(indv.range(kk)));
+    
     [w]=Tang_ODM_window(sys_par,rx_par,fade_struct,snr,4);
     for ii=1:tx_par.nblock
         
@@ -132,7 +133,14 @@ for kk = 1:size(indv.range,2)
         y = diag(w)*y;
         Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
         H = fft(diag(w)*h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
-
+        %figure(1)
+        %pcolor(flip(abs(H)));
+        %colorbar
+        %H2 = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
+        %figure(2)
+        %pcolor(flip(abs(H2)));
+        %colorbar
+        
         %H = dftmtx(128)*h*conj(dftmtx(128))/128;
         
         %Detection...
