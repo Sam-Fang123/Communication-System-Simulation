@@ -23,12 +23,6 @@ if (fade_struct.fading_flag==1)
         for n=0:1
             rand('state',fade_struct.ch_length*NoB+n);
             inphase_init=2*pi*rand(1,N0+1);
-            %[h(1,:) inphase(1,:)] = fastfade(fd,N0,Nsample,inphase_init);
-            %for ii=1:sys_par.tblock
-            %    h(rand_pos(ii),ii)=h(1,ii)*sqrt(avg_pwr(2));
-            %end
-            %h(1,:)= sqrt(avg_pwr(1)).*h(1,:);
-            
             if(n==0)
                 [h(n+1,:),inphase(n+1,:)]=fastfade(fd,N0,Nsample,inphase_init);
                 h(n+1,:)= sqrt(avg_pwr(1)).*h(n+1,:);
@@ -49,7 +43,7 @@ if (fade_struct.fading_flag==1)
         
         
         
-    elseif (fade_struct.ch_model==3 || fade_struct.ch_model==4)% 3: fast fading exponential PDP  4:fast fading uniform PDP
+    elseif (fade_struct.ch_model==3 || fade_struct.ch_model==4|| fade_struct.ch_model==6)% 3: fast fading exponential PDP  4:fast fading uniform PDP
         N0=100;
         Nsample=sys_par.tblock;
         fd=fade_struct.nor_fd;
@@ -60,7 +54,10 @@ if (fade_struct.fading_flag==1)
             avg_pwr=var0*exp(-(0:fade_struct.ch_length-1)*inv_nrms);
         elseif(fade_struct.ch_model==4)
             avg_pwr = 1/fade_struct.ch_length*ones(1,fade_struct.ch_length);
-        end    
+        elseif(fade_struct.ch_model==6)
+            avg_pwr = exp(-(0:fade_struct.ch_length)/10)/sum(exp(-(0:fade_struct.ch_length)/10));
+        end
+        
         h=zeros(fade_struct.ch_length,Nsample);
         inphase=zeros(fade_struct.ch_length,N0+1);
         for n=0:fade_struct.ch_length-1

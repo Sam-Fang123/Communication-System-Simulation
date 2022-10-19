@@ -22,16 +22,20 @@ snr.type_str={'Es_N0','Eb_N0'};
 %% Channel parameters 硄笵把计
 fade_struct.ch_length = sys_par.M;
 fade_struct.fading_flag=1;
-fade_struct.ch_model_str={'slow fading exponential PDP','slow fading uniform PDP','fast fading exponential PDP','fast fading uniform PDP','Two_path_ch'};
-fade_struct.ch_model=5;
+fade_struct.ch_model_str={'slow fading exponential PDP','slow fading uniform PDP','fast fading exponential PDP','fast fading uniform PDP','Two_path_ch','Tang_ch'};
+fade_struct.ch_model=6;
 fade_struct.nrms = 10;
 
-fade_struct.fd = 0.3;% Doppler frequency
-fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
+%fade_struct.fd = 0.3;% Doppler frequency
+%fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
+fade_struct.nor_fd = 0.002;
+fade_struct.fd = fade_struct.nor_fd*sys_par.tblock;
+
+
 
 %% Tx parameters 肚癳狠把计
 tx_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
-tx_par.mod_type = 1; % 1: BPSK
+tx_par.mod_type = 2; % 1: BPSK
                      % 2: QPSK
                      % 3: 16QAM
                    
@@ -103,13 +107,14 @@ for kk = 1:size(indv.range,2)
     dv.bit_error_count = zeros(size(dv.BER,1),1);
     dv.sym_error_count = zeros(size(dv.SER,1),1);
     display(indv.str(indv.option)+num2str(indv.range(kk)));
-    
+    [w]=Tang_ODM_window(sys_par,rx_par,fade_struct,snr,4);
     for ii=1:tx_par.nblock
         
         trans_block=zeros(1,sys_par.tblock); % transmission (constellation) block
         [data.const_data data.dec_data data.bit_data]=block_sym_mapping(sys_par.ndata,tx_par);% generate data block
-        trans_data = data.const_data;
-        trans_block = ifft(trans_data,sys_par.tblock)*sqrt(sys_par.tblock);     % OFDM
+        %trans_data = data.const_data;
+        trans_block = data.const_data;
+        %trans_block = ifft(trans_data,sys_par.tblock)*sqrt(sys_par.tblock);     % OFDM
         trans_block = trans_block.';%column vector
         
         noise_block = sqrt(snr.noise_pwr/2)*(randn(1,sys_par.tblock)+1j*randn(1,sys_par.tblock));
@@ -124,7 +129,7 @@ for kk = 1:size(indv.range,2)
         % Window
         
         y = h*trans_block + noise_block;
-     
+        y = diag(w)*y;
         Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
         H = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
 
