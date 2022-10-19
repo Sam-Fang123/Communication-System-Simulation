@@ -131,7 +131,7 @@ for kk = 1:size(indv.range,2)
         y = h*trans_block + noise_block;
         y = diag(w)*y;
         Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
-        H = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
+        H = fft(diag(w)*h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
 
         %H = dftmtx(128)*h*conj(dftmtx(128))/128;
         
