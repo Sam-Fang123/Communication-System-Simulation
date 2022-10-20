@@ -136,11 +136,9 @@ for kk = 1:size(indv.range,2)
         %figure(1)
         %pcolor(flip(abs(H)));
         %colorbar
-        %H2 = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
-        %figure(2)
-        %pcolor(flip(abs(H2)));
-        %colorbar
-        
+        H2 = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
+       
+   
         %H = dftmtx(128)*h*conj(dftmtx(128))/128;
         
         %Detection...
