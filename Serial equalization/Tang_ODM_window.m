@@ -1,5 +1,5 @@
 
-function [w]=Tang_ODM_window(sys_par,rx_par,fade_struct,snr,Q)
+function [w w_FD_mtx]=Tang_ODM_window(sys_par,rx_par,fade_struct,snr,Q)
 
 N = sys_par.tblock;
 F = dftmtx(N)/sqrt(N);
@@ -24,6 +24,8 @@ d_hat = V(:,i);
 w = B_N*d_hat;
 w = w*sqrt(N/sum(w.^2));
 %plot(0:N-1,abs(w))
+Beta = F*w/sqrt(N);
+w_FD_mtx = F*diag(sqrt(N)*conj(F.')*Beta)*conj(F.');
 
 
 

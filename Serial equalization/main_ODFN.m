@@ -7,7 +7,7 @@ DE_option.detection_on = 1;
 
 %% System parameters(Frame structure)
 sys_par.tblock = 128;   %Blocksize
-sys_par.M = sys_par.tblock/8;   %CP length + 1: M
+sys_par.M = 31;   %CP length + 1: M
 sys_par.pilot_random_seed = 0;
 sys_par.pilot_scheme = 1;
 sys_par.random_seed = 0;
@@ -26,7 +26,7 @@ snr.type_str={'Es_N0','Eb_N0'};
 fade_struct.ch_length = sys_par.M;
 fade_struct.fading_flag=1;
 fade_struct.ch_model_str={'slow fading exponential PDP','slow fading uniform PDP','fast fading exponential PDP','fast fading uniform PDP','Two_path_ch','Tang_ch'};
-fade_struct.ch_model=5;
+fade_struct.ch_model=6;
 fade_struct.nrms = 10;
 
 %fade_struct.fd = 0.3;% Doppler frequency
@@ -54,19 +54,19 @@ rx_par.type_str={
     'SE_MMES'   % Only for OFDM
     'SE_DFE'    % Only for OFDM
     };
-rx_par.type = 1;
+rx_par.type = 2;
 
-rx_par.K = [25];
+rx_par.K = [1 5 25];
 
 
 %% Window 參數
-window_par.type_str={'no window','Tang window'};
+window_par.type_str={'no_window','Tang_window'};
 window_par.type = 1;
 
 %% Independent variable 控制變因
 indv.str = ["SNR(Es/No)","fd","Serial Equalization K"];
 indv.option = 1;
-indv.range = 0:5:60;
+indv.range = 0:5:40;
 %% Dependent variable 應變變因
 %BER,SER
 dv.BER = zeros(size(rx_par.K,2),size(indv.range,2));
@@ -116,9 +116,10 @@ for kk = 1:size(indv.range,2)
     
     switch(window_par.type)
         case(1)
-            w = ones(1,sys_par.tblock);
+            w.w = ones(1,sys_par.tblock);
+            w.FD_mtx = eye(sys_par.tblock);
         case(2)
-            [w]=Tang_ODM_window(sys_par,rx_par,fade_struct,snr,4);
+            [w.w w.FD_mtx]=Tang_ODM_window(sys_par,rx_par,fade_struct,snr,4);
     end
     
     for ii=1:tx_par.nblock
@@ -143,13 +144,14 @@ for kk = 1:size(indv.range,2)
         % Window
         
         y = h*trans_block + noise_block;
-        y = diag(w)*y;
+        y = diag(w.w)*y;
         Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
-        H = fft(diag(w)*h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
+        H = fft(diag(w.w)*h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
         %figure(1)
         %pcolor(flip(abs(H)));
         %colorbar
         %H2 = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
+        %H2 = w.FD_mtx*H2;
        
    
         %H = dftmtx(128)*h*conj(dftmtx(128))/128;
@@ -181,16 +183,17 @@ for kk = 1:size(indv.range,2)
         
         
 end
-    
+
+figure(1)
 semilogy(indv.range,dv.SER(1,:),'-d');
 xlabel('SNR');
 ylabel('BER');
 grid on;
 hold on;
-%semilogy(indv.range,dv.BER(2,:),'-^');
-%semilogy(indv.range,dv.BER(3,:),'-*');
+semilogy(indv.range,dv.BER(2,:),'-^');
+semilogy(indv.range,dv.BER(3,:),'-*');
 %semilogy(indv.range,dv.BER(4,:),'-o');
-%legend('1 tap MMSE','5 tap MMSE','25 tap MMSE')
+legend('1 tap MMSE','5 tap MMSE','25 tap MMSE')
 
 
 %save(filename,'indv','dv','sys_par','tx_par','rx_par','snr','fade_struct');
