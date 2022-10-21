@@ -1,7 +1,8 @@
 
 
-function [data_hat_dec_out data_hat_bit]=SE_DFE(sys_par,tx_par,K,H,Y,noise_pwr,data)
+function [data_hat_dec_out data_hat_bit]=SE_DFE(sys_par,tx_par,K,H,Y,noise_pwr,data,w)
 
+F = dftmtx(sys_par.tblock)/sqrt(sys_par.tblock);
 Q = (K-1)/2;
 [max_norm m] = max(vecnorm(H));
 m = m-1; % Symbol index is from 0 to N-1
@@ -11,7 +12,7 @@ data_hat_dec = zeros(iter_num+1,sys_par.tblock);
 % first iteration
 rho = mod(m-Q-1+(1:K),sys_par.tblock)+1;
 A_k = H(rho,:);
-R_k = A_k*conj(A_k.') + noise_pwr*eye(K);
+R_k = A_k*conj(A_k.') + noise_pwr*F*diag(w)*diag(conj(w))*conj(F.');
 m_k = R_k\A_k(:,m+1);
 [data_hat_dec(1,m+1) s_hat_k(1,m+1)]  = sc_symbol_slicing(conj(m_k.')*Y(rho),tx_par);
 
@@ -25,7 +26,7 @@ for k=rho2(2:end)
         Y_tilde_k = Y_tilde_k - A_k(:,rho2(ii)+1)*s_hat_k(1,rho2(ii)+1);
     end
     A_k_tilde = A_k(:,rho2(n_k+1:end)+1);
-    R_k = A_k_tilde*conj(A_k_tilde.')+noise_pwr*eye(K);
+    R_k = A_k_tilde*conj(A_k_tilde.')+noise_pwr*F*diag(w)*diag(conj(w))*conj(F.');
     m_k = R_k\A_k(:,k+1);
     n_k = n_k+1;
     [data_hat_dec(1,k+1) s_hat_k(1,k+1)] = sc_symbol_slicing(conj(m_k.')*Y_tilde_k,tx_par);

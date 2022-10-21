@@ -12,6 +12,9 @@ sys_par.pilot_random_seed = 0;
 sys_par.pilot_scheme = 1;
 sys_par.random_seed = 0;
 sys_par.ndata = sys_par.tblock;  % Number of data symbols
+sys_par.type_str = {'SC','OFDM'};
+sys_par.type = 2;
+
 
 %% SNR parameters(Noise) 馒癟
 snr.db = 10;
@@ -23,7 +26,7 @@ snr.type_str={'Es_N0','Eb_N0'};
 fade_struct.ch_length = sys_par.M;
 fade_struct.fading_flag=1;
 fade_struct.ch_model_str={'slow fading exponential PDP','slow fading uniform PDP','fast fading exponential PDP','fast fading uniform PDP','Two_path_ch','Tang_ch'};
-fade_struct.ch_model=6;
+fade_struct.ch_model=5;
 fade_struct.nrms = 10;
 
 %fade_struct.fd = 0.3;% Doppler frequency
@@ -43,21 +46,22 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 1000; % Number of transmitted blocks
+tx_par.nblock= 10; % Number of transmitted blocks
 
 %% Rx parameter 钡Μ狠把计
 
 rx_par.type_str={
-    'SE_MMES'
-    'SE_DFE'
+    'SE_MMES'   % Only for OFDM
+    'SE_DFE'    % Only for OFDM
     };
-rx_par.type = 2;
+rx_par.type = 1;
 
-rx_par.K = [1 5 25];
+rx_par.K = [5];
 
 
 %% Window 把计
-
+window_par.type_str={'no window','Tang window'};
+window_par.type = 1;
 
 %% Independent variable 北跑
 indv.str = ["SNR(Es/No)","fd","Serial Equalization K"];
@@ -69,13 +73,15 @@ dv.BER = zeros(size(rx_par.K,2),size(indv.range,2));
 dv.SER = zeros(size(rx_par.K,2),size(indv.range,2));
 
 filename = "";
-filename = filename + rx_par.type_str(rx_par.type);
+filename = filename + sys_par.type_str(sys_par.type);
+filename = filename + "_"+ rx_par.type_str(rx_par.type);
 filename = filename + "_" + tx_par.mod_type_str(tx_par.mod_type);
 filename = filename + "_" + fade_struct.ch_model_str(fade_struct.ch_model);
 filename = filename + "_ch_num=" + num2str(sys_par.M);
 filename = filename + "_fd=" + num2str(fade_struct.fd);
 filename = filename + "_Nblock=" + num2str(tx_par.nblock);
 filename = filename + "_snr=" + snr.type_str(snr.type);
+filename = filename + "_window=" + window_par.type_str(window_par.type);
 filename = filename + ".mat";
 filename
 
@@ -108,14 +114,21 @@ for kk = 1:size(indv.range,2)
     dv.sym_error_count = zeros(size(dv.SER,1),1);
     display(indv.str(indv.option)+num2str(indv.range(kk)));
     
-    [w]=Tang_ODM_window(sys_par,rx_par,fade_struct,snr,4);
+    switch(window_par.type)
+        case(1)
+            w = ones(1,sys_par.tblock);
+        case(2)
+            [w]=Tang_ODM_window(sys_par,rx_par,fade_struct,snr,4);
+    end
+    
     for ii=1:tx_par.nblock
         
         trans_block=zeros(1,sys_par.tblock); % transmission (constellation) block
         [data.const_data data.dec_data data.bit_data]=block_sym_mapping(sys_par.ndata,tx_par);% generate data block
-        %trans_data = data.const_data;
         trans_block = data.const_data;
-        %trans_block = ifft(trans_data,sys_par.tblock)*sqrt(sys_par.tblock);     % OFDM
+        if(sys_par.type==2) % OFDM
+            trans_block = ifft(trans_block,sys_par.tblock)*sqrt(sys_par.tblock);     
+        end
         trans_block = trans_block.';%column vector
         
         noise_block = sqrt(snr.noise_pwr/2)*(randn(1,sys_par.tblock)+1j*randn(1,sys_par.tblock));
@@ -136,7 +149,7 @@ for kk = 1:size(indv.range,2)
         %figure(1)
         %pcolor(flip(abs(H)));
         %colorbar
-        H2 = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
+        %H2 = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
        
    
         %H = dftmtx(128)*h*conj(dftmtx(128))/128;
@@ -148,12 +161,12 @@ for kk = 1:size(indv.range,2)
                 case(1) % Serial equalation MMES 
                      for i=1:size(rx_par.K,2)
                         K = rx_par.K(i);
-                        [data.hat_dec(i,:) data.hat_bit(i,:)] = SE_MMSE(sys_par,tx_par,K,H,Y,snr.noise_pwr,data);
+                        [data.hat_dec(i,:) data.hat_bit(i,:)] = SE_MMSE(sys_par,tx_par,K,H,Y,snr.noise_pwr,data,w);
                      end
                 case(2) % Serial equalization DFE 
                      for i=1:size(rx_par.K,2)
                         K = rx_par.K(i);
-                        [data.hat_dec(i,:) data.hat_bit(i,:)] = SE_DFE(sys_par,tx_par,K,H,Y,snr.noise_pwr,data);
+                        [data.hat_dec(i,:) data.hat_bit(i,:)] = SE_DFE(sys_par,tx_par,K,H,Y,snr.noise_pwr,data,w);
                      end
             end
 
@@ -174,10 +187,10 @@ xlabel('SNR');
 ylabel('BER');
 grid on;
 hold on;
-semilogy(indv.range,dv.BER(2,:),'-^');
-semilogy(indv.range,dv.BER(3,:),'-*');
+%semilogy(indv.range,dv.BER(2,:),'-^');
+%semilogy(indv.range,dv.BER(3,:),'-*');
 %semilogy(indv.range,dv.BER(4,:),'-o');
-legend('1 tap MMSE','5 tap MMSE','25 tap MMSE')
+%legend('1 tap MMSE','5 tap MMSE','25 tap MMSE')
 
 
 %save(filename,'indv','dv','sys_par','tx_par','rx_par','snr','fade_struct');
