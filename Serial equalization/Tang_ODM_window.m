@@ -23,6 +23,7 @@ dd = diag(D);
 d_hat = V(:,i);
 w = B_N*d_hat;
 w = w*sqrt(N/sum(w.^2));
+%plot(0:N-1,abs(w))
 
 
 

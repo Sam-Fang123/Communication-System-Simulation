@@ -46,7 +46,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 10; % Number of transmitted blocks
+tx_par.nblock= 100; % Number of transmitted blocks
 
 %% Rx parameter 接收端參數
 
@@ -56,7 +56,7 @@ rx_par.type_str={
     };
 rx_par.type = 1;
 
-rx_par.K = [5];
+rx_par.K = [25];
 
 
 %% Window 參數
@@ -66,7 +66,7 @@ window_par.type = 1;
 %% Independent variable 控制變因
 indv.str = ["SNR(Es/No)","fd","Serial Equalization K"];
 indv.option = 1;
-indv.range = 0:5:30;
+indv.range = 0:5:60;
 %% Dependent variable 應變變因
 %BER,SER
 dv.BER = zeros(size(rx_par.K,2),size(indv.range,2));
