@@ -26,7 +26,7 @@ snr.type_str={'Es_N0','Eb_N0'};
 fade_struct.ch_length = sys_par.M;
 fade_struct.fading_flag=1;
 fade_struct.ch_model_str={'slow fading exponential PDP','slow fading uniform PDP','fast fading exponential PDP','fast fading uniform PDP','Two_path_ch','Tang_ch'};
-fade_struct.ch_model=6;
+fade_struct.ch_model=3;
 fade_struct.nrms = 10;
 
 %fade_struct.fd = 0.3;% Doppler frequency
@@ -46,7 +46,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 100; % Number of transmitted blocks
+tx_par.nblock= 10; % Number of transmitted blocks
 
 %% Rx parameter 接收端參數
 
@@ -55,8 +55,10 @@ rx_par.type_str={
     'SE_DFE'    % Only for OFDM
     };
 rx_par.type = 2;
-
-rx_par.K = [1 5 25];
+if(sys_par.type==1&&(rx_par.type==2||rx_par.type==1))
+    error("serial equalization only for OFDM")
+end
+rx_par.K = [1 5 11 25];
 
 
 %% Window 參數
@@ -70,8 +72,10 @@ indv.option = 1;
 indv.range = 0:5:40;
 %% Dependent variable 應變變因
 %BER,SER
+
 dv.BER = zeros(size(rx_par.K,2),size(indv.range,2));
 dv.SER = zeros(size(rx_par.K,2),size(indv.range,2));
+
 
 filename = "";
 filename = filename + sys_par.type_str(sys_par.type);
@@ -117,11 +121,12 @@ for kk = 1:size(indv.range,2)
     
     switch(window_par.type)
         case(1)
-            w.w = ones(1,sys_par.tblock);
-            w.FD_mtx = eye(sys_par.tblock);
+             w.w = ones(1,sys_par.tblock);
+             w.FD_mtx = eye(sys_par.tblock);
         case(2)
             [w.w w.FD_mtx]=Tang_window(sys_par,rx_par,fade_struct,snr,window_par.Q,window_par);  
     end
+ 
     
     for ii=1:tx_par.nblock
         
@@ -141,14 +146,11 @@ for kk = 1:size(indv.range,2)
         
 
         % Window
-        
         y = h*trans_block + noise_block;
         y = diag(w.w)*y;
         Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
         H = fft(diag(w.w)*h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
       
-  
-        %H = dftmtx(128)*h*conj(dftmtx(128))/128;
         
         %Detection...
         if(DE_option.detection_on ==1)
@@ -162,7 +164,7 @@ for kk = 1:size(indv.range,2)
                 case(2) % Serial equalization DFE 
                      for i=1:size(rx_par.K,2)
                         K = rx_par.K(i);
-                        [data.hat_dec(i,:) data.hat_bit(i,:)] = SE_DFE(sys_par,tx_par,K,H,Y,snr.noise_pwr,data,w);
+                        [data.hat_dec(i,:) data.hat_bit(i,:)] = SE_DFE(sys_par,tx_par,K,H,Y,snr.noise_pwr,data,w);  
                      end
             end
 
@@ -186,8 +188,8 @@ grid on;
 hold on;
 semilogy(indv.range,dv.BER(2,:),'-^');
 semilogy(indv.range,dv.BER(3,:),'-*');
-%semilogy(indv.range,dv.BER(4,:),'-o');
-legend('1 tap MMSE','5 tap MMSE','25 tap MMSE')
+semilogy(indv.range,dv.BER(4,:),'-o');
+legend('1 tap MMSE','5 tap MMSE','11 tap MMSE','25 tap MMSE');
 
 
 %save(filename,'indv','dv','sys_par','tx_par','rx_par','snr','fade_struct');

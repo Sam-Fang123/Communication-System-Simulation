@@ -17,7 +17,7 @@ td_window.str = ["No-windowing","MBAE-SOE","Tang"];
 td_window.type =3;
 td_window.Q = 4;
 %% System parameters(Frame structure)
-sys_par.tblock = 256; %Blocksize
+sys_par.tblock = 128; %Blocksize
 sys_par.P = 14;%pilot cluster length: P+1, P is even
 sys_par.G = 6;%cluster number: G
 sys_par.M = 5;%CP length + 1: M
