@@ -60,8 +60,9 @@ rx_par.K = [1 5 25];
 
 
 %% Window 參數
-window_par.type_str={'no_window','Tang_window'};
-window_par.type = 1;
+window_par.type_str={'no_window','Tang_window_ODM'};
+window_par.type = 2;
+window_par.Q = 4;
 
 %% Independent variable 控制變因
 indv.str = ["SNR(Es/No)","fd","Serial Equalization K"];
@@ -119,7 +120,7 @@ for kk = 1:size(indv.range,2)
             w.w = ones(1,sys_par.tblock);
             w.FD_mtx = eye(sys_par.tblock);
         case(2)
-            [w.w w.FD_mtx]=Tang_ODM_window(sys_par,rx_par,fade_struct,snr,4);
+            [w.w w.FD_mtx]=Tang_window(sys_par,rx_par,fade_struct,snr,window_par.Q,window_par);  
     end
     
     for ii=1:tx_par.nblock
@@ -133,27 +134,20 @@ for kk = 1:size(indv.range,2)
         trans_block = trans_block.';%column vector
         
         noise_block = sqrt(snr.noise_pwr/2)*(randn(1,sys_par.tblock)+1j*randn(1,sys_par.tblock));
-        %noise_block = sqrt(snr.noise_pwr)*randn(1,sys_par.tblock);    % Noise for BPSK
+        
         noise_block = noise_block.';%column vector
         
         [h,h_taps] = gen_ch_imp(fade_struct, sys_par,ii);
         
-        %trans_block_FD = fft(trans_block,sys_par.tblock)/sqrt(sys_par.tblock);%column vector
-        %noise_block_FD=fft(noise_block,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
-        
+
         % Window
         
         y = h*trans_block + noise_block;
         y = diag(w.w)*y;
         Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
         H = fft(diag(w.w)*h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
-        %figure(1)
-        %pcolor(flip(abs(H)));
-        %colorbar
-        %H2 = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
-        %H2 = w.FD_mtx*H2;
-       
-   
+      
+  
         %H = dftmtx(128)*h*conj(dftmtx(128))/128;
         
         %Detection...

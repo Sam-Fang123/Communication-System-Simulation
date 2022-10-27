@@ -14,7 +14,7 @@ DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 3: Channel Estimation And Detection Both Working
 %% Time Domain Window parameter ®É°ìµøµ¡Âoªi¾¹
 td_window.str = ["No-windowing","MBAE-SOE","Tang"];
-td_window.type =1;
+td_window.type =3;
 td_window.Q = 4;
 %% System parameters(Frame structure)
 sys_par.tblock = 256; %Blocksize
