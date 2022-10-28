@@ -53,13 +53,22 @@ tx_par.nblock= 10; % Number of transmitted blocks
 rx_par.type_str={
     'SE_MMES'   % Only for OFDM
     'SE_DFE'    % Only for OFDM
+    'IBDFE_TV_T3C1';%3 Correlation Estimator Type
     };
 rx_par.type = 2;
 if(sys_par.type==1&&(rx_par.type==2||rx_par.type==1))
     error("serial equalization only for OFDM")
+elseif(sys_par.type==2&&rx_par.type==3)
+    error("IBDFE only for Single carrier")
 end
-rx_par.K = [1 5 11 25];
-
+rx_par.SE.K = [1 5 11 25];
+rx_par.IBDFE.cor_type_str={'GA cor','EST cor td', 'EST cor fd', 'TI cor_noth', 'TI cor_th'};% correlation coefficient
+rx_par.IBDFE.cor_type = 3;
+rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
+rx_par.IBDFE.D = 2;%For IBDFE T3C1 and T2C1_Quasibanded
+rx_par.IBDFE.first_iteration_full = 1;%For IBDFE T1C1, T3C1 ==> 1: use full block MMSE for first iteration
+%Parameter for iterative equalizer;
+rx_par.iteration = 3;
 
 %% Window 參數
 window_par.type_str={'no_window','Tang_window_ODM'};
@@ -73,8 +82,8 @@ indv.range = 0:5:40;
 %% Dependent variable 應變變因
 %BER,SER
 
-dv.BER = zeros(size(rx_par.K,2),size(indv.range,2));
-dv.SER = zeros(size(rx_par.K,2),size(indv.range,2));
+dv.BER = zeros(size(rx_par.SE.K,2),size(indv.range,2));
+dv.SER = zeros(size(rx_par.SE.K,2),size(indv.range,2));
 
 
 filename = "";
@@ -109,7 +118,7 @@ for kk = 1:size(indv.range,2)
             fade_struct.fd = indv.range(kk);
             fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
         case(3)
-            rx_par.K = indv.range(kk);
+            rx_par.SE.K = indv.range(kk);
     end
     
     %Set random seed
@@ -157,13 +166,13 @@ for kk = 1:size(indv.range,2)
             
             switch(rx_par.type)
                 case(1) % Serial equalation MMES 
-                     for i=1:size(rx_par.K,2)
-                        K = rx_par.K(i);
+                     for i=1:size(rx_par.SE.K,2)
+                        K = rx_par.SE.K(i);
                         [data.hat_dec(i,:) data.hat_bit(i,:)] = SE_MMSE(sys_par,tx_par,K,H,Y,snr.noise_pwr,data,w);
                      end
                 case(2) % Serial equalization DFE 
-                     for i=1:size(rx_par.K,2)
-                        K = rx_par.K(i);
+                     for i=1:size(rx_par.SE.K,2)
+                        K = rx_par.SE.K(i);
                         [data.hat_dec(i,:) data.hat_bit(i,:)] = SE_DFE(sys_par,tx_par,K,H,Y,snr.noise_pwr,data,w);  
                      end
             end
