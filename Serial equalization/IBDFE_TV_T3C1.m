@@ -55,25 +55,25 @@ for n=1:rx_par.iteration
     S_temp = fft(s_temp)/sqrt(sys_par.tblock); % normalized
     
     data_temp=s_temp(data.position); %remove TS
-    pn_temp=s_temp(reshape(pilot.position.',1,[])); %TS
+    %pn_temp=s_temp(reshape(pilot.position.',1,[])); %TS
     
     %Symbol Slicing
     for ii=1:size(data.position,2)
-        [data_hat_dec(n,ii) data_hat_const(ii)] = sc_symbol_slicing(data_temp(ii),tx_par);
+        [data_hat_dec(ii) data_hat_const(ii)] = sc_symbol_slicing(data_temp(ii),tx_par);
     end%end ii=1:sys_par.ndata
     
-    for ii=1:size(reshape(pilot.position.',1,[]),2)
-        [pn_hat_dec(n,ii) pn_hat_const(ii)] = sc_symbol_slicing(pn_temp(ii),tx_par);
-    end%end ii=1:sys_par.nts
+    %for ii=1:size(reshape(pilot.position.',1,[]),2)
+    %    [pn_hat_dec(n,ii) pn_hat_const(ii)] = sc_symbol_slicing(pn_temp(ii),tx_par);
+    %end%end ii=1:sys_par.nts
     
     %Translate to bits
     for ii=1:sys_par.ndata
-        data_hat_bit(n,(ii-1)*tx_par.nbits_per_sym+1:ii*tx_par.nbits_per_sym ) = my_dec2base(data_hat_dec(n,ii),2,tx_par.nbits_per_sym);
+        data_hat_bit((ii-1)*tx_par.nbits_per_sym+1:ii*tx_par.nbits_per_sym ) = my_dec2base(data_hat_dec(ii),2,tx_par.nbits_per_sym);
     end% end ii=1:sys_par.ndata
     
     s_dec = zeros(sys_par.tblock,1);
     s_dec(data.position) = data_hat_const;
-    s_dec(reshape(pilot.position.',1,[])) = pn_hat_const;
+    %s_dec(reshape(pilot.position.',1,[])) = pn_hat_const;
     S_dec=fft(s_dec,sys_par.tblock)./sqrt(sys_par.tblock);
     
     S_est = S_temp;  % estimate of S; used for correlation estimation.

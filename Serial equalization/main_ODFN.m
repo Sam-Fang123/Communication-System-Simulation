@@ -7,13 +7,13 @@ DE_option.detection_on = 1;
 
 %% System parameters(Frame structure)
 sys_par.tblock = 128;   %Blocksize
-sys_par.M = 31;   %CP length + 1: M
+sys_par.M = 5;   %CP length + 1: M
 sys_par.pilot_random_seed = 0;
 sys_par.pilot_scheme = 1;
 sys_par.random_seed = 0;
 sys_par.ndata = sys_par.tblock;  % Number of data symbols
 sys_par.type_str = {'SC','OFDM'};
-sys_par.type = 2;
+sys_par.type = 1;
 
 
 %% SNR parameters(Noise) 雜訊
@@ -29,10 +29,10 @@ fade_struct.ch_model_str={'slow fading exponential PDP','slow fading uniform PDP
 fade_struct.ch_model=3;
 fade_struct.nrms = 10;
 
-%fade_struct.fd = 0.3;% Doppler frequency
-%fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
-fade_struct.nor_fd = 0.004;
-fade_struct.fd = fade_struct.nor_fd*sys_par.tblock;
+fade_struct.fd = 0.3;% Doppler frequency
+fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
+%fade_struct.nor_fd = 0.004;
+%fade_struct.fd = fade_struct.nor_fd*sys_par.tblock;
 
 
 
@@ -46,7 +46,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 10; % Number of transmitted blocks
+tx_par.nblock= 100; % Number of transmitted blocks
 
 %% Rx parameter 接收端參數
 
@@ -55,7 +55,7 @@ rx_par.type_str={
     'SE_DFE'    % Only for OFDM
     'IBDFE_TV_T3C1';%3 Correlation Estimator Type
     };
-rx_par.type = 2;
+rx_par.type = 3;
 if(sys_par.type==1&&(rx_par.type==2||rx_par.type==1))
     error("serial equalization only for OFDM")
 elseif(sys_par.type==2&&rx_par.type==3)
@@ -65,26 +65,31 @@ rx_par.SE.K = [1 5 11 25];
 rx_par.IBDFE.cor_type_str={'GA cor','EST cor td', 'EST cor fd', 'TI cor_noth', 'TI cor_th'};% correlation coefficient
 rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
-rx_par.IBDFE.D = 2;%For IBDFE T3C1 and T2C1_Quasibanded
+rx_par.IBDFE.D_type = [0 2 5 12];%For IBDFE T3C1 and T2C1_Quasibanded
 rx_par.IBDFE.first_iteration_full = 1;%For IBDFE T1C1, T3C1 ==> 1: use full block MMSE for first iteration
 %Parameter for iterative equalizer;
 rx_par.iteration = 3;
+data.position = 1:sys_par.tblock;
+pilot.position = 0;
 
 %% Window 參數
 window_par.type_str={'no_window','Tang_window_ODM'};
-window_par.type = 2;
+window_par.type = 1;
 window_par.Q = 4;
 
 %% Independent variable 控制變因
 indv.str = ["SNR(Es/No)","fd","Serial Equalization K"];
 indv.option = 1;
-indv.range = 0:5:40;
+indv.range = 0:4:24;
 %% Dependent variable 應變變因
 %BER,SER
-
-dv.BER = zeros(size(rx_par.SE.K,2),size(indv.range,2));
-dv.SER = zeros(size(rx_par.SE.K,2),size(indv.range,2));
-
+if(rx_par.type==1||rx_par.type==2)
+    dv.BER = zeros(size(rx_par.SE.K,2),size(indv.range,2));
+    dv.SER = zeros(size(rx_par.SE.K,2),size(indv.range,2));
+elseif(rx_par.type==3)
+    dv.BER = zeros(size(rx_par.IBDFE.D_type,2),size(indv.range,2));
+    dv.SER = zeros(size(rx_par.IBDFE.D_type,2),size(indv.range,2));
+end
 
 filename = "";
 filename = filename + sys_par.type_str(sys_par.type);
@@ -108,7 +113,7 @@ for kk = 1:size(indv.range,2)
         case(1)
             snr.db = indv.range(kk);
             snr.snr = 10^(snr.db/10);
-            switch(indv.option)
+            switch(snr.type)
                 case(1) %Es/N0
                     snr.noise_pwr = 1/snr.snr;
                 case(2) %Eb/N0
@@ -175,7 +180,13 @@ for kk = 1:size(indv.range,2)
                         K = rx_par.SE.K(i);
                         [data.hat_dec(i,:) data.hat_bit(i,:)] = SE_DFE(sys_par,tx_par,K,H,Y,snr.noise_pwr,data,w);  
                      end
-            end
+                case(3) %IBDFE_TV_T3C1
+                    for i = 1:size(rx_par.IBDFE.D_type,2)
+                        rx_par.IBDFE.D = rx_par.IBDFE.D_type(i);
+                        [data.hat_dec data.hat_bit]=IBDFE_TV_T3C1(sys_par,tx_par,rx_par,H,Y,snr.noise_pwr,pilot,data,w.w);
+                    end
+                end
+           
 
             dv.sym_error_count(:,1) = dv.sym_error_count(:,1) + sum((data.hat_dec-data.dec_data)~=0,2);
             dv.bit_error_count(:,1) = dv.bit_error_count(:,1) + sum((data.hat_bit-data.bit_data)~=0,2);
@@ -184,10 +195,8 @@ for kk = 1:size(indv.range,2)
     
     dv.SER(:,kk) = dv.sym_error_count/(tx_par.nblock*sys_par.ndata);
     dv.BER(:,kk) = dv.bit_error_count/(tx_par.nblock*sys_par.ndata*tx_par.nbits_per_sym);
-
-        
-        
 end
+  
 
 figure(1)
 semilogy(indv.range,dv.SER(1,:),'-d');

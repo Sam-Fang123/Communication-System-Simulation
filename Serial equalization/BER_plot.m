@@ -1,11 +1,11 @@
 
 range = 1:9;
 semilogy(indv.range(range),dv.BER(1,range),'-d');
-title('16 path channel, normalize Doppler Frequency = 0.3, Tang ODM window');
+title('5 path channel, normalize Doppler Frequency = 0.1, Tang ODM window');
 xlabel('SNR');
 ylabel('BER');
 xlim([indv.range(range(1)) indv.range(range(end))])
-ylim ([6*10^-6 0.2])
+%ylim ([6*10^-6 0.2])
 grid on;
 hold on;
 semilogy(indv.range(range),dv.BER(2,range),'-^');
