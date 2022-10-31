@@ -46,26 +46,29 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 100; % Number of transmitted blocks
+tx_par.nblock= 10; % Number of transmitted blocks
 
 %% Rx parameter 钡Μ狠把计
 
 rx_par.type_str={
     'SE_MMES'   % Only for OFDM
     'SE_DFE'    % Only for OFDM
-    'IBDFE_TV_T3C1';%3 Correlation Estimator Type
+    'IBDFE_TV_T3C1'; %3 Correlation Estimator Type
+    'IBDFE_TV_T2C1_Quasibanded'
     };
-rx_par.type = 3;
+rx_par.type = 4;
 if(sys_par.type==1&&(rx_par.type==2||rx_par.type==1))
     error("serial equalization only for OFDM")
 elseif(sys_par.type==2&&rx_par.type==3)
+    error("IBDFE only for Single carrier")
+elseif(sys_par.type==2&&rx_par.type==4)
     error("IBDFE only for Single carrier")
 end
 rx_par.SE.K = [1 5 11 25];
 rx_par.IBDFE.cor_type_str={'GA cor','EST cor td', 'EST cor fd', 'TI cor_noth', 'TI cor_th'};% correlation coefficient
 rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
-rx_par.IBDFE.D_type = [0 1 2 3];%For IBDFE T3C1 and T2C1_Quasibanded
+rx_par.IBDFE.D_type = [0 2 5 11];%For IBDFE T3C1 and T2C1_Quasibanded
 rx_par.IBDFE.first_iteration_full = 1;%For IBDFE T1C1, T3C1 ==> 1: use full block MMSE for first iteration
 %Parameter for iterative equalizer;
 rx_par.iteration = 4;
@@ -74,10 +77,10 @@ pilot.position = 0;
 
 %% Window 把计
 window_par.type_str={'no_window','Tang_window_ODM'};
-window_par.type = 2;
+window_par.type = 1;
 window_par.Q = 4;
 window_par.banded_str = {'Banded','Not banded'};
-window_par.banded = 1;
+window_par.banded = 2;
 
 %% Independent variable 北跑
 indv.str = ["SNR(Es/No)","fd","Serial Equalization K"];
@@ -88,7 +91,7 @@ indv.range = 0:4:24;
 if(rx_par.type==1||rx_par.type==2)
     dv.BER = zeros(size(rx_par.SE.K,2),size(indv.range,2));
     dv.SER = zeros(size(rx_par.SE.K,2),size(indv.range,2));
-elseif(rx_par.type==3)
+elseif(rx_par.type==3||rx_par.type==4)
     dv.BER = zeros(size(rx_par.IBDFE.D_type,2),size(indv.range,2));
     dv.SER = zeros(size(rx_par.IBDFE.D_type,2),size(indv.range,2));
 end
@@ -169,13 +172,15 @@ for kk = 1:size(indv.range,2)
         Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
         H = fft(diag(w.w)*h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
         
-        % Banded matrix
-        B_mtx = zeros(sys_par.tblock,sys_par.tblock);
-        for k=0:sys_par.tblock-1
-            rho = mod(k-window_par.Q/2-1+(1:window_par.Q+1),sys_par.tblock)+1;
-            B_mtx(rho,k+1) = 1;
+        if(window_par.banded==1)
+            % Banded matrix
+            B_mtx = zeros(sys_par.tblock,sys_par.tblock);
+            for k=0:sys_par.tblock-1
+                rho = mod(k-window_par.Q/2-1+(1:window_par.Q+1),sys_par.tblock)+1;
+                B_mtx(rho,k+1) = 1;
+            end
+            H = H.*B_mtx;
         end
-        H = H.*B_mtx;
         
         %Detection...
         if(DE_option.detection_on ==1)
@@ -196,6 +201,11 @@ for kk = 1:size(indv.range,2)
                         rx_par.IBDFE.D = rx_par.IBDFE.D_type(i);
                         [data.hat_dec data.hat_bit]=IBDFE_TV_T3C1(sys_par,tx_par,rx_par,H,Y,snr.noise_pwr,pilot,data,w.w);
                     end
+                case(4) %IBDFE_TV_T2C1_Quasibanded
+                    for i = 1:size(rx_par.IBDFE.D_type,2)
+                        rx_par.IBDFE.D = rx_par.IBDFE.D_type(i);
+                        [data.hat_dec data.hat_bit]=IBDFE_TV_T2C1_Quasibanded(sys_par,tx_par,rx_par,H,Y,snr.noise_pwr,pilot,data,w.w);
+                    end
                 end
            
 
@@ -210,7 +220,7 @@ end
   
 
 figure(1)
-semilogy(indv.range,dv.SER(1,:),'-d');
+semilogy(indv.range,dv.BER(1,:),'-d');
 xlabel('SNR');
 ylabel('BER');
 grid on;
