@@ -65,17 +65,19 @@ rx_par.SE.K = [1 5 11 25];
 rx_par.IBDFE.cor_type_str={'GA cor','EST cor td', 'EST cor fd', 'TI cor_noth', 'TI cor_th'};% correlation coefficient
 rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
-rx_par.IBDFE.D_type = [0 2 5 12];%For IBDFE T3C1 and T2C1_Quasibanded
+rx_par.IBDFE.D_type = [0 1 2 3];%For IBDFE T3C1 and T2C1_Quasibanded
 rx_par.IBDFE.first_iteration_full = 1;%For IBDFE T1C1, T3C1 ==> 1: use full block MMSE for first iteration
 %Parameter for iterative equalizer;
-rx_par.iteration = 3;
+rx_par.iteration = 4;
 data.position = 1:sys_par.tblock;
 pilot.position = 0;
 
 %% Window 參數
 window_par.type_str={'no_window','Tang_window_ODM'};
-window_par.type = 1;
+window_par.type = 2;
 window_par.Q = 4;
+window_par.banded_str = {'Banded','Not banded'};
+window_par.banded = 1;
 
 %% Independent variable 控制變因
 indv.str = ["SNR(Es/No)","fd","Serial Equalization K"];
@@ -101,6 +103,8 @@ filename = filename + "_fd=" + num2str(fade_struct.fd);
 filename = filename + "_Nblock=" + num2str(tx_par.nblock);
 filename = filename + "_snr=" + snr.type_str(snr.type);
 filename = filename + "_window=" + window_par.type_str(window_par.type);
+filename = filename + "_Q=" + num2str(window_par.Q);
+filename = filename + "_" + window_par.banded_str(window_par.banded);
 filename = filename + ".mat";
 filename
 
@@ -164,7 +168,14 @@ for kk = 1:size(indv.range,2)
         y = diag(w.w)*y;
         Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
         H = fft(diag(w.w)*h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
-      
+        
+        % Banded matrix
+        B_mtx = zeros(sys_par.tblock,sys_par.tblock);
+        for k=0:sys_par.tblock-1
+            rho = mod(k-window_par.Q/2-1+(1:window_par.Q+1),sys_par.tblock)+1;
+            B_mtx(rho,k+1) = 1;
+        end
+        H = H.*B_mtx;
         
         %Detection...
         if(DE_option.detection_on ==1)
