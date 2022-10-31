@@ -17,4 +17,4 @@ semilogy(indv.range(range),dv2.BER(2,range),'--^');
 semilogy(indv.range(range),dv2.BER(3,range),'--o');
 semilogy(indv.range(range),dv2.BER(4,range),'--*');
 %legend('1 tap MMSE','5 tap MMSE','15 tap MMSE','25 tap MMSE','1 tap DFE','5 tap DFE','15 tap DFE','25 tap DFE')
-legend('1 tap DFE with window','5 tap DFE with window','11 tap DFE with window','25 tap DFE with window','1 tap DFE','5 tap DFE','11 tap DFE','25 tap DFE')
+legend('1 tap IBDFE with window','5 tap IBDFE with window','11 tap IBDFE with window','25 tap IBDFE with window','1 tap IBDFE','5 tap IBDFE','11 tap IBDFE','25 tap IBDFE')
