@@ -80,7 +80,15 @@ window_par.type_str={'no_window','Tang_window_ODM'};
 window_par.type = 1;
 window_par.Q = 4;
 window_par.banded_str = {'Banded','Not banded'};
-window_par.banded = 2;
+window_par.banded = 1;
+
+if(window_par.type==2&&window_par.banded==2)
+    error("Tang's window should use banded channel");
+elseif(rx_par.type==3&&window_par.banded==1)
+    error("IBDFE-T3C1 should not use banded matrix")
+elseif(rx_par.type==4&&window_par.type==1&&window_par.banded==1)
+    error("IBDFE-T2C1 without window should not be banded channel")
+end
 
 %% Independent variable ±±®Ó≈‹¶]
 indv.str = ["SNR(Es/No)","fd","Serial Equalization K"];
