@@ -68,7 +68,7 @@ rx_par.SE.K = [1 5 11 25];
 rx_par.IBDFE.cor_type_str={'GA cor','EST cor td', 'EST cor fd', 'TI cor_noth', 'TI cor_th'};% correlation coefficient
 rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
-rx_par.IBDFE.D_type = [0 2 5 11];%For IBDFE T3C1 and T2C1_Quasibanded
+rx_par.IBDFE.D_type = [0 2 8 10];%For IBDFE T3C1 and T2C1_Quasibanded
 rx_par.IBDFE.first_iteration_full = 1;%For IBDFE T1C1, T3C1 ==> 1: use full block MMSE for first iteration
 %Parameter for iterative equalizer;
 rx_par.iteration = 4;
@@ -78,7 +78,7 @@ pilot.position = 0;
 %% Window °Ñ¼Æ
 window_par.type_str={'no_window','Tang_window_ODM'};
 window_par.type = 1;
-window_par.Q = 4;
+window_par.Q = 2;
 window_par.banded_str = {'Banded','Not banded'};
 window_par.banded = 2;
 
@@ -106,7 +106,7 @@ filename = filename + "_fd=" + num2str(fade_struct.fd);
 filename = filename + "_Nblock=" + num2str(tx_par.nblock);
 filename = filename + "_snr=" + snr.type_str(snr.type);
 filename = filename + "_window=" + window_par.type_str(window_par.type);
-filename = filename + "_Q=" + num2str(window_par.Q);
+%filename = filename + "_Q=" + num2str(window_par.Q);
 filename = filename + "_" + window_par.banded_str(window_par.banded);
 filename = filename + ".mat";
 filename
@@ -142,10 +142,10 @@ for kk = 1:size(indv.range,2)
     
     switch(window_par.type)
         case(1)
-             w.w = ones(1,sys_par.tblock);
-             w.FD_mtx = eye(sys_par.tblock);
+            w.w = ones(1,sys_par.tblock);
+            w.FD_mtx = eye(sys_par.tblock);
         case(2)
-            [w.w w.FD_mtx]=Tang_window(sys_par,rx_par,fade_struct,snr,window_par.Q,window_par);  
+            [w.w w.FD_mtx]=Tang_window(sys_par,rx_par,fade_struct,snr,window_par.Q,window_par); 
     end
  
     
@@ -199,12 +199,12 @@ for kk = 1:size(indv.range,2)
                 case(3) %IBDFE_TV_T3C1
                     for i = 1:size(rx_par.IBDFE.D_type,2)
                         rx_par.IBDFE.D = rx_par.IBDFE.D_type(i);
-                        [data.hat_dec data.hat_bit]=IBDFE_TV_T3C1(sys_par,tx_par,rx_par,H,Y,snr.noise_pwr,pilot,data,w.w);
+                        [data.hat_dec(i,:) data.hat_bit(i,:)]=IBDFE_TV_T3C1(sys_par,tx_par,rx_par,H,Y,snr.noise_pwr,pilot,data,w.w);
                     end
                 case(4) %IBDFE_TV_T2C1_Quasibanded
                     for i = 1:size(rx_par.IBDFE.D_type,2)
                         rx_par.IBDFE.D = rx_par.IBDFE.D_type(i);
-                        [data.hat_dec data.hat_bit]=IBDFE_TV_T2C1_Quasibanded(sys_par,tx_par,rx_par,H,Y,snr.noise_pwr,pilot,data,w.w);
+                        [data.hat_dec(i,:) data.hat_bit(i,:)]=IBDFE_TV_T2C1_Quasibanded(sys_par,tx_par,rx_par,H,Y,snr.noise_pwr,pilot,data,w.w);
                     end
                 end
            
