@@ -78,7 +78,7 @@ pilot.position = 0;
 %% Window °Ñ¼Æ
 window_par.type_str={'no_window','Tang_window_ODM'};
 window_par.type = 1;
-window_par.Q = 2;
+window_par.Q = 4;
 window_par.banded_str = {'Banded','Not banded'};
 window_par.banded = 2;
 
