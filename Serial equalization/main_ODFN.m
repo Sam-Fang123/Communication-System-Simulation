@@ -56,14 +56,17 @@ rx_par.type_str={
     'IBDFE_TV_T3C1'; %3 Correlation Estimator Type
     'IBDFE_TV_T2C1_Quasibanded'
     'IBDFE_TV_T2C1'
+    'SE_DFE_SC'
     };
 rx_par.type = 4;
 if(sys_par.type==1&&(rx_par.type==2||rx_par.type==1))
     error("serial equalization only for OFDM")
-elseif(sys_par.type==2&&(rx_par.type==3||rx_par.type==4||rx_par.type==5))
-    error("IBDFE only for Single carrier")
+elseif(sys_par.type==2&&(rx_par.type==3||rx_par.type==4||rx_par.type==5||rx_par.type==6))
+    error("IBDFE and SE_DFE_SC only for Single carrier")
 end
 rx_par.SE.K = [1 5 11 25];
+rx_par.SE.SC_K = fade_struct.ch_length;
+rx_par.SE.SC_PIC_iter = 3;
 rx_par.IBDFE.cor_type_str={'GA cor','EST cor td', 'EST cor fd', 'TI cor_noth', 'TI cor_th'};% correlation coefficient
 rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
@@ -87,6 +90,8 @@ elseif((rx_par.type==3||rx_par.type==5)&&window_par.banded==1)
     error("IBDFE-T3C1 or T2C1 should not use banded matrix")
 elseif(rx_par.type==4&&window_par.type==1&&window_par.banded==1)
     error("IBDFE-T2C1 without window should not be banded channel")
+elseif(rx_par.type==6&&window_par.type==2)
+    error("SE_DFE_SC should not use Tang's window")
 end
 
 %% Independent variable ±±®Ó≈‹¶]
@@ -104,6 +109,15 @@ elseif(rx_par.type==3||rx_par.type==4)
 elseif(rx_par.type==5)
     dv.BER = zeros(1,size(indv.range,2));
     dv.SER = zeros(1,size(indv.range,2));
+elseif(rx_par.type==6)
+    dv.BER = zeros(rx_par.SE.SC_PIC_iter+1,size(indv.range,2));
+    dv.SER = zeros(rx_par.SE.SC_PIC_iter+1,size(indv.range,2));
+end
+
+if(rx_par.type~=6)
+    nn_size = size(dv.BER,1);
+else
+    nn_size = 1;
 end
 
 filename = "";
@@ -150,9 +164,9 @@ for kk = 1:size(indv.range,2)
     dv.sym_error_count = zeros(size(dv.SER,1),1);
     display(indv.str(indv.option)+num2str(indv.range(kk)));
     
-    for nn=1:size(rx_par.IBDFE.D_type,2)
+    for nn=1:nn_size
         rx_par.IBDFE.D = rx_par.IBDFE.D_type(nn);
-        %K = rx_par.SE.K(nn);
+        K = rx_par.SE.K(nn);
         switch(window_par.type)
             case(1)
                 w.w = ones(1,sys_par.tblock);
@@ -200,14 +214,22 @@ for kk = 1:size(indv.range,2)
                         [data.hat_dec(nn,:) data.hat_bit(nn,:)]=IBDFE_TV_T2C1_Quasibanded(sys_par,tx_par,rx_par,H,Y,snr.noise_pwr,pilot,data,w.w);
                     case(5)
                         [data.hat_dec(nn,:) data.hat_bit(nn,:)]=IBDFE_TV_T2C1(sys_par,tx_par,rx_par,H,Y,snr.noise_pwr,pilot,data,w.w);
+                    case(6)
+                        
                 end
+                
             end
             
-           
-            dv.sym_error_count(nn,1) = dv.sym_error_count(nn,1) + sum((data.hat_dec(nn,:)-data.dec_data)~=0,2);
-            dv.bit_error_count(nn,1) = dv.bit_error_count(nn,1) + sum((data.hat_bit(nn,:)-data.bit_data)~=0,2);
+            if(rx_par.type~=6)
+                dv.sym_error_count(nn,1) = dv.sym_error_count(nn,1) + sum((data.hat_dec(nn,:)-data.dec_data)~=0,2);
+                dv.bit_error_count(nn,1) = dv.bit_error_count(nn,1) + sum((data.hat_bit(nn,:)-data.bit_data)~=0,2);
+            else
+                dv.sym_error_count(:,1) = dv.sym_error_count(:,1) + sum((data.hat_dec-data.dec_data)~=0,2);
+                dv.bit_error_count(:,1) = dv.bit_error_count(:,1) + sum((data.hat_bit-data.bit_data)~=0,2);
+            end
+            
         end   % end ii=1:tx_par.nblock
-    end       % end 1:size(rx_par.IBDFE.D_type,2)
+    end       % end nn=1:size(rx_par.IBDFE.D_type,2)
     
     dv.SER(:,kk) = dv.sym_error_count/(tx_par.nblock*sys_par.ndata);
     dv.BER(:,kk) = dv.bit_error_count/(tx_par.nblock*sys_par.ndata*tx_par.nbits_per_sym);
