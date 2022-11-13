@@ -58,7 +58,7 @@ rx_par.type_str={
     'IBDFE_TV_T2C1'
     'SE_DFE_SC'
     };
-rx_par.type = 4;
+rx_par.type = 3;
 if(sys_par.type==1&&(rx_par.type==2||rx_par.type==1))
     error("serial equalization only for OFDM")
 elseif(sys_par.type==2&&(rx_par.type==3||rx_par.type==4||rx_par.type==5||rx_par.type==6))
@@ -79,15 +79,15 @@ pilot.position = 0;
 
 %% Window °Ñ¼Æ
 window_par.type_str={'no_window','Tang_window_ODM'};
-window_par.type = 2;
+window_par.type = 1;
 window_par.Q =rx_par.IBDFE.D_type*2 ;
 window_par.banded_str = {'Banded','Not banded'};
-window_par.banded = 1;
+window_par.banded = 2;
 
 if(window_par.type==2&&window_par.banded==2)
     error("Tang's window should use banded channel");
 elseif((rx_par.type==3||rx_par.type==5)&&window_par.banded==1)
-    error("IBDFE-T3C1 or T2C1 should not use banded matrix")
+    error("IBDFE-T3C1 or T2C1-full should not use banded matrix")
 elseif(rx_par.type==4&&window_par.type==1&&window_par.banded==1)
     error("IBDFE-T2C1 without window should not be banded channel")
 elseif(rx_par.type==6&&window_par.type==2)
