@@ -1,8 +1,9 @@
 
 
-function [data_hat_dec_out, data_hat_bit]=SE_DFE_SC(sys_par,tx_par,rx_par,K_SC,h,y,noise_pwr,data,w)
+function [data_hat_dec_out, data_hat_bit]=SE_DFE_SC2(sys_par,tx_par,rx_par,K_SC,h,y,noise_pwr,data,w)
 
 K = K_SC;
+Q = (K-1)/2;
 w_diag = diag(w.w);
 [max_norm m] = max(vecnorm(h));
 m = m-1;
@@ -10,7 +11,7 @@ iter_num = rx_par.SE.SC_PIC_iter;
 s_hat_k = zeros(iter_num+1,sys_par.tblock);
 data_hat_dec = zeros(iter_num+1,sys_par.tblock);
 % first iteration
-rho = mod(m-1+(1:K),sys_par.tblock)+1;
+rho = mod(m-Q-1+(1:K),sys_par.tblock)+1;
 A_k = h(rho,:);
 R_k = A_k*conj(A_k.') + noise_pwr*w_diag(rho,:)*conj(w_diag(rho,:).');
 m_k = R_k\A_k(:,m+1);
@@ -19,7 +20,7 @@ m_k = R_k\A_k(:,m+1);
 rho2 = mod(m:m+sys_par.tblock-1,sys_par.tblock);
 n_k = 1;
 for k=rho2(2:end)
-    rho = mod(k-1+(1:K),sys_par.tblock)+1;
+    rho = mod(k-Q-1+(1:K),sys_par.tblock)+1;
     A_k = h(rho,:);
     Y_tilde_k = y(rho);
     for ii=1:n_k
@@ -38,7 +39,7 @@ end
 
 for ii = 1:iter_num
     for kk = 0:sys_par.tblock-1
-        rho3 = mod(kk-1+(1:K),sys_par.tblock)+1;
+        rho3 = mod(kk-Q-1+(1:K),sys_par.tblock)+1;
         Y_k = y(rho3);
         A_k = h(rho3,:);
         for kkk = 0:sys_par.tblock-1

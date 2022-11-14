@@ -47,7 +47,7 @@ for ii = 1:iter_num
     end
 end
     
-data_hat_dec_out = data_hat_dec(3,:);
+data_hat_dec_out = data_hat_dec(iter_num+1,:);
 for ii=1:sys_par.ndata
     data_hat_bit((ii-1)*tx_par.nbits_per_sym+1:ii*tx_par.nbits_per_sym ) = my_dec2base(data_hat_dec(iter_num+1,ii),2,tx_par.nbits_per_sym);
 end% end ii=1:sys_par.ndata

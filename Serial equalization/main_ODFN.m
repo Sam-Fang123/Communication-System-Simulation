@@ -13,7 +13,7 @@ sys_par.pilot_scheme = 1;
 sys_par.random_seed = 0;
 sys_par.ndata = sys_par.tblock;  % Number of data symbols
 sys_par.type_str = {'SC','OFDM'};
-sys_par.type = 2;
+sys_par.type = 1;
 
 
 %% SNR parameters(Noise) Âø°T
@@ -57,16 +57,18 @@ rx_par.type_str={
     'IBDFE_TV_T2C1_Quasibanded'
     'IBDFE_TV_T2C1'
     'SE_DFE_SC'
+    'SE_DFE_SC2'
+    'TD_LMMSE'
     };
-rx_par.type = 2;
+rx_par.type = 8;
 if(sys_par.type==1&&(rx_par.type==2||rx_par.type==1))
     error("serial equalization only for OFDM")
-elseif(sys_par.type==2&&(rx_par.type==3||rx_par.type==4||rx_par.type==5||rx_par.type==6))
-    error("IBDFE and SE_DFE_SC only for Single carrier")
+elseif(sys_par.type==2&&(rx_par.type>=3&&rx_par.type<=8))
+    error("IBDFE and SE_DFE_SC and TD_LMMSE only for Single carrier")
 end
 rx_par.SE.K = [1 5 11 25];
-rx_par.SE.SC_K = fade_struct.ch_length;
-rx_par.SE.SC_PIC_iter = 3;
+rx_par.SE.SC_K = [5 11 21 31 41];
+rx_par.SE.SC_PIC_iter = 2;
 rx_par.IBDFE.cor_type_str={'GA cor','EST cor td', 'EST cor fd', 'TI cor_noth', 'TI cor_th'};% correlation coefficient
 rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
@@ -90,7 +92,7 @@ elseif((rx_par.type==3||rx_par.type==5)&&window_par.banded==1)
     error("IBDFE-T3C1 or T2C1-full should not use banded matrix")
 elseif(rx_par.type==4&&window_par.type==1&&window_par.banded==1)
     error("IBDFE-T2C1 without window should not be banded channel")
-elseif(rx_par.type==6&&window_par.type==2)
+elseif((rx_par.type==6||rx_par.type==7||rx_par.type==8)&&window_par.type==2)
     error("SE_DFE_SC should not use Tang's window")
 end
 
@@ -109,12 +111,15 @@ elseif(rx_par.type==3||rx_par.type==4)
 elseif(rx_par.type==5)
     dv.BER = zeros(1,size(indv.range,2));
     dv.SER = zeros(1,size(indv.range,2));
-elseif(rx_par.type==6)
-    dv.BER = zeros(rx_par.SE.SC_PIC_iter+1,size(indv.range,2));
-    dv.SER = zeros(rx_par.SE.SC_PIC_iter+1,size(indv.range,2));
+elseif(rx_par.type==6||rx_par.type==7)
+    dv.BER = zeros(size(rx_par.SE.SC_K,2),size(indv.range,2));
+    dv.SER = zeros(size(rx_par.SE.SC_K,2),size(indv.range,2));
+elseif(rx_par.type==8)
+    dv.BER = zeros(1,size(indv.range,2));
+    dv.SER = zeros(1,size(indv.range,2));
 end
 
-if(rx_par.type~=6)
+if(rx_par.type~=8)
     nn_size = size(dv.BER,1);
 else
     nn_size = 1;
@@ -167,6 +172,7 @@ for kk = 1:size(indv.range,2)
     for nn=1:nn_size
         rx_par.IBDFE.D = rx_par.IBDFE.D_type(nn);
         K = rx_par.SE.K(nn);
+        K_SC = rx_par.SE.SC_K(nn);
         switch(window_par.type)
             case(1)
                 w.w = ones(1,sys_par.tblock);
@@ -190,6 +196,7 @@ for kk = 1:size(indv.range,2)
             y = diag(w.w)*y;
             Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
             H = fft(diag(w.w)*h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
+            h = diag(w.w)*h;
         
             if(window_par.banded==1)
                 % Banded matrix
@@ -215,12 +222,16 @@ for kk = 1:size(indv.range,2)
                     case(5)
                         [data.hat_dec(nn,:) data.hat_bit(nn,:)]=IBDFE_TV_T2C1(sys_par,tx_par,rx_par,H,Y,snr.noise_pwr,pilot,data,w.w);
                     case(6)
-                        [data.hat_dec data.hat_bit] = SE_DFE_SC(sys_par,tx_par,rx_par,K,H,Y,snr.noise_pwr,data,w);  
+                        [data.hat_dec(nn,:) data.hat_bit(nn,:)] = SE_DFE_SC(sys_par,tx_par,rx_par,K_SC,h,y,snr.noise_pwr,data,w); 
+                    case(7)
+                        [data.hat_dec(nn,:) data.hat_bit(nn,:)] = SE_DFE_SC2(sys_par,tx_par,rx_par,K_SC,h,y,snr.noise_pwr,data,w);
+                    case(8)
+                        [data.hat_dec data.hat_bit] = TD_LMMSE(sys_par,tx_par,h,y,snr.noise_pwr,data);
                 end
                 
             end
             
-            if(rx_par.type~=6)
+            if(rx_par.type~=8)
                 dv.sym_error_count(nn,1) = dv.sym_error_count(nn,1) + sum((data.hat_dec(nn,:)-data.dec_data)~=0,2);
                 dv.bit_error_count(nn,1) = dv.bit_error_count(nn,1) + sum((data.hat_bit(nn,:)-data.bit_data)~=0,2);
             else
@@ -236,16 +247,17 @@ for kk = 1:size(indv.range,2)
 end
   
 
-figure(1)
+figure(2)
 semilogy(indv.range,dv.BER(1,:),'-d');
 xlabel('SNR');
 ylabel('BER');
 grid on;
 hold on;
-semilogy(indv.range,dv.BER(2,:),'-^');
-semilogy(indv.range,dv.BER(3,:),'-*');
-semilogy(indv.range,dv.BER(4,:),'-o');
-legend('1 tap MMSE','5 tap MMSE','11 tap MMSE','25 tap MMSE');
+%semilogy(indv.range,dv.BER(2,:),'-^');
+%semilogy(indv.range,dv.BER(3,:),'-*');
+%semilogy(indv.range,dv.BER(4,:),'-o');
+%semilogy(indv.range,dv.BER(5,:),'-+');
+%legend('5 tap','11 tap','21 tap','31 tap','41 tap');
 
 
 %save(filename,'indv','dv','sys_par','tx_par','rx_par','snr','fade_struct');
