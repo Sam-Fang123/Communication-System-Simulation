@@ -1,6 +1,6 @@
 
 
-function [data_hat_dec data_hat_bit]=SE_MMSE(sys_par,tx_par,K,H,Y,noise_pwr,data,w)
+function [data_hat_dec, data_hat_bit]=SE_MMSE(sys_par,tx_par,K,H,Y,noise_pwr,data,w)
 
 Q = (K-1)/2;
 F = dftmtx(sys_par.tblock)/sqrt(sys_par.tblock);

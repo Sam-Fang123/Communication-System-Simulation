@@ -1,6 +1,6 @@
 
 
-function [data_hat_dec_out, data_hat_bit]=SE_DFE(sys_par,tx_par,rx_par,K,H,Y,noise_pwr,data,w)
+function [data_hat_dec_out, data_hat_bit]=SE_DFE_SC(sys_par,tx_par,rx_par,K,H,Y,noise_pwr,data,w)
 
 F = dftmtx(sys_par.tblock)/sqrt(sys_par.tblock);
 Q = (K-1)/2;

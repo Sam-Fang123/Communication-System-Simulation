@@ -13,7 +13,7 @@ sys_par.pilot_scheme = 1;
 sys_par.random_seed = 0;
 sys_par.ndata = sys_par.tblock;  % Number of data symbols
 sys_par.type_str = {'SC','OFDM'};
-sys_par.type = 1;
+sys_par.type = 2;
 
 
 %% SNR parameters(Noise) 雜訊
@@ -46,7 +46,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 10; % Number of transmitted blocks
+tx_par.nblock= 100; % Number of transmitted blocks
 
 %% Rx parameter 接收端參數
 
@@ -58,7 +58,7 @@ rx_par.type_str={
     'IBDFE_TV_T2C1'
     'SE_DFE_SC'
     };
-rx_par.type = 3;
+rx_par.type = 2;
 if(sys_par.type==1&&(rx_par.type==2||rx_par.type==1))
     error("serial equalization only for OFDM")
 elseif(sys_par.type==2&&(rx_par.type==3||rx_par.type==4||rx_par.type==5||rx_par.type==6))
@@ -207,7 +207,7 @@ for kk = 1:size(indv.range,2)
                     case(1) % Serial equalation MMES 
                         [data.hat_dec(nn,:) data.hat_bit(nn,:)] = SE_MMSE(sys_par,tx_par,K,H,Y,snr.noise_pwr,data,w);
                     case(2) % Serial equalization DFE 
-                        [data.hat_dec(nn,:) data.hat_bit(nn,:)] = SE_DFE(sys_par,tx_par,K,H,Y,snr.noise_pwr,data,w);  
+                        [data.hat_dec(nn,:) data.hat_bit(nn,:)] = SE_DFE(sys_par,tx_par,rx_par,K,H,Y,snr.noise_pwr,data,w);  
                     case(3) %IBDFE_TV_T3C1
                         [data.hat_dec(nn,:) data.hat_bit(nn,:)]=IBDFE_TV_T3C1(sys_par,tx_par,rx_par,H,Y,snr.noise_pwr,pilot,data,w.w);
                     case(4) %IBDFE_TV_T2C1_Quasibanded      
@@ -215,7 +215,7 @@ for kk = 1:size(indv.range,2)
                     case(5)
                         [data.hat_dec(nn,:) data.hat_bit(nn,:)]=IBDFE_TV_T2C1(sys_par,tx_par,rx_par,H,Y,snr.noise_pwr,pilot,data,w.w);
                     case(6)
-                        
+                        [data.hat_dec data.hat_bit] = SE_DFE_SC(sys_par,tx_par,rx_par,K,H,Y,snr.noise_pwr,data,w);  
                 end
                 
             end

@@ -4,7 +4,7 @@
 %  2. Three correlation estimation method are supported(1.Genie-Aided 2.Using TS 3.A Way proposed by Our Lab)
 %
 
-function [data_hat_dec data_hat_bit] = IBDFE_TV_T3C1(sys_par,tx_par,rx_par,H,Y,noise_pwr,pilot,data,w)
+function [data_hat_dec, data_hat_bit] = IBDFE_TV_T3C1(sys_par,tx_par,rx_par,H,Y,noise_pwr,pilot,data,w)
 
 for n=1:rx_par.iteration
     if (n==1)
