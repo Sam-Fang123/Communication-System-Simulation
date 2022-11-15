@@ -6,6 +6,7 @@ s_tilde = G_H*y;
 for k=0:sys_par.tblock-1
     s_hat_k(k+1) = sc_symbol_slicing(s_tilde(k+1),tx_par);
 end
+
 data_hat_dec = s_hat_k;
 
 for ii=1:sys_par.ndata
