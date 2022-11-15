@@ -46,28 +46,29 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 100; % Number of transmitted blocks
+tx_par.nblock= 1; % Number of transmitted blocks
 
 %% Rx parameter 接收端參數
 
 rx_par.type_str={
-    'SE_MMES'   % Only for OFDM
+    'SE_MMSE'   % Only for OFDM
     'SE_DFE'    % Only for OFDM
     'IBDFE_TV_T3C1'; %3 Correlation Estimator Type
     'IBDFE_TV_T2C1_Quasibanded'
     'IBDFE_TV_T2C1'
     'SE_DFE_SC'
     'SE_DFE_SC2'
-    'TD_LMMSE'
+    'SE_MMSE_SC'
+    'SE_MMSE_SC2'
     };
-rx_par.type = 8;
+rx_par.type = 6;
 if(sys_par.type==1&&(rx_par.type==2||rx_par.type==1))
     error("serial equalization only for OFDM")
-elseif(sys_par.type==2&&(rx_par.type>=3&&rx_par.type<=8))
-    error("IBDFE and SE_DFE_SC and TD_LMMSE only for Single carrier")
+elseif(sys_par.type==2&&(rx_par.type>=3&&rx_par.type<=9))
+    error("IBDFE and SE_DFE_SC and SE_MMSE_SC only for Single carrier")
 end
-rx_par.SE.K = [1 5 11 25];
-rx_par.SE.SC_K = [5 11 21 31 41];
+rx_par.SE.K = [5 11 21 31];
+rx_par.SE.SC_K = [5 11 21 31 41 51 61 71 81 91 101 111 127];
 rx_par.SE.SC_PIC_iter = 2;
 rx_par.IBDFE.cor_type_str={'GA cor','EST cor td', 'EST cor fd', 'TI cor_noth', 'TI cor_th'};% correlation coefficient
 rx_par.IBDFE.cor_type = 3;
@@ -92,14 +93,16 @@ elseif((rx_par.type==3||rx_par.type==5)&&window_par.banded==1)
     error("IBDFE-T3C1 or T2C1-full should not use banded matrix")
 elseif(rx_par.type==4&&window_par.type==1&&window_par.banded==1)
     error("IBDFE-T2C1 without window should not be banded channel")
-elseif((rx_par.type==6||rx_par.type==7||rx_par.type==8)&&window_par.type==2)
+elseif((rx_par.type>=6&&rx_par.type<=9)&&window_par.type==2)
     error("SE_DFE_SC should not use Tang's window")
+elseif((rx_par.type>=1&&rx_par.type<=2)&&window_par.type==2)
+    error("SE_DFE should not use Tang's window")
 end
 
 %% Independent variable 控制變因
 indv.str = ["SNR(Es/No)","fd","Serial Equalization K"];
 indv.option = 1;
-indv.range = 0:4:24;
+indv.range = 0:4:36;
 %% Dependent variable 應變變因
 %BER,SER
 if(rx_par.type==1||rx_par.type==2)
@@ -111,19 +114,19 @@ elseif(rx_par.type==3||rx_par.type==4)
 elseif(rx_par.type==5)
     dv.BER = zeros(1,size(indv.range,2));
     dv.SER = zeros(1,size(indv.range,2));
-elseif(rx_par.type==6||rx_par.type==7)
+elseif(rx_par.type>=6&&rx_par.type<=9)
     dv.BER = zeros(size(rx_par.SE.SC_K,2),size(indv.range,2));
     dv.SER = zeros(size(rx_par.SE.SC_K,2),size(indv.range,2));
-elseif(rx_par.type==8)
-    dv.BER = zeros(1,size(indv.range,2));
-    dv.SER = zeros(1,size(indv.range,2));
+%elseif(rx_par.type==8)
+    %dv.BER = zeros(1,size(indv.range,2));
+    %dv.SER = zeros(1,size(indv.range,2));
 end
 
-if(rx_par.type~=8)
+%if(rx_par.type~=8)
     nn_size = size(dv.BER,1);
-else
-    nn_size = 1;
-end
+%else
+    %nn_size = 1;
+%end
 
 filename = "";
 filename = filename + sys_par.type_str(sys_par.type);
@@ -170,8 +173,8 @@ for kk = 1:size(indv.range,2)
     display(indv.str(indv.option)+num2str(indv.range(kk)));
     
     for nn=1:nn_size
-        rx_par.IBDFE.D = rx_par.IBDFE.D_type(nn);
-        K = rx_par.SE.K(nn);
+        %rx_par.IBDFE.D = rx_par.IBDFE.D_type(nn);
+        %K = rx_par.SE.K(nn);
         K_SC = rx_par.SE.SC_K(nn);
         switch(window_par.type)
             case(1)
@@ -226,18 +229,19 @@ for kk = 1:size(indv.range,2)
                     case(7)
                         [data.hat_dec(nn,:) data.hat_bit(nn,:)] = SE_DFE_SC2(sys_par,tx_par,rx_par,K_SC,h,y,snr.noise_pwr,data,w);
                     case(8)
-                        [data.hat_dec data.hat_bit] = TD_LMMSE(sys_par,tx_par,h,y,snr.noise_pwr,data);
+                        [data.hat_dec(nn,:) data.hat_bit(nn,:)] = SE_MMSE_SC(sys_par,tx_par,rx_par,K_SC,h,y,snr.noise_pwr,data,w);
+                    case(9)
+                        [data.hat_dec(nn,:) data.hat_bit(nn,:)] = SE_MMSE_SC2(sys_par,tx_par,rx_par,K_SC,h,y,snr.noise_pwr,data,w);
                 end
-                
             end
             
-            if(rx_par.type~=8)
+            %if(rx_par.type~=8)
                 dv.sym_error_count(nn,1) = dv.sym_error_count(nn,1) + sum((data.hat_dec(nn,:)-data.dec_data)~=0,2);
                 dv.bit_error_count(nn,1) = dv.bit_error_count(nn,1) + sum((data.hat_bit(nn,:)-data.bit_data)~=0,2);
-            else
-                dv.sym_error_count(:,1) = dv.sym_error_count(:,1) + sum((data.hat_dec-data.dec_data)~=0,2);
-                dv.bit_error_count(:,1) = dv.bit_error_count(:,1) + sum((data.hat_bit-data.bit_data)~=0,2);
-            end
+            %else
+                %dv.sym_error_count(:,1) = dv.sym_error_count(:,1) + sum((data.hat_dec-data.dec_data)~=0,2);
+                %dv.bit_error_count(:,1) = dv.bit_error_count(:,1) + sum((data.hat_bit-data.bit_data)~=0,2);
+            %end
             
         end   % end ii=1:tx_par.nblock
     end       % end nn=1:size(rx_par.IBDFE.D_type,2)
@@ -248,16 +252,24 @@ end
   
 
 figure(2)
-semilogy(indv.range,dv.BER(1,:),'-d');
+semilogy(indv.range,dv.BER(1,:),'-o');
 xlabel('SNR');
 ylabel('BER');
 grid on;
 hold on;
-%semilogy(indv.range,dv.BER(2,:),'-^');
-%semilogy(indv.range,dv.BER(3,:),'-*');
-%semilogy(indv.range,dv.BER(4,:),'-o');
-%semilogy(indv.range,dv.BER(5,:),'-+');
-%legend('5 tap','11 tap','21 tap','31 tap','41 tap');
+semilogy(indv.range,dv.BER(2,:),'-+');
+semilogy(indv.range,dv.BER(3,:),'-*');
+semilogy(indv.range,dv.BER(4,:),'-.');
+semilogy(indv.range,dv.BER(5,:),'-x');
+semilogy(indv.range,dv.BER(6,:),'-p');
+semilogy(indv.range,dv.BER(7,:),'-h');
+semilogy(indv.range,dv.BER(8,:),'-s');
+semilogy(indv.range,dv.BER(9,:),'-d');
+semilogy(indv.range,dv.BER(10,:),'-^');
+semilogy(indv.range,dv.BER(11,:),'-v');
+semilogy(indv.range,dv.BER(12,:),'->');
+semilogy(indv.range,dv.BER(13,:),'-<');
+legend('5 tap','11 tap','21 tap','31 tap','41 tap','51 tap','61 tap','71 tap','81 tap','91 tap','101 tap','111 tap','127 tap');
 
 
-%save(filename,'indv','dv','sys_par','tx_par','rx_par','snr','fade_struct');
+save(filename,'indv','dv','sys_par','tx_par','rx_par','snr','fade_struct');

@@ -1,15 +1,16 @@
 
 
-function [data_hat_dec, data_hat_bit]=SE_MMSE(sys_par,tx_par,K,H,Y,noise_pwr,data,w)
+function [data_hat_dec, data_hat_bit]=SE_MMSE_SC2(sys_par,tx_par,rx_par,K_SC,h,y,noise_pwr,data,w)
+K = K_SC;
 Q = (K-1)/2;
-F = dftmtx(sys_par.tblock)/sqrt(sys_par.tblock);
+w_diag = diag(w.w);
 s_hat_k = zeros(1,sys_par.tblock);
 for k=0:sys_par.tblock-1
     rho = mod(k-Q-1+(1:K),sys_par.tblock)+1;
-    A_k = H(rho,:);
-    R_k = A_k*conj(A_k.') + noise_pwr*w.FD_mtx(rho,:)*conj(w.FD_mtx(rho,:).');
+    A_k = h(rho,:);
+    R_k = A_k*conj(A_k.') + noise_pwr*w_diag(rho,:)*conj(w_diag(rho,:).');
     m_k = R_k\A_k(:,k+1);
-    s_hat_k(k+1) = sc_symbol_slicing(conj(m_k.')*Y(rho),tx_par);
+    s_hat_k(k+1) = sc_symbol_slicing(conj(m_k.')*y(rho),tx_par);
 end
 
 data_hat_dec = s_hat_k;
