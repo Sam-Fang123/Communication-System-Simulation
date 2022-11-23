@@ -48,7 +48,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 10000; % Number of transmitted blocks
+tx_par.nblock= 100; % Number of transmitted blocks
 
 %% Rx parameter 接收端參數
 
@@ -62,12 +62,11 @@ rx_par.type_str={
     'SE_DFE_SC2' % 7
     'SE_MMSE_SC' % 8
     'SE_MMSE_SC2' % 9
-    'SE_DFE_SC3' %10, 老師提的想法
     };
-rx_par.type = 6;
+rx_par.type = 3;
 if(sys_par.type==1&&(rx_par.type==2||rx_par.type==1))
     error("serial equalization only for OFDM")
-elseif(sys_par.type==2&&(rx_par.type>=3&&rx_par.type<=10))
+elseif(sys_par.type==2&&(rx_par.type>=3&&rx_par.type<=9))
     error("IBDFE and SE_DFE_SC and SE_MMSE_SC only for Single carrier")
 end
 rx_par.SE.K = [5 11 21 31];
@@ -80,7 +79,6 @@ rx_par.IBDFE.D_type = [2 4 8 12];%For IBDFE T3C1 and T2C1_Quasibanded
 rx_par.IBDFE.first_iteration_full = 1;%For IBDFE T1C1, T3C1 ==> 1: use full block MMSE for first iteration
 %Parameter for iterative equalizer;
 rx_par.iteration = 4;
-
 %% Window 參數
 window_par.type_str={'no_window','Tang_window_ODM'};
 window_par.type = 1;
@@ -94,7 +92,7 @@ elseif((rx_par.type==3||rx_par.type==5)&&window_par.banded==1)
     error("IBDFE-T3C1 or T2C1-full should not use banded matrix")
 elseif(rx_par.type==4&&window_par.type==1&&window_par.banded==1)
     error("IBDFE-T2C1 without window should not be banded channel")
-elseif((rx_par.type>=6&&rx_par.type<=10)&&window_par.type==2)
+elseif((rx_par.type>=6&&rx_par.type<=9)&&window_par.type==2)
     error("SE_DFE_SC should not use Tang's window")
 elseif((rx_par.type>=1&&rx_par.type<=2)&&window_par.type==2)
     error("SE_DFE should not use Tang's window")
@@ -103,7 +101,7 @@ end
 %% Independent variable 控制變因
 indv.str = ["SNR(Es/No)","fd","Serial Equalization K"];
 indv.option = 1;
-indv.range = 0:4:36;
+indv.range = 0:4:24;
 %% Dependent variable 應變變因
 %BER,SER
 if(rx_par.type==1||rx_par.type==2)
@@ -112,7 +110,7 @@ if(rx_par.type==1||rx_par.type==2)
 elseif(rx_par.type==3||rx_par.type==4)
     dv.BER = zeros(size(rx_par.IBDFE.D_type,2),size(indv.range,2));
     dv.SER = zeros(size(rx_par.IBDFE.D_type,2),size(indv.range,2));
-elseif(rx_par.type==5||rx_par.type==10)
+elseif(rx_par.type==5)
     dv.BER = zeros(1,size(indv.range,2));
     dv.SER = zeros(1,size(indv.range,2));
 elseif(rx_par.type>=6&&rx_par.type<=9)
@@ -132,7 +130,6 @@ filename = filename + "_fd=" + num2str(fade_struct.fd);
 filename = filename + "_Nblock=" + num2str(tx_par.nblock);
 filename = filename + "_snr=" + snr.type_str(snr.type);
 filename = filename + "_window=" + window_par.type_str(window_par.type);
-%filename = filename + "_Q=" + num2str(window_par.Q);
 filename = filename + "_" + window_par.banded_str(window_par.banded);
 filename = filename + ".mat";
 filename
@@ -176,9 +173,9 @@ for kk = 1:size(indv.range,2)
     display(indv.str(indv.option)+num2str(indv.range(kk)));
     
     for nn=1:nn_size
-        %rx_par.IBDFE.D = rx_par.IBDFE.D_type(nn);
+        rx_par.IBDFE.D = rx_par.IBDFE.D_type(nn);
         %K = rx_par.SE.K(nn);
-        K_SC = rx_par.SE.SC_K(nn);
+        %K_SC = rx_par.SE.SC_K(nn);
         switch(window_par.type)
             case(1)
                 w.w = ones(1,sys_par.tblock);
@@ -234,15 +231,13 @@ for kk = 1:size(indv.range,2)
                     case(8)
                         [data.hat_dec(nn,:) data.hat_bit(nn,:)] = SE_MMSE_SC(sys_par,tx_par,rx_par,K_SC,h,y,snr.noise_pwr,data,w);
                     case(9)
-                        [data.hat_dec(nn,:) data.hat_bit(nn,:)] = SE_MMSE_SC2(sys_par,tx_par,rx_par,K_SC,h,y,snr.noise_pwr,data,w);
-                    case(10)
-                        [data.hat_dec(nn,:) data.hat_bit(nn,:)] = SE_DFE_SC3(sys_par,tx_par,rx_par,h,y,snr.noise_pwr,data,w);
+                        [data.hat_dec(nn,:) data.hat_bit(nn,:)] = SE_MMSE_SC2(sys_par,tx_par,rx_par,K_SC,h,y,snr.noise_pwr,data,w);            
                 end
             end
-            
-           
-            dv.sym_error_count(nn,1) = dv.sym_error_count(nn,1) + sum((data.hat_dec(nn,:)-data.dec_data)~=0,2);
-            dv.bit_error_count(nn,1) = dv.bit_error_count(nn,1) + sum((data.hat_bit(nn,:)-data.bit_data)~=0,2);
+
+                dv.sym_error_count(nn,1) = dv.sym_error_count(nn,1) + sum((data.hat_dec(nn,:)-data.dec_data)~=0,2);
+                dv.bit_error_count(nn,1) = dv.bit_error_count(nn,1) + sum((data.hat_bit(nn,:)-data.bit_data)~=0,2);
+
             
             
         end   % end ii=1:tx_par.nblock
@@ -250,6 +245,8 @@ for kk = 1:size(indv.range,2)
     
     dv.SER(:,kk) = dv.sym_error_count/(tx_par.nblock*sys_par.ndata);
     dv.BER(:,kk) = dv.bit_error_count/(tx_par.nblock*sys_par.ndata*tx_par.nbits_per_sym);
+
+    
 end
   
 
@@ -259,9 +256,12 @@ xlabel('SNR');
 ylabel('BER');
 grid on;
 hold on;
+
 semilogy(indv.range,dv.BER(2,:),'-+');
 semilogy(indv.range,dv.BER(3,:),'-*');
 semilogy(indv.range,dv.BER(4,:),'-.');
+legend('2 tap','4 tap','8 tap','12 tap')
+%{
 semilogy(indv.range,dv.BER(5,:),'-x');
 semilogy(indv.range,dv.BER(6,:),'-p');
 semilogy(indv.range,dv.BER(7,:),'-h');
@@ -272,6 +272,6 @@ semilogy(indv.range,dv.BER(11,:),'-v');
 semilogy(indv.range,dv.BER(12,:),'->');
 semilogy(indv.range,dv.BER(13,:),'-<');
 legend('5 tap','11 tap','21 tap','31 tap','41 tap','51 tap','61 tap','71 tap','81 tap','91 tap','101 tap','111 tap','127 tap');
+%}
 
-
-save(filename,'indv','dv','sys_par','tx_par','rx_par','snr','fade_struct');
+%save(filename,'indv','dv','sys_par','tx_par','rx_par','snr','fade_struct');
