@@ -63,7 +63,7 @@ rx_par.type_str={
     'SE_MMSE_SC' % 8
     'SE_MMSE_SC2' % 9
     };
-rx_par.type = 3;
+rx_par.type = 4;
 if(sys_par.type==1&&(rx_par.type==2||rx_par.type==1))
     error("serial equalization only for OFDM")
 elseif(sys_par.type==2&&(rx_par.type>=3&&rx_par.type<=9))
@@ -81,10 +81,10 @@ rx_par.IBDFE.first_iteration_full = 1;%For IBDFE T1C1, T3C1 ==> 1: use full bloc
 rx_par.iteration = 4;
 %% Window °Ñ¼Æ
 window_par.type_str={'no_window','Tang_window_ODM'};
-window_par.type = 1;
+window_par.type = 2;
 window_par.Q =rx_par.IBDFE.D_type*2 ;
 window_par.banded_str = {'Banded','Not banded'};
-window_par.banded = 2;
+window_par.banded = 1;
 
 if(window_par.type==2&&window_par.banded==2)
     error("Tang's window should use banded channel");
