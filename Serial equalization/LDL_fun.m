@@ -2,12 +2,9 @@ function [L,D] = LDL_fun(A,Q)
 
 dim = size(A);
 N_A = dim(1);
-for i = 1:N_A
-    for j = 1:N_A
-        if A(i,j)~=A(j,i)
-            error('The input matrix should be symmetric')
-        end
-    end
+
+if A~=conj(A.')
+    error('The matrix is not conjugate and symmetric')
 end
 
 L = eye(N_A);
@@ -21,6 +18,7 @@ for j = 1:N_A
     end
     v(j) = A(j,j)-L(j,m:j-1)*v(m:j-1);
     D(j,j) = v(j);
-    L(j+1:M,j) = ()
+    L(j+1:M,j) = (A(j+1:M,j)-L(j+1:M,m:j-1)*v(m:j-1))/v(j);
+end
 
         

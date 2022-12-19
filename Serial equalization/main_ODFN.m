@@ -75,7 +75,7 @@ rx_par.SE.SC_PIC_iter = 2;
 rx_par.IBDFE.cor_type_str={'GA cor','EST cor td', 'EST cor fd', 'TI cor_noth', 'TI cor_th'};% correlation coefficient
 rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
-rx_par.IBDFE.D_type = [2 4 8 12];%For IBDFE T3C1 and T2C1_Quasibanded
+rx_par.IBDFE.D_type = [4];%For IBDFE T3C1 and T2C1_Quasibanded
 rx_par.IBDFE.first_iteration_full = 1;%For IBDFE T1C1, T3C1 ==> 1: use full block MMSE for first iteration
 %Parameter for iterative equalizer;
 rx_par.iteration = 4;
@@ -83,14 +83,14 @@ rx_par.iteration = 4;
 window_par.type_str={'no_window','Tang_window_ODM'};
 window_par.type = 2;
 window_par.Q =rx_par.IBDFE.D_type*2 ;
-window_par.banded_str = {'Banded','Not banded'};
-window_par.banded = 1;
+window_par.banded_str = {'Not Banded','Banded','Strictly Banded'};
+window_par.banded = 3;
 
-if(window_par.type==2&&window_par.banded==2)
+if(window_par.type==2&&window_par.banded==1)
     error("Tang's window should use banded channel");
-elseif((rx_par.type==3||rx_par.type==5)&&window_par.banded==1)
+elseif((rx_par.type==3||rx_par.type==5)&&(window_par.banded==2||window_par.banded==3))
     error("IBDFE-T3C1 or T2C1-full should not use banded matrix")
-elseif(rx_par.type==4&&window_par.type==1&&window_par.banded==1)
+elseif(rx_par.type==4&&window_par.type==1&&(window_par.banded==2||window_par.banded==3))
     error("IBDFE-T2C1 without window should not be banded channel")
 elseif((rx_par.type>=6&&rx_par.type<=9)&&window_par.type==2)
     error("SE_DFE_SC should not use Tang's window")
@@ -201,16 +201,28 @@ for kk = 1:size(indv.range,2)
             H = fft(diag(w.w)*h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
             h = diag(w.w)*h;
         
-            if(window_par.banded==1)
-                % Banded matrix
+            if(window_par.banded==2)
+                % 2: Banded matrix 
                 B_mtx = zeros(sys_par.tblock,sys_par.tblock);
                 for k=0:sys_par.tblock-1
                     rho = mod(k-window_par.Q(nn)/2-1+(1:window_par.Q(nn)+1),sys_par.tblock)+1;
                     B_mtx(rho,k+1) = 1;
                 end
                 H = H.*B_mtx;
+            elseif(window_par.banded==3)
+                % Strictly banded matrix
+                B_mtx = zeros(sys_par.tblock,sys_par.tblock);
+                for k=0:sys_par.tblock-1
+                    rho = k-window_par.Q(nn)/2-1+(1:window_par.Q(nn)+1)+1;
+                    rho2 = rho(rho>0);
+                    rho3 = rho2(rho2<=sys_par.tblock);
+                    B_mtx(rho3,k+1) = 1;
+                end
+                H = H.*B_mtx; 
+                [L D] = LDL_fun(H*conj(H.'),window_par.Q(nn)/2);        %上次寫到這裡
             end
-        
+            err = norm(H*conj(H.')-L*D*conj(L.'))
+            
             %Detection...
             if(DE_option.detection_on ==1)
                 switch(rx_par.type)
