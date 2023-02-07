@@ -5,7 +5,7 @@ clc;
 clear all;
 tic; %timer
 %% Options(Channel Estimation & Detection)
-DE_option.estimation_on = 0;
+DE_option.estimation_on = 1;
 DE_option.detection_on = 1;
 DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 0: Not Working
