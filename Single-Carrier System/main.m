@@ -5,7 +5,7 @@ clc;
 clear all;
 tic; %timer
 %% Options(Channel Estimation & Detection)
-DE_option.estimation_on = 1;
+DE_option.estimation_on = 0;
 DE_option.detection_on = 1;
 DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 0: Not Working
@@ -81,8 +81,10 @@ rx_par.type_str={
     'IBDFE_TV_T3C1(Ideal Feedback)';
     
     'IBDFE_TI';%5 Correlation Estimator Type
+    
+    'Zero_forcing'  
     };
-rx_par.type = 7;
+rx_par.type = 10;
 
 %{
 Parameters for IBDFE ==> 
@@ -96,7 +98,8 @@ rx_par.IBDFE.cor_type_str={'GA cor','EST cor td', 'EST cor fd', 'TI cor_noth', '
 rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 rx_par.IBDFE.D = 2;%For IBDFE T3C1 and T2C1_Quasibanded
-rx_par.IBDFE.first_iteration_full = 1;%For IBDFE T1C1, T3C1 ==> 1: use full block MMSE for first iteration
+rx_par.IBDFE.first_iteration_full = 1;%For IBDFE T1C1, T3C1 ==> 1: use full block MMSE for first 
+rx_par.ZF.method = 1;   % 1:For block ZF    2:For symbol ZF
 
 %Parameter for iterative equalizer;
 rx_par.iteration = 4;
@@ -106,7 +109,7 @@ indv.option = 1;
 indv.range = 0:4:20;
 %% Dependent variable 應變變因
 %BER,SER
-if(rx_par.type == 2||rx_par.type == 4||rx_par.type == 6)%Ideal case ==> No Iteration
+if(rx_par.type == 2||rx_par.type == 4||rx_par.type == 6||rx_par.type == 10)%Ideal case ==> No Iteration
     dv.BER = zeros(1,size(indv.range,2));
     dv.SER = zeros(1,size(indv.range,2));
 else
@@ -225,6 +228,8 @@ for kk = 1:size(indv.range,2)
                     [data.hat_dec data.hat_bit]=IBDFE_TV_T3C1_Ideal(sys_par,tx_par,rx_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);
                 case(9) %IBDFE_TI
                      [data.hat_dec data.hat_bit] = IBDFE_TI(sys_par,tx_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
+                case(10)
+                     [data.hat_dec data.hat_bit] = Zero_Force(sys_par,tx_par,rx_par,h,y,snr.noise_pwr,pilot,data,w);
             end% end rx_par.type
 
             dv.sym_error_count(:,1) = dv.sym_error_count(:,1) + sum((data.hat_dec-data.dec_data)~=0,2);
