@@ -17,7 +17,7 @@ td_window.str = ["No-windowing","MBAE-SOE","Tang"];
 td_window.type =1;
 td_window.Q = 4;
 %% System parameters(Frame structure)
-sys_par.tblock = 128; %Blocksize
+sys_par.tblock = 256; %Blocksize
 sys_par.P = 14;%pilot cluster length: P+1, P is even
 sys_par.G = 6;%cluster number: G
 sys_par.M = 5;%CP length + 1: M
@@ -64,7 +64,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 100; % Number of transmitted blocks
+tx_par.nblock= 1000; % Number of transmitted blocks
 %% Rx parameter 接收端參數
 % IBDFE (Scaling Factor removed and divide beta before slicing)
 rx_par.type_str={
@@ -99,7 +99,7 @@ rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 rx_par.IBDFE.D = 2;%For IBDFE T3C1 and T2C1_Quasibanded
 rx_par.IBDFE.first_iteration_full = 1;%For IBDFE T1C1, T3C1 ==> 1: use full block MMSE for first 
-rx_par.ZF.method = 1;   % 1:For block ZF    2:For symbol ZF
+rx_par.ZF.method = 1;   % 1:For block-by-block ZF    2:For symbol-by-symbol ZF
 
 %Parameter for iterative equalizer;
 rx_par.iteration = 4;
@@ -155,7 +155,7 @@ for kk = 1:size(indv.range,2)
         
         %display(indv.str(indv.option)+' & block index  '+num2str(indv.range(kk))+'_'+num2str(ii));
         
-        [data.const_data data.dec_data data.bit_data]=block_sym_mapping(sys_par.ndata,tx_par);% generate data block
+        [data.const_data data.dec_data, data.bit_data]=block_sym_mapping(sys_par.ndata,tx_par);% generate data block
         trans_block = zeros(1,sys_par.tblock);
         trans_block(reshape(pilot.position.',1,[])) = reshape(pilot.clusters_symbol.',1,[]);
         trans_block(data.position) = data.const_data;
@@ -295,12 +295,9 @@ filename = filename + ".mat";
 save(filename,'indv','dv','sys_par','est_par','tx_par','rx_par','snr','fade_struct','td_window');
 disp('------------------------------------------------');
 figure(1)
-semilogy(indv.range,dv.SER(1,:),'-d');
+semilogy(indv.range,dv.BER(1,:),'-d');
 xlabel('SNR');
 ylabel('BER');
 grid on;
 hold on;
-semilogy(indv.range,dv.BER(2,:),'-^');
-semilogy(indv.range,dv.BER(3,:),'-*');
-semilogy(indv.range,dv.BER(4,:),'-o');
-legend('1','2','3','4')
+
