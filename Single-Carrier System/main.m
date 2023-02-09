@@ -64,7 +64,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 1000; % Number of transmitted blocks
+tx_par.nblock= 100; % Number of transmitted blocks
 %% Rx parameter 接收端參數
 % IBDFE (Scaling Factor removed and divide beta before slicing)
 rx_par.type_str={
@@ -99,7 +99,7 @@ rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 rx_par.IBDFE.D = 2;%For IBDFE T3C1 and T2C1_Quasibanded
 rx_par.IBDFE.first_iteration_full = 1;%For IBDFE T1C1, T3C1 ==> 1: use full block MMSE for first 
-rx_par.ZF.method = 1;   % 1:For block-by-block ZF    2:For symbol-by-symbol ZF
+rx_par.ZF.method = 2;   % 1:For block-by-block ZF    2:For symbol-by-symbol ZF
 
 %Parameter for iterative equalizer;
 rx_par.iteration = 4;
@@ -169,6 +169,10 @@ for kk = 1:size(indv.range,2)
         h = diag(w)*h;
         h_taps = diag(w)*h_taps;
         
+        if(rank(h)~=256)    % If the channel matrix isnt full rank, it isn't invertible !!
+            continue
+        end
+        
         noise_block = diag(w)*noise_block;
         
         trans_block_FD = fft(trans_block,sys_par.tblock)/sqrt(sys_par.tblock);%column vector
@@ -176,7 +180,8 @@ for kk = 1:size(indv.range,2)
         %H = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock); %column vector
         noise_block_FD=fft(noise_block,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
         
-        y = h*trans_block + noise_block;
+        %y = h*trans_block + noise_block;
+        y = h*trans_block;  % Test the algo is correct or not
         Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
        
     
@@ -234,6 +239,10 @@ for kk = 1:size(indv.range,2)
 
             dv.sym_error_count(:,1) = dv.sym_error_count(:,1) + sum((data.hat_dec-data.dec_data)~=0,2);
             dv.bit_error_count(:,1) = dv.bit_error_count(:,1) + sum((data.hat_bit-data.bit_data)~=0,2);
+            if sum((data.hat_bit-data.bit_data)~=0,2)
+                error("!!")
+            end
+            
         end
     end % end ii=1:tx_par.nblock
     
