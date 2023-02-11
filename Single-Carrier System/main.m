@@ -17,6 +17,9 @@ td_window.str = ["No-windowing","MBAE-SOE","Tang"];
 td_window.type =1;
 td_window.Q = 4;
 %% System parameters(Frame structure)
+sys_par.tx_type_str = {'CP','ZP'};
+sys_par.tx_type = 2;  % 1: CP
+                      % 2: ZP
 sys_par.tblock = 256; %Blocksize
 sys_par.P = 14;%pilot cluster length: P+1, P is even
 sys_par.G = 6;%cluster number: G
@@ -64,7 +67,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 100; % Number of transmitted blocks
+tx_par.nblock= 1; % Number of transmitted blocks
 %% Rx parameter 接收端參數
 % IBDFE (Scaling Factor removed and divide beta before slicing)
 rx_par.type_str={
@@ -121,6 +124,11 @@ end
 dv.BEM_MSE = zeros(1,size(indv.range,2));
 dv.CH_MSE = zeros(1,size(indv.range,2));
 dv.Theory_BEM_MSE = zeros(1,size(indv.range,2));
+
+%% get filename
+[filename] = Get_filename(DE_option,td_window,sys_par,fade_struct,est_par,tx_par,rx_par,indv,dv);
+filename
+
 %% initialization
 trans_block=zeros(1,sys_par.tblock); % transmission (constellation) block
 for kk = 1:size(indv.range,2)
@@ -180,8 +188,8 @@ for kk = 1:size(indv.range,2)
         %H = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock); %column vector
         noise_block_FD=fft(noise_block,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
         
-        %y = h*trans_block + noise_block;
-        y = h*trans_block;  % Test the algo is correct or not
+        y = h*trans_block + noise_block;
+        %y = h*trans_block;  % Test the algo is correct or not
         Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
        
     
@@ -239,9 +247,9 @@ for kk = 1:size(indv.range,2)
 
             dv.sym_error_count(:,1) = dv.sym_error_count(:,1) + sum((data.hat_dec-data.dec_data)~=0,2);
             dv.bit_error_count(:,1) = dv.bit_error_count(:,1) + sum((data.hat_bit-data.bit_data)~=0,2);
-            if sum((data.hat_bit-data.bit_data)~=0,2)
-                error("!!")
-            end
+            %if sum((data.hat_bit-data.bit_data)~=0,2) Test the algo is correct or not
+            %    error("!!")
+            %end
             
         end
     end % end ii=1:tx_par.nblock
@@ -262,45 +270,6 @@ if(DE_option.estimation_on == 1)
     [dv.Theory_BEM_MSE] = Theoretical_BEM_MSE(sys_par,fade_struct,snr,est_par,tx_par,rx_par,td_window,indv);
 end
 %% Save files
-% filename of .mat
-filename = "";
-filename = filename + "data/";
-
-switch(DE_option.type)
-    case(1)
-        filename = filename + "E-mode";
-    case(2)
-        filename = filename + "D-mode";
-    case(3)
-        filename = filename + "D&E-mode";
-end
-
-filename = filename + "_" + td_window.str(td_window.type);
-if(td_window.type == 2)
-    filename = filename + "_Q=" +num2str(td_window.Q);
-end
-
-if(DE_option.estimation_on == 1)
-   filename = filename + "_" + est_par.BEM.str(est_par.BEM.type) + "_" + est_par.type_str(est_par.type);
-end
-
-if(DE_option.detection_on == 1)
-    filename = filename + "_" + rx_par.type_str(rx_par.type);
-    
-    if(rx_par.type == 1||rx_par.type == 7)
-        if(rx_par.IBDFE.first_iteration_full == 1)
-            filename = filename + "_1st_full";
-        end
-    end
-    if(rx_par.type == 5||rx_par.type == 6||rx_par.type == 7||rx_par.type == 8)
-        filename = filename + "_D=" + num2str(rx_par.IBDFE.D);
-    end
-end
-
-filename = filename + "_" + tx_par.mod_type_str(tx_par.mod_type);
-filename = filename + "_fd=" + num2str(fade_struct.fd);
-filename = filename + "_Nblock=" + num2str(tx_par.nblock);
-filename = filename + ".mat";
 save(filename,'indv','dv','sys_par','est_par','tx_par','rx_par','snr','fade_struct','td_window');
 disp('------------------------------------------------');
 figure(1)
