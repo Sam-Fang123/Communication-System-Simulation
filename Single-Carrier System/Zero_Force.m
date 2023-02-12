@@ -33,6 +33,25 @@ switch(rx_par.ZF.method)
         for ii=1:sys_par.ndata
             data_hat_bit((ii-1)*tx_par.nbits_per_sym+1:ii*tx_par.nbits_per_sym ) = my_dec2base(data_hat_dec(ii),2,tx_par.nbits_per_sym);
         end% end ii=1:sys_par.ndata
+        
+    case(3) % symbol-by-symbol ZF (Faster but only for slow fading channel?), cant use in CP case??
+        delay = floor(sys_par.tblock/2);
+        e = [zeros(1,delay) 1 zeros(1,sys_par.tblock-1-delay)].';
+        h_H = conj(h.');
+        W = pinv(h_H)*e;
+        y_dec = conv(W,y);
+        y_dec = y_dec(delay+1:delay+sys_par.tblock);
+        y_data = y_dec(data.position);
+        
+        %Symbol Slicing
+        for ii=1:size(data.position,2)
+            [data_hat_dec(ii) data_hat_const(ii)] = sc_symbol_slicing(y_data(ii),tx_par);
+        end%end ii=1:sys_par.ndata
+        
+        %Translate to bits
+        for ii=1:sys_par.ndata
+            data_hat_bit((ii-1)*tx_par.nbits_per_sym+1:ii*tx_par.nbits_per_sym ) = my_dec2base(data_hat_dec(ii),2,tx_par.nbits_per_sym);
+        end% end ii=1:sys_par.ndata
 end
 
         

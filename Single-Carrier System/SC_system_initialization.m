@@ -42,7 +42,7 @@ function [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initializ
     observation.position = mod(observation.position-1,sys_par.tblock)+1;
     contaminating_data.position = mod(contaminating_data.position-1,sys_par.tblock)+1;
     data.position = setdiff(1:sys_par.tblock, reshape(pilot.position.',1,[]));
-       
+    
     %pilot generate
     rand('state',sys_par.pilot_random_seed);
     randn('state',sys_par.pilot_random_seed);

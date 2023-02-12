@@ -67,7 +67,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 1; % Number of transmitted blocks
+tx_par.nblock= 100; % Number of transmitted blocks
 %% Rx parameter 接收端參數
 % IBDFE (Scaling Factor removed and divide beta before slicing)
 rx_par.type_str={
@@ -102,7 +102,7 @@ rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 rx_par.IBDFE.D = 2;%For IBDFE T3C1 and T2C1_Quasibanded
 rx_par.IBDFE.first_iteration_full = 1;%For IBDFE T1C1, T3C1 ==> 1: use full block MMSE for first 
-rx_par.ZF.method = 2;   % 1:For block-by-block ZF    2:For symbol-by-symbol ZF
+rx_par.ZF.method = 1;   % 1:For block-by-block ZF    2:For symbol-by-symbol ZF
 
 %Parameter for iterative equalizer;
 rx_par.iteration = 4;
@@ -177,8 +177,10 @@ for kk = 1:size(indv.range,2)
         h = diag(w)*h;
         h_taps = diag(w)*h_taps;
         
-        if(rank(h)~=256)    % If the channel matrix isnt full rank, it isn't invertible !!
-            continue
+        if(rx_par.type==10)
+            if(rank(h)~=256)    % If the channel matrix isnt full rank, it isn't invertible !!
+                continue        % It can not use zero forcing !!
+            end
         end
         
         noise_block = diag(w)*noise_block;
