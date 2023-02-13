@@ -49,7 +49,7 @@ est_par.type = 1;
 est_par.BEM.str = ["CE-BEM","GCE-BEM","P-BEM"];
 est_par.BEM.typenum = size(est_par.BEM.str,2);
 est_par.BEM.type = 2;
-est_par.BEM.I = 5;  %bases number 
+est_par.BEM.I = 5;  %number of bases
 est_par.BEM.Q = floor(est_par.BEM.I/2);
 
 est_par.l = 4;%parameter l determines the range of observation vector used for channel estimation(l>=0, l<=(P+M-1)/2 for SC system);
