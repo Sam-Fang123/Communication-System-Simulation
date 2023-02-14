@@ -17,9 +17,9 @@ td_window.str = ["No-windowing","MBAE-SOE","Tang"];
 td_window.type =1;
 td_window.Q = 4;
 %% System parameters(Frame structure)
-sys_par.tx_type_str = {'CP','ZP'};
-sys_par.tx_type = 2;  % 1: CP
-                      % 2: ZP
+sys_par.ts_type_str = {'Non-optiaml','Optiaml'};
+sys_par.ts_type = 2;  % 1: Non-optiaml
+                      % 2: Optiaml
 sys_par.tblock = 256; %Blocksize
 sys_par.P = 14;%pilot cluster length: P+1, P is even
 sys_par.G = 6;%cluster number: G
@@ -57,6 +57,22 @@ est_par.BLUE_iterative_times = 5;
 
 est_par.plot_taps = 1;%plot the taps or not
 est_par.plot_taps_blockindex = 1;
+
+%% ZP把计砞﹚
+if(sys_par.ts_type==2)
+    sys_par.L = sys_par.M-1;
+    est_par.l = sys_par.L;
+    sys_par.P = 2*(sys_par.L);
+    sys_par.G = est_par.BEM.I;
+    sys_par.nts = sys_par.G*(sys_par.P+1); %Number of total pilot symbols
+    sys_par.ndata = sys_par.tblock - sys_par.nts; % Number of data symbols
+    if(mod(sys_par.ndata,sys_par.G)~=0)
+        sys_par.ndata = sys_par.G*floor(sys_par.ndata/sys_par.G);
+        sys_par.nts = sys_par.tblock-sys_par.ndata;
+    end
+    sys_par.bandwidth_efficiency = sys_par.ndata/sys_par.tblock*100;
+end
+
 %% Tx parameters 肚癳狠把计
 tx_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
 tx_par.mod_type = 2; % 1: BPSK
@@ -148,8 +164,13 @@ for kk = 1:size(indv.range,2)
     end
     
     %initialization
-    [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initialization(sys_par,tx_par,est_par,td_window,fade_struct);
-   
+    switch(sys_par.ts_type)
+        case(1) % Optiaml
+            [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initialization(sys_par,tx_par,est_par,td_window,fade_struct);
+        case(2) % Non-optimal
+            [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initialization_Op(sys_par,tx_par,est_par,td_window,fade_struct);
+    end
+    
     %Set random seed
     rand('state',sys_par.random_seed);
     randn('state',sys_par.random_seed);
