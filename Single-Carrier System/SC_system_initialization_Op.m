@@ -1,4 +1,4 @@
-function [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initialization_Op(sys_par,tx_par,est_par,td_window,fade_struct)
+function [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initialization_Op(sys_par,tx_par,ts_par,est_par,td_window,fade_struct)
 
     %window generate
     w = window_design(sys_par.tblock,td_window.Q,fade_struct.nor_fd,td_window.type);
@@ -15,7 +15,8 @@ function [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initializ
     end
     U = diag(w)*U; %let the basis matrix absorb the-time domain window
     U = orth(U);
-    power_allocation = 1/(1+sqrt((sys_par.L+1)/(sys_par.ndata/sys_par.G)));
+    % Optimal power allocation
+    power_allocation = 1/(1+sqrt((sys_par.L+1)/(sys_par.ndata/sys_par.G))); 
     pilot.power = sys_par.tblock*(1-power_allocation)/sys_par.G;
     data.power = sys_par.tblock*power_allocation/sys_par.ndata;
     
@@ -45,6 +46,7 @@ function [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initializ
     pilot.position = mod(pilot.position-1,sys_par.tblock)+1;
     observation.position = mod(observation.position-1,sys_par.tblock)+1;
     contaminating_data.position = mod(contaminating_data.position-1,sys_par.tblock)+1;
+    
     pilot.position = [reshape(pilot.position.',1,[]) subblock_length*sys_par.G+1:sys_par.tblock];
     data.position = setdiff(1:sys_par.tblock, reshape(pilot.position.',1,[]));
     
@@ -52,15 +54,18 @@ function [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initializ
     rand('state',sys_par.pilot_random_seed);
     randn('state',sys_par.pilot_random_seed);
     %only the middle pilot is nonzero pilot, and the average energy is same as data symbol
-    [const_pn dec_pn bit_pn]=block_sym_mapping(1,tx_par);% generate TS seq (all blocks have same TS) %ts_par=1
+    [const_pn dec_pn bit_pn]=block_sym_mapping(1,tx_par,ts_par,2);% generate TS seq (all blocks have same TS) %ts_par=1
     pilot.clusters_symbol = [zeros(sys_par.G,floor((sys_par.P+1)/2)) const_pn*ones(sys_par.G,1)*sqrt(pilot.power) zeros(sys_par.G,floor((sys_par.P+1)/2))];%each row is a pilot cluster
     pilot.clusters_dec = [zeros(sys_par.G,floor((sys_par.P+1)/2)) dec_pn*ones(sys_par.G,1) zeros(sys_par.G,floor((sys_par.P+1)/2))];%each row is a pilot cluster
-    % 改到這邊!!
+    
+    pilot.clusters_symbol = [reshape(pilot.clusters_symbol.',1,[]) zeros(1,sys_par.tblock-subblock_length*sys_par.G)];
+    pilot.clusters_dec = [reshape(pilot.clusters_dec.',1,[]) zeros(1,sys_par.tblock-subblock_length*sys_par.G)];
     
     
     %Channel Estimation Model Construct...
     %1. Once BEM model and pilots are known, the estimator matrix A is known. 
     %2. The only changing thing is the received observation vector y.
+    % 改到這邊!!!!
     A = [];
     for g = 1:sys_par.G
 

@@ -4,7 +4,7 @@
 %  2. Three correlation estimation method are supported(1.Genie-Aided 2.Using TS 3.A Way proposed by Our Lab)
 %
 
-function [data_hat_dec data_hat_bit] = IBDFE_TV_T2C1_Quasibanded(sys_par,tx_par,rx_par,H,Y,noise_pwr,pilot,data,w)
+function [data_hat_dec data_hat_bit] = IBDFE_TV_T2C1_Quasibanded(sys_par,tx_par,ts_par,rx_par,H,Y,noise_pwr,pilot,data,w)
 
 for n=1:rx_par.iteration
     if (n==1)
@@ -52,13 +52,13 @@ for n=1:rx_par.iteration
     data_temp=s_temp(data.position); %remove TS
     pn_temp=s_temp(reshape(pilot.position.',1,[])); %TS
     
-    %Symbol Slicing
+   %Symbol Slicing
     for ii=1:size(data.position,2)
-        [data_hat_dec(n,ii) data_hat_const(ii)] = sc_symbol_slicing(data_temp(ii),tx_par);
+        [data_hat_dec(n,ii) data_hat_const(ii)] = sc_symbol_slicing(data_temp(ii),tx_par,data.power);
     end%end ii=1:sys_par.ndata
     
     for ii=1:size(reshape(pilot.position.',1,[]),2)
-        [pn_hat_dec(n,ii) pn_hat_const(ii)] = sc_symbol_slicing(pn_temp(ii),tx_par);
+        [pn_hat_dec(n,ii) pn_hat_const(ii)] = sc_symbol_slicing(data_temp(ii),ts_par,pilot.power);
     end%end ii=1:sys_par.nts
     
     %Translate to bits

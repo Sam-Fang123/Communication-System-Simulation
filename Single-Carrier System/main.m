@@ -59,7 +59,7 @@ est_par.plot_taps = 1;%plot the taps or not
 est_par.plot_taps_blockindex = 1;
 
 %% ZP把计砞﹚
-if(sys_par.ts_type==2)
+if(sys_par.ts_type==2)  % Optimal training
     sys_par.L = sys_par.M-1;
     est_par.l = sys_par.L;
     sys_par.P = 2*(sys_par.L);
@@ -84,6 +84,16 @@ tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
 tx_par.nblock= 100; % Number of transmitted blocks
+%% Train parameters 癡絤才じ把计
+ts_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
+ts_par.mod_type = 1; % 1: BPSK
+                     % 2: QPSK
+                     % 3: 16QAM
+                   
+ts_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
+ts_par.nbits_per_sym = ts_par.mod_nbits_per_sym(ts_par.mod_type);
+ts_par.pts_mod_const=2^(ts_par.nbits_per_sym); % points in modulation constellation
+
 %% Rx parameter 钡Μ狠把计
 % IBDFE (Scaling Factor removed and divide beta before slicing)
 rx_par.type_str={
@@ -166,9 +176,9 @@ for kk = 1:size(indv.range,2)
     %initialization
     switch(sys_par.ts_type)
         case(1) % Optiaml
-            [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initialization(sys_par,tx_par,est_par,td_window,fade_struct);
+            [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initialization(sys_par,tx_par,ts_par,est_par,td_window,fade_struct);
         case(2) % Non-optimal
-            [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initialization_Op(sys_par,tx_par,est_par,td_window,fade_struct);
+            [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initialization_Op(sys_par,tx_par,ts_par,est_par,td_window,fade_struct);
     end
     
     %Set random seed
@@ -184,10 +194,10 @@ for kk = 1:size(indv.range,2)
         
         %display(indv.str(indv.option)+' & block index  '+num2str(indv.range(kk))+'_'+num2str(ii));
         
-        [data.const_data data.dec_data, data.bit_data]=block_sym_mapping(sys_par.ndata,tx_par);% generate data block
+        [data.const_data data.dec_data, data.bit_data]=block_sym_mapping(sys_par.ndata,tx_par,ts_par,1);% generate data block
         trans_block = zeros(1,sys_par.tblock);
         trans_block(reshape(pilot.position.',1,[])) = reshape(pilot.clusters_symbol.',1,[]);
-        trans_block(data.position) = data.const_data;
+        trans_block(data.position) = data.const_data*sqrt(data.power);
         trans_block = trans_block.';%column vector
         
         noise_block=sqrt(snr.noise_pwr/2)*(randn(1,sys_par.tblock)+1j*randn(1,sys_par.tblock));
@@ -247,25 +257,25 @@ for kk = 1:size(indv.range,2)
             
             switch(rx_par.type)
                 case(1) %IBDFE_TV_T1C1
-                    [data.hat_dec data.hat_bit]=IBDFE_TV_T1C1(sys_par,tx_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
+                    [data.hat_dec data.hat_bit]=IBDFE_TV_T1C1(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
                 case(2) %IBDFE_TV_T1C1(Ideal Feedback)
-                    [data.hat_dec data.hat_bit]=IBDFE_TV_T1C1_Ideal(sys_par,tx_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);
+                    [data.hat_dec data.hat_bit]=IBDFE_TV_T1C1_Ideal(sys_par,tx_par,ts_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);
                 case(3) %IBDFE_TV_T2C1
-                    [data.hat_dec data.hat_bit]=IBDFE_TV_T2C1(sys_par,tx_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
+                    [data.hat_dec data.hat_bit]=IBDFE_TV_T2C1(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
                 case(4) %IBDFE_TV_T2C1(Ideal Feedback)
-                    [data.hat_dec data.hat_bit]=IBDFE_TV_T2C1_Ideal(sys_par,tx_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);      
+                    [data.hat_dec data.hat_bit]=IBDFE_TV_T2C1_Ideal(sys_par,tx_par,ts_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);      
                 case(5) %IBDFE_TV_T2C1_Quasibanded
-                    [data.hat_dec data.hat_bit] = IBDFE_TV_T2C1_Quasibanded(sys_par,tx_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
+                    [data.hat_dec data.hat_bit] = IBDFE_TV_T2C1_Quasibanded(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
                 case(6) %IBDFE_TV_T2C1_Quasibanded(Ideal Feedback)
-                    [data.hat_dec data.hat_bit]=IBDFE_TV_T2C1_Quasibanded_Ideal(sys_par,tx_par,rx_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);
+                    [data.hat_dec data.hat_bit]=IBDFE_TV_T2C1_Quasibanded_Ideal(sys_par,tx_par,ts_par,rx_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);
                 case(7) %IBDFE_TV_T3C1
-                    [data.hat_dec data.hat_bit]=IBDFE_TV_T3C1(sys_par,tx_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
+                    [data.hat_dec data.hat_bit]=IBDFE_TV_T3C1(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
                 case(8) %IBDFE_TV_T3C1(Ideal Feedback)
-                    [data.hat_dec data.hat_bit]=IBDFE_TV_T3C1_Ideal(sys_par,tx_par,rx_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);
+                    [data.hat_dec data.hat_bit]=IBDFE_TV_T3C1_Ideal(sys_par,tx_par,ts_par,rx_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);
                 case(9) %IBDFE_TI
-                     [data.hat_dec data.hat_bit] = IBDFE_TI(sys_par,tx_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
+                     [data.hat_dec data.hat_bit] = IBDFE_TI(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
                 case(10)
-                     [data.hat_dec data.hat_bit] = Zero_Force(sys_par,tx_par,rx_par,h,y,snr.noise_pwr,pilot,data,w);
+                     [data.hat_dec data.hat_bit] = Zero_Force(sys_par,tx_par,ts_par,rx_par,h,y,snr.noise_pwr,pilot,data,w);
             end% end rx_par.type
 
             dv.sym_error_count(:,1) = dv.sym_error_count(:,1) + sum((data.hat_dec-data.dec_data)~=0,2);

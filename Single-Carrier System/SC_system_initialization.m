@@ -1,4 +1,4 @@
-function [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initialization(sys_par,tx_par,est_par,td_window,fade_struct)
+function [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initialization(sys_par,tx_par,ts_par,est_par,td_window,fade_struct)
 
     %window generate
     w = window_design(sys_par.tblock,td_window.Q,fade_struct.nor_fd,td_window.type);
@@ -15,6 +15,9 @@ function [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initializ
     end
     U = diag(w)*U; %let the basis matrix absorb the-time domain window
     U = orth(U);
+    % Equal power allocation
+    pilot.power = 1;
+    data.power = 1;
     
     %Calculate the starting index and length of each cluster(Pg,Dg,Og)
     %Then the positions are also calculated
@@ -48,12 +51,12 @@ function [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initializ
     randn('state',sys_par.pilot_random_seed);
      switch(sys_par.pilot_scheme)
         case 1 %use random constellation points as pilot
-            [const_pn dec_pn bit_pn] = block_sym_mapping(sys_par.nts,tx_par);
-            pilot.clusters_symbol = reshape(const_pn,(sys_par.P+1),sys_par.G).';%gth row is the pilot symbol of gth cluster
+            [const_pn dec_pn bit_pn] = block_sym_mapping(sys_par.nts,tx_par,ts_par,2);
+            pilot.clusters_symbol = reshape(sqrt(pilot.power)*const_pn,(sys_par.P+1),sys_par.G).';%gth row is the pilot symbol of gth cluster
             pilot.clusters_dec = reshape(dec_pn,(sys_par.P+1),sys_par.G).';
         case 2 %only the middle pilot is nonzero pilot, and the average energy is same as data symbol
             nonzero_pilot_symbol_num = sys_par.G;        
-            [const_pn dec_pn bit_pn]=block_sym_mapping(nonzero_pilot_symbol_num,tx_par);% generate TS seq (all blocks have same TS) %ts_par=1
+            [const_pn dec_pn bit_pn]=block_sym_mapping(nonzero_pilot_symbol_num,tx_par,ts_par,2);% generate TS seq (all blocks have same TS) %ts_par=1
             pilot.clusters_symbol = [zeros(sys_par.G,floor((sys_par.P+1)/2)) const_pn.' zeros(sys_par.G,floor((sys_par.P+1)/2))];%each row is a pilot cluster
             pilot.clusters_symbol = pilot.clusters_symbol*sqrt(sys_par.P+1);
             pilot.clusters_dec = [zeros(sys_par.G,floor((sys_par.P+1)/2)) dec_pn.' zeros(sys_par.G,floor((sys_par.P+1)/2))];%each row is a pilot cluster

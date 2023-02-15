@@ -1,4 +1,4 @@
-function [data_hat_dec data_hat_bit]=IBDFE_TV_T2C1_Quasibanded_Ideal(sys_par,tx_par,rx_par,H,Y,trans_block_FD,noise_pwr,pilot,data,w)
+function [data_hat_dec data_hat_bit]=IBDFE_TV_T2C1_Quasibanded_Ideal(sys_par,tx_par,ts_par,rx_par,H,Y,trans_block_FD,noise_pwr,pilot,data,w)
 
     signal_pwr=1;
     decision_pwr=1;
@@ -16,11 +16,11 @@ function [data_hat_dec data_hat_bit]=IBDFE_TV_T2C1_Quasibanded_Ideal(sys_par,tx_
 
     %Symbol Slicing
     for ii=1:size(data.position,2)
-        [data_hat_dec(1,ii) data_hat_const(ii)] = sc_symbol_slicing(data_temp(ii),tx_par);
+        [data_hat_dec(n,ii) data_hat_const(ii)] = sc_symbol_slicing(data_temp(ii),tx_par,data.power);
     end%end ii=1:sys_par.ndata
     
     for ii=1:size(reshape(pilot.position.',1,[]),2)
-        [pn_hat_dec(1,ii) pn_hat_const(ii)] = sc_symbol_slicing(pn_temp(ii),tx_par);
+        [pn_hat_dec(n,ii) pn_hat_const(ii)] = sc_symbol_slicing(data_temp(ii),ts_par,pilot.power);
     end%end ii=1:sys_par.nts
     
     %Translate to bits
