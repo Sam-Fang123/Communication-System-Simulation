@@ -63,7 +63,7 @@ for n=1:rx_par.iteration
     end%end ii=1:sys_par.ndata
     
     for ii=1:size(reshape(pilot.position.',1,[]),2)
-        [pn_hat_dec(n,ii) pn_hat_const(ii)] = sc_symbol_slicing(data_temp(ii),ts_par,pilot.power);
+        [pn_hat_dec(n,ii) pn_hat_const(ii)] = sc_symbol_slicing(pn_temp(ii),ts_par,pilot.power);
     end%end ii=1:sys_par.nts
     
     %Translate to bits

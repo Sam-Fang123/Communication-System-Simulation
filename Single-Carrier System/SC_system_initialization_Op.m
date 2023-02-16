@@ -58,21 +58,17 @@ function [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initializ
     pilot.clusters_symbol = [zeros(sys_par.G,floor((sys_par.P+1)/2)) const_pn*ones(sys_par.G,1)*sqrt(pilot.power) zeros(sys_par.G,floor((sys_par.P+1)/2))];%each row is a pilot cluster
     pilot.clusters_dec = [zeros(sys_par.G,floor((sys_par.P+1)/2)) dec_pn*ones(sys_par.G,1) zeros(sys_par.G,floor((sys_par.P+1)/2))];%each row is a pilot cluster
     
-    pilot.clusters_symbol = [reshape(pilot.clusters_symbol.',1,[]) zeros(1,sys_par.tblock-subblock_length*sys_par.G)];
-    pilot.clusters_dec = [reshape(pilot.clusters_dec.',1,[]) zeros(1,sys_par.tblock-subblock_length*sys_par.G)];
-    
     
     %Channel Estimation Model Construct...
     %1. Once BEM model and pilots are known, the estimator matrix A is known. 
     %2. The only changing thing is the received observation vector y.
-    % 改到這邊!!!!
     A = [];
     for g = 1:sys_par.G
 
-        pg = [pilot.clusters_symbol(g,:).' ;zeros(sys_par.tblock - (sys_par.P+1),1)];
-        P_circulant = [];
+        p_start_index = sys_par.L;
+        P_circulant = zeros(pilot.cluster_length-sys_par.L);
         for p = 1:sys_par.tblock
-            P_circulant = [P_circulant circshift(pg,p-1)]; 
+            P_circulant(:,p) =  pilot.clusters_symbol(p,p_start_index+1:p_start_index+sys_par.L+1)
         end
 
         P_circulant = P_circulant(observation.position(g,:),mod(pilot.start_index(g):pilot.start_index(g) + sys_par.M -1, sys_par.tblock));
@@ -84,5 +80,7 @@ function [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initializ
         end
         A = [A;Ag];
     end
+    pilot.clusters_symbol = [reshape(pilot.clusters_symbol.',1,[]) zeros(1,sys_par.tblock-subblock_length*sys_par.G)];
+    pilot.clusters_dec = [reshape(pilot.clusters_dec.',1,[]) zeros(1,sys_par.tblock-subblock_length*sys_par.G)];
        
 end
