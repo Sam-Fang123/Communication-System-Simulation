@@ -7,8 +7,14 @@ data_hat_const = zeros(1,sys_par.ndata);
 switch(rx_par.ZF.method)
     case(1) %block-by-block ZF
         %y_dec = (conj(h.')*h)\conj(h.')*y;
-        y_dec = pinv(h)*y;             % Using pseudo-inverse to avoid the error 
-        y_data = y_dec(data.position); %causing by the matrix is close to singular or badly scaled
+        if(sys_par.tx_type ==2 )    % ZP
+            %y_dec = pinv(h(1:end-sys_par.L,1:end-sys_par.L))*y(1:end-sys_par.L);
+            y_dec = h\y;
+        else
+            y_dec = h\y;
+            %y_dec = pinv(h)*y;             
+        end
+        y_data = y_dec(data.position); 
          %Symbol Slicing
         for ii=1:size(data.position,2)
             [data_hat_dec(ii) data_hat_const(ii)] = sc_symbol_slicing(y_data(ii),tx_par,data.power);
