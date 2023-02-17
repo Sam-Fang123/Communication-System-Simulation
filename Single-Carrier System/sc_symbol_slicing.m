@@ -1,6 +1,6 @@
 % z: decision variable
 % hc: cursor channel coefficient
-function [sym_det_dec sym_det_const]= sc_symbol_slicing(z,tx_par,power,type)
+function [sym_det_dec sym_det_const]= sc_symbol_slicing(z,tx_par,power)
 
     [const_table] = sc_gen_tables(tx_par);
     eu_dist = abs(z/sqrt(power)-const_table);

@@ -1,5 +1,5 @@
 
-function [data_hat_dec data_hat_bit] = Zero_Force(sys_par,tx_par,rx_par,h,y,noise_pwr,pilot,data,w)
+function [data_hat_dec data_hat_bit] = Zero_Force(sys_par,tx_par,ts_par,rx_par,h,y,noise_pwr,pilot,data,w)
 
 data_hat_dec = zeros(1,sys_par.ndata);
 data_hat_const = zeros(1,sys_par.ndata);
@@ -11,7 +11,7 @@ switch(rx_par.ZF.method)
         y_data = y_dec(data.position); %causing by the matrix is close to singular or badly scaled
          %Symbol Slicing
         for ii=1:size(data.position,2)
-            [data_hat_dec(ii) data_hat_const(ii)] = sc_symbol_slicing(y_data(ii),tx_par);
+            [data_hat_dec(ii) data_hat_const(ii)] = sc_symbol_slicing(y_data(ii),tx_par,data.power);
         end%end ii=1:sys_par.ndata
         
         %Translate to bits
@@ -27,7 +27,7 @@ switch(rx_par.ZF.method)
             e_shift = circshift(e,data.position(ii)-1);
             W = pinv(conj(h.'))*e_shift;
             y_data = conj(W.')*y;
-            [data_hat_dec(ii) data_hat_const(ii)] = sc_symbol_slicing(y_data,tx_par);
+            [data_hat_dec(ii) data_hat_const(ii)] = sc_symbol_slicing(y_data,tx_par,data.power);
         end
             
         for ii=1:sys_par.ndata
@@ -45,7 +45,7 @@ switch(rx_par.ZF.method)
         
         %Symbol Slicing
         for ii=1:size(data.position,2)
-            [data_hat_dec(ii) data_hat_const(ii)] = sc_symbol_slicing(y_data(ii),tx_par);
+            [data_hat_dec(ii) data_hat_const(ii)] = sc_symbol_slicing(y_data(ii),tx_par,data.power);
         end%end ii=1:sys_par.ndata
         
         %Translate to bits

@@ -30,7 +30,7 @@ function [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initializ
     observation.start_index = mod(observation.start_index-1,sys_par.tblock)+1;
     
     pilot.cluster_length = sys_par.P+1;
-    observation.cluster_length = sys_par.P - 2*est_par.l + 1;
+    observation.cluster_length  = sys_par.P + sys_par.M - 2*est_par.l;
     contaminating_data.oneside_length = sys_par.M - 1 - est_par.l;
     
     pilot.position = zeros(sys_par.G,pilot.cluster_length); %each row contains indices of pilots corresponds to gth cluster
@@ -67,11 +67,12 @@ function [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initializ
 
         p_start_index = sys_par.L;
         P_circulant = zeros(pilot.cluster_length-sys_par.L);
-        for p = 1:sys_par.tblock
-            P_circulant(:,p) =  pilot.clusters_symbol(p,p_start_index+1:p_start_index+sys_par.L+1)
+        for p = 0:sys_par.L
+            P_circulant(:,p+1) =  pilot.clusters_symbol(p+1,p_start_index+1:p_start_index+sys_par.L+1);
+            p_start_index = p_start_index-1;
         end
 
-        P_circulant = P_circulant(observation.position(g,:),mod(pilot.start_index(g):pilot.start_index(g) + sys_par.M -1, sys_par.tblock));
+        %P_circulant = P_circulant(observation.position(g,:),mod(pilot.start_index(g):pilot.start_index(g) + sys_par.M -1, sys_par.tblock));
 
         Ag = [];
         for i = 1:est_par.BEM.I

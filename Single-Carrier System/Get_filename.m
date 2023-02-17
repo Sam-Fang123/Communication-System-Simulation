@@ -15,6 +15,7 @@ switch(DE_option.type)
 end
 
 filename = filename + "_" + td_window.str(td_window.type);
+filename = filename + "_" + sys_par.tx_type_str(sys_par.tx_type);
 filename = filename + "_" + sys_par.ts_type_str(sys_par.ts_type);
 if(td_window.type == 2)
     filename = filename + "_Q=" +num2str(td_window.Q);

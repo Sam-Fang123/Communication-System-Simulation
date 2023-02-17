@@ -20,7 +20,10 @@ td_window.Q = 4;
 sys_par.ts_type_str = {'Non-optiaml','Optiaml'};
 sys_par.ts_type = 2;  % 1: Non-optiaml
                       % 2: Optiaml
-sys_par.tblock = 256; %Blocksize
+sys_par.tx_type_str = {'CP','ZP'};
+sys_par.tx_type = 2;  % 1: CP
+                      % 2: ZP
+sys_par.tblock = 128; %Blocksize
 sys_par.P = 14;%pilot cluster length: P+1, P is even
 sys_par.G = 6;%cluster number: G
 sys_par.M = 5;%CP length + 1: M
@@ -37,7 +40,7 @@ fade_struct.fading_flag=1;
 fade_struct.ch_model=3;
 fade_struct.nrms = 10;
 
-fade_struct.fd = 0.2;% Doppler frequency
+fade_struct.fd = 0;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 %% SNR parameters(Noise) Âø°T
 snr.db = 10;
@@ -128,7 +131,7 @@ rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 rx_par.IBDFE.D = 2;%For IBDFE T3C1 and T2C1_Quasibanded
 rx_par.IBDFE.first_iteration_full = 1;%For IBDFE T1C1, T3C1 ==> 1: use full block MMSE for first 
-rx_par.ZF.method = 1;   % 1:For block-by-block ZF    2:For symbol-by-symbol ZF
+rx_par.ZF.method = 1;   % 1:For block-by-block ZF    2:For symbol-by-symbol ZF   3:Symbol-by-symbol ZF
 
 %Parameter for iterative equalizer;
 rx_par.iteration = 4;
@@ -205,11 +208,17 @@ for kk = 1:size(indv.range,2)
         
         [h,h_taps] = gen_ch_imp(fade_struct, sys_par,ii);
         %[h,h_taps] = ZX_gen_ch_imp(fade_struct, sys_par,(ii-1)*(sys_par.tblock + fade_struct.ch_length));
+        if(sys_par.tx_type==2)  % ZP
+            for zz = 1:sys_par.L
+                h(zz,end-sys_par.L+zz:end) = 0;
+                h_taps(zz,end-sys_par.L+zz:end)=0;
+            end
+        end
         h = diag(w)*h;
         h_taps = diag(w)*h_taps;
         
         if(rx_par.type==10)
-            if(rank(h)~=256)    % If the channel matrix isnt full rank, it isn't invertible !!
+            if(rank(h)~=sys_par.tblock)    % If the channel matrix isnt full rank, it isn't invertible !!
                 continue        % It can not use zero forcing !!
             end
         end
@@ -224,7 +233,7 @@ for kk = 1:size(indv.range,2)
         y = h*trans_block + noise_block;
         %y = h*trans_block;  % Test the algo is correct or not
         Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
-       
+        
     
         %Channel Estimation...
         if(DE_option.estimation_on == 1)
