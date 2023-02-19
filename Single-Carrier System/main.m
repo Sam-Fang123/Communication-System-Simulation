@@ -5,7 +5,7 @@ clc;
 clear all;
 tic; %timer
 %% Options(Channel Estimation & Detection)
-DE_option.estimation_on = 0;
+DE_option.estimation_on = 1;
 DE_option.detection_on = 1;
 DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 0: Not Working
@@ -21,7 +21,7 @@ sys_par.ts_type_str = {'Non-optiaml','Optiaml'};
 sys_par.ts_type = 2;  % 1: Non-optiaml
                       % 2: Optiaml
 sys_par.tx_type_str = {'CP','ZP'};
-sys_par.tx_type = 2;  % 1: CP
+sys_par.tx_type = 1;  % 1: CP
                       % 2: ZP
 sys_par.tblock = 128; %Blocksize
 sys_par.P = 14;%pilot cluster length: P+1, P is even
@@ -206,7 +206,7 @@ for kk = 1:size(indv.range,2)
         noise_block=sqrt(snr.noise_pwr/2)*(randn(1,sys_par.tblock)+1j*randn(1,sys_par.tblock));
         noise_block = noise_block.';%column vector
         
-        [h,h_taps] = gen_ch_imp(fade_struct, sys_par,ii);
+        [h,h_taps,h_avg_pwr] = gen_ch_imp(fade_struct, sys_par,ii);
         %[h,h_taps] = ZX_gen_ch_imp(fade_struct, sys_par,(ii-1)*(sys_par.tblock + fade_struct.ch_length));
         if(sys_par.tx_type==2)  % ZP
             for zz = 1:sys_par.L
@@ -217,11 +217,11 @@ for kk = 1:size(indv.range,2)
         h = diag(w)*h;
         h_taps = diag(w)*h_taps;
         
-        if(rx_par.type==10)
-            if(rank(h)~=sys_par.tblock)    % If the channel matrix isnt full rank, it isn't invertible !!
-                continue        % It can not use zero forcing !!
-            end
-        end
+        %if(rx_par.type==10)
+        %    if(rank(h)~=sys_par.tblock)    % If the channel matrix isnt full rank, it isn't invertible !!
+        %        continue        % It can not use zero forcing !!
+        %    end
+        %end
         
         noise_block = diag(w)*noise_block;
         
@@ -249,7 +249,7 @@ for kk = 1:size(indv.range,2)
             [h_approx,h_taps_approx,c] = BEM_approximation(h, fade_struct.ch_length, est_par.BEM.Q,est_par.BEM.type,w);
             dv.BEM_MSE_count = dv.BEM_MSE_count + trace((c_est - c)*(c_est-c)');
             %dv.BEM_MSE_count = dv.BEM_MSE_count + trace((h_taps_est - h_taps_approx)*(h_taps_est - h_taps_approx)');
-        
+            
             H_est = fft(h_est,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);  
             
             %plot taps
@@ -259,6 +259,7 @@ for kk = 1:size(indv.range,2)
             end
         else
             H_est = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
+            h_est = h;
         end
         
         %Detection...
@@ -284,7 +285,7 @@ for kk = 1:size(indv.range,2)
                 case(9) %IBDFE_TI
                      [data.hat_dec data.hat_bit] = IBDFE_TI(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
                 case(10)
-                     [data.hat_dec data.hat_bit] = Zero_Force(sys_par,tx_par,ts_par,rx_par,h,y,snr.noise_pwr,pilot,data,w);
+                     [data.hat_dec data.hat_bit] = Zero_Force(sys_par,tx_par,ts_par,rx_par,h_est,y,snr.noise_pwr,pilot,data,w);
             end% end rx_par.type
 
             dv.sym_error_count(:,1) = dv.sym_error_count(:,1) + sum((data.hat_dec-data.dec_data)~=0,2);
@@ -308,13 +309,13 @@ run_time.hour=fix(run_time.total/60);
 run_time.min=run_time.total-run_time.hour*60;
 dv.run_time_str=[num2str(run_time.hour) ' hours and ' num2str(run_time.min) ' minutes'];
 %% Theoretical BEM-MSE Calculation
-if(DE_option.estimation_on == 1)
-    [dv.Theory_BEM_MSE] = Theoretical_BEM_MSE(sys_par,fade_struct,snr,est_par,tx_par,rx_par,td_window,indv);
-end
+%if(DE_option.estimation_on == 1)
+%    [dv.Theory_BEM_MSE] = Theoretical_BEM_MSE(sys_par,fade_struct,snr,est_par,tx_par,rx_par,td_window,indv);
+%end
 %% Save files
 save(filename,'indv','dv','sys_par','est_par','tx_par','rx_par','snr','fade_struct','td_window');
 disp('------------------------------------------------');
-figure(1)
+figure
 semilogy(indv.range,dv.BER(1,:),'-d');
 xlabel('SNR');
 ylabel('BER');

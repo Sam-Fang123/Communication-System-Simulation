@@ -39,6 +39,7 @@ if (fade_struct.fading_flag==1)
 %             h(m,:)=circshift(hh(m,:),-sys_par.tblock+m,2);
         end% end m=1:Nsample
         varargout{1} = h;
+        varargout{3} = avg_pwr;
     else
         error('fader model not supported yet');
     end

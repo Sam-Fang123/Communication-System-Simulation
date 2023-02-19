@@ -20,7 +20,13 @@ function [BEM_MSE] = Theoretical_BEM_MSE(sys_par,fade_struct,snr,est_par,tx_par,
         %initialization
         F = fft(eye(sys_par.tblock))/sqrt(sys_par.tblock); 
 
-        [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initialization(sys_par,tx_par,est_par,td_window,fade_struct);
+        %initialization
+        switch(sys_par.ts_type)
+            case(1) % Optiaml
+                [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initialization(sys_par,tx_par,ts_par,est_par,td_window,fade_struct);
+            case(2) % Non-optimal
+                [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initialization_Op(sys_par,tx_par,ts_par,est_par,td_window,fade_struct);
+        end
         
         switch(est_par.type)
                 case 1 %LS

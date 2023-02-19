@@ -9,10 +9,11 @@ switch(rx_par.ZF.method)
         %y_dec = (conj(h.')*h)\conj(h.')*y;
         if(sys_par.tx_type ==2 )    % ZP
             %y_dec = pinv(h(1:end-sys_par.L,1:end-sys_par.L))*y(1:end-sys_par.L);
-            y_dec = h\y;
+            y_dec = pinv(h)*y; 
+            %y_dec = h\y;
         else
-            y_dec = h\y;
-            %y_dec = pinv(h)*y;             
+            %y_dec = h\y;
+            y_dec = pinv(h)*y;             
         end
         y_data = y_dec(data.position); 
          %Symbol Slicing
