@@ -1,4 +1,4 @@
-function [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initialization(sys_par,tx_par,ts_par,est_par,td_window,fade_struct)
+function [pilot,data,observation,contaminating_data,w,U,A,Rc] = SC_system_initialization(sys_par,tx_par,ts_par,est_par,td_window,fade_struct)
 
     %window generate
     w = window_design(sys_par.tblock,td_window.Q,fade_struct.nor_fd,td_window.type);
@@ -84,5 +84,30 @@ function [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initializ
         end
         A = [A;Ag];
     end
+    
+    
+    %% Rc
+    channel_autocorrelation = besselj(0,(-(sys_par.tblock-1):(sys_par.tblock-1))*2*pi*fade_struct.nor_fd);
+                    ch_ac_matrix = zeros(sys_par.tblock,sys_par.tblock);
+                    for p = 1:sys_par.tblock
+                        element_num = p;
+                        ch_ac_matrix = ch_ac_matrix + diag(ones(1,element_num),-(p-sys_par.tblock))*channel_autocorrelation(p);
+                    end
+                    for p = sys_par.tblock+1:2*sys_par.tblock-1
+                        element_num = 2*sys_par.tblock-p; 
+                        ch_ac_matrix = ch_ac_matrix + diag(ones(1,element_num),-(p-sys_par.tblock))*channel_autocorrelation(p);
+                    end
+
+                    switch(fade_struct.ch_model)
+                        case(3)
+                            inv_nrms=1/fade_struct.nrms;
+                            var0=((1-exp(-inv_nrms))/(1-exp(-fade_struct.ch_length*inv_nrms))); % c value
+                            avg_pwr=var0*exp(-(0:fade_struct.ch_length-1)*inv_nrms);
+                        case(4)
+                            avg_pwr = 1/fade_struct.ch_length*ones(1,fade_struct.ch_length);
+                    end
+                    pseudo_U = (U'*U)\(U');
+                    Rhl_normalized = pseudo_U*diag(w)*ch_ac_matrix*diag(w')*pseudo_U';
+                    Rc = kron(Rhl_normalized,diag(avg_pwr));
        
 end

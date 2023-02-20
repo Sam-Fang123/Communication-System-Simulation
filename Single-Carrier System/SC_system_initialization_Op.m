@@ -1,4 +1,4 @@
-function [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initialization_Op(sys_par,tx_par,ts_par,est_par,td_window,fade_struct)
+function [pilot,data,observation,contaminating_data,w,U,A,Rc] = SC_system_initialization_Op(sys_par,tx_par,ts_par,est_par,td_window,fade_struct)
 
     %window generate
     w = window_design(sys_par.tblock,td_window.Q,fade_struct.nor_fd,td_window.type);
@@ -47,7 +47,9 @@ function [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initializ
     observation.position = mod(observation.position-1,sys_par.tblock)+1;
     contaminating_data.position = mod(contaminating_data.position-1,sys_par.tblock)+1;
     
-    pilot.position = [reshape(pilot.position.',1,[]) subblock_length*sys_par.G+1:sys_par.tblock];
+    if(sys_par.cpzp_type==2)    % ZP
+        pilot.position = [reshape(pilot.position.',1,[]) subblock_length*sys_par.G+1:sys_par.tblock];
+    end
     data.position = setdiff(1:sys_par.tblock, reshape(pilot.position.',1,[]));
     
     %pilot generate
@@ -68,7 +70,7 @@ function [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initializ
         p_start_index = sys_par.L;
         P_circulant = zeros(pilot.cluster_length-sys_par.L);
         for p = 0:sys_par.L
-            P_circulant(:,p+1) =  pilot.clusters_symbol(p+1,p_start_index+1:p_start_index+sys_par.L+1);
+            P_circulant(:,p+1) =  pilot.clusters_symbol(g,p_start_index+1:p_start_index+sys_par.L+1);
             p_start_index = p_start_index-1;
         end
 
@@ -81,7 +83,34 @@ function [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initializ
         end
         A = [A;Ag];
     end
-    pilot.clusters_symbol = [reshape(pilot.clusters_symbol.',1,[]) zeros(1,sys_par.tblock-subblock_length*sys_par.G)];
-    pilot.clusters_dec = [reshape(pilot.clusters_dec.',1,[]) zeros(1,sys_par.tblock-subblock_length*sys_par.G)];
+    
+    if(sys_par.cpzp_type==2)    %ZP
+        pilot.clusters_symbol = [reshape(pilot.clusters_symbol.',1,[]) zeros(1,sys_par.tblock-subblock_length*sys_par.G)];
+        pilot.clusters_dec = [reshape(pilot.clusters_dec.',1,[]) zeros(1,sys_par.tblock-subblock_length*sys_par.G)];
+    end
+    
+    %% Rc
+    channel_autocorrelation = besselj(0,(-(sys_par.tblock-1):(sys_par.tblock-1))*2*pi*fade_struct.nor_fd);
+                    ch_ac_matrix = zeros(sys_par.tblock,sys_par.tblock);
+                    for p = 1:sys_par.tblock
+                        element_num = p;
+                        ch_ac_matrix = ch_ac_matrix + diag(ones(1,element_num),-(p-sys_par.tblock))*channel_autocorrelation(p);
+                    end
+                    for p = sys_par.tblock+1:2*sys_par.tblock-1
+                        element_num = 2*sys_par.tblock-p; 
+                        ch_ac_matrix = ch_ac_matrix + diag(ones(1,element_num),-(p-sys_par.tblock))*channel_autocorrelation(p);
+                    end
+
+                    switch(fade_struct.ch_model)
+                        case(3)
+                            inv_nrms=1/fade_struct.nrms;
+                            var0=((1-exp(-inv_nrms))/(1-exp(-fade_struct.ch_length*inv_nrms))); % c value
+                            avg_pwr=var0*exp(-(0:fade_struct.ch_length-1)*inv_nrms);
+                        case(4)
+                            avg_pwr = 1/fade_struct.ch_length*ones(1,fade_struct.ch_length);
+                    end
+                    pseudo_U = (U'*U)\(U');
+                    Rhl_normalized = pseudo_U*diag(w)*ch_ac_matrix*diag(w')*pseudo_U';
+                    Rc = kron(Rhl_normalized,diag(avg_pwr));
        
 end

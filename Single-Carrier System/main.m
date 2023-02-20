@@ -20,13 +20,13 @@ td_window.Q = 4;
 sys_par.ts_type_str = {'Non-optiaml','Optiaml'};
 sys_par.ts_type = 2;  % 1: Non-optiaml
                       % 2: Optiaml
-sys_par.tx_type_str = {'CP','ZP'};
-sys_par.tx_type = 1;  % 1: CP
+sys_par.cpzp_type_str = {'CP','ZP'};
+sys_par.cpzp_type = 1;  % 1: CP
                       % 2: ZP
-sys_par.tblock = 128; %Blocksize
+sys_par.tblock = 64; %Blocksize
 sys_par.P = 14;%pilot cluster length: P+1, P is even
 sys_par.G = 6;%cluster number: G
-sys_par.M = 5;%CP length + 1: M
+sys_par.M = 8;%CP length + 1: M
 sys_par.nts = sys_par.G*(sys_par.P+1); %Number of total pilot symbols
 sys_par.ndata = sys_par.tblock - sys_par.nts; % Number of data symbols
 sys_par.bandwidth_efficiency = sys_par.ndata/sys_par.tblock*100;
@@ -37,7 +37,7 @@ sys_par.random_seed = 0;
 %% Channel parameters 硄笵把计
 fade_struct.ch_length = sys_par.M;
 fade_struct.fading_flag=1;
-fade_struct.ch_model=3;
+fade_struct.ch_model=4;
 fade_struct.nrms = 10;
 
 fade_struct.fd = 0;% Doppler frequency
@@ -46,19 +46,19 @@ fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 snr.db = 10;
 snr.noise_pwr=10^(-snr.db/10);
 %% Channel Estimator parameters(BEM) 硄笵︳代
-est_par.type_str = {'LS','BLUE'};
-est_par.type = 1;
+est_par.type_str = {'LS','BLUE','MMSE'};
+est_par.type = 3;
 
 est_par.BEM.str = ["CE-BEM","GCE-BEM","P-BEM"];
 est_par.BEM.typenum = size(est_par.BEM.str,2);
 est_par.BEM.type = 2;
-est_par.BEM.I = 5;  %number of bases
+est_par.BEM.I = 3;  %number of bases
 est_par.BEM.Q = floor(est_par.BEM.I/2);
 
 est_par.l = 4;%parameter l determines the range of observation vector used for channel estimation(l>=0, l<=(P+M-1)/2 for SC system);
 est_par.BLUE_iterative_times = 5;
 
-est_par.plot_taps = 1;%plot the taps or not
+est_par.plot_taps = 0;%plot the taps or not
 est_par.plot_taps_blockindex = 1;
 
 %% ZP把计砞﹚
@@ -69,9 +69,11 @@ if(sys_par.ts_type==2)  % Optimal training
     sys_par.G = est_par.BEM.I;
     sys_par.nts = sys_par.G*(sys_par.P+1); %Number of total pilot symbols
     sys_par.ndata = sys_par.tblock - sys_par.nts; % Number of data symbols
-    if(mod(sys_par.ndata,sys_par.G)~=0)
-        sys_par.ndata = sys_par.G*floor(sys_par.ndata/sys_par.G);
-        sys_par.nts = sys_par.tblock-sys_par.ndata;
+    if(sys_par.cpzp_type==2)
+        if(mod(sys_par.ndata,sys_par.G)~=0)
+            sys_par.ndata = sys_par.G*floor(sys_par.ndata/sys_par.G);
+            sys_par.nts = sys_par.tblock-sys_par.ndata;
+        end
     end
     sys_par.bandwidth_efficiency = sys_par.ndata/sys_par.tblock*100;
 end
@@ -96,6 +98,16 @@ ts_par.mod_type = 1; % 1: BPSK
 ts_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 ts_par.nbits_per_sym = ts_par.mod_nbits_per_sym(ts_par.mod_type);
 ts_par.pts_mod_const=2^(ts_par.nbits_per_sym); % points in modulation constellation
+
+if(sys_par.ts_type==2)  %Optimal
+    if(ts_par.mod_type~=1)
+        error('Optimal training should use BPSK pilot symbol');
+    end
+elseif(sys_par.ts_type==1)  %Non-Optimal
+    if(tx_par.mod_type~=ts_par.mod_type)
+        error('Non-optimal should use same modulation type');
+    end
+end
 
 %% Rx parameter 钡Μ狠把计
 % IBDFE (Scaling Factor removed and divide beta before slicing)
@@ -131,14 +143,13 @@ rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 rx_par.IBDFE.D = 2;%For IBDFE T3C1 and T2C1_Quasibanded
 rx_par.IBDFE.first_iteration_full = 1;%For IBDFE T1C1, T3C1 ==> 1: use full block MMSE for first 
-rx_par.ZF.method = 1;   % 1:For block-by-block ZF    2:For symbol-by-symbol ZF   3:Symbol-by-symbol ZF
 
 %Parameter for iterative equalizer;
 rx_par.iteration = 4;
 %% Independent variable 北跑
 indv.str = ["SNR(Es/No)","fd","IBDFE's eta","observation parameter l"];
 indv.option = 1;
-indv.range = 0:4:20;
+indv.range = 0:4:24;
 %% Dependent variable 莱跑跑
 %BER,SER
 if(rx_par.type == 2||rx_par.type == 4||rx_par.type == 6||rx_par.type == 10)%Ideal case ==> No Iteration
@@ -179,10 +190,12 @@ for kk = 1:size(indv.range,2)
     %initialization
     switch(sys_par.ts_type)
         case(1) % Optiaml
-            [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initialization(sys_par,tx_par,ts_par,est_par,td_window,fade_struct);
+            [pilot,data,observation,contaminating_data,w,U,A,Rc] = SC_system_initialization(sys_par,tx_par,ts_par,est_par,td_window,fade_struct);
         case(2) % Non-optimal
-            [pilot,data,observation,contaminating_data,w,U,A] = SC_system_initialization_Op(sys_par,tx_par,ts_par,est_par,td_window,fade_struct);
+            [pilot,data,observation,contaminating_data,w,U,A,Rc] = SC_system_initialization_Op(sys_par,tx_par,ts_par,est_par,td_window,fade_struct);
     end
+    
+    % Noise power will change if we use window ???
     
     %Set random seed
     rand('state',sys_par.random_seed);
@@ -208,20 +221,20 @@ for kk = 1:size(indv.range,2)
         
         [h,h_taps,h_avg_pwr] = gen_ch_imp(fade_struct, sys_par,ii);
         %[h,h_taps] = ZX_gen_ch_imp(fade_struct, sys_par,(ii-1)*(sys_par.tblock + fade_struct.ch_length));
-        if(sys_par.tx_type==2)  % ZP
-            for zz = 1:sys_par.L
-                h(zz,end-sys_par.L+zz:end) = 0;
-                h_taps(zz,end-sys_par.L+zz:end)=0;
-            end
-        end
+        %if(sys_par.cpzp_type==2)  % ZP
+        %    for zz = 1:sys_par.L
+        %        h(zz,end-sys_par.L+zz:end) = 0;
+        %        h_taps(zz,end-sys_par.L+zz:end)=0;
+        %    end
+        %end
         h = diag(w)*h;
         h_taps = diag(w)*h_taps;
         
-        %if(rx_par.type==10)
-        %    if(rank(h)~=sys_par.tblock)    % If the channel matrix isnt full rank, it isn't invertible !!
-        %        continue        % It can not use zero forcing !!
-        %    end
-        %end
+        if(rx_par.type==10)
+            if(rank(h)~=sys_par.tblock)    % If the channel matrix isnt full rank, it isn't invertible !!
+                continue        % It can not use zero forcing !!
+            end
+        end
         
         noise_block = diag(w)*noise_block;
         
@@ -244,6 +257,8 @@ for kk = 1:size(indv.range,2)
                     [h_est, h_taps_est, c_est] = Estimator_LS(sys_par,A,y_O,U);
                 case(2)%Iterative BLUE
                     [h_est, h_taps_est, c_est] = Estimator_Iterative_BLUE(sys_par,A,y_O,snr.noise_pwr,observation,contaminating_data,est_par,U,w);
+                case(3)%MMSE
+                    [h_est, h_taps_est, c_est] = Estimator_Iterative_MMSE(sys_par,A,y_O,snr.noise_pwr,observation,est_par,U,w,h_avg_pwr,Rc);
             end
             dv.CH_MSE_count = dv.CH_MSE_count + trace((h_taps_est - h_taps)*(h_taps_est - h_taps)');
             [h_approx,h_taps_approx,c] = BEM_approximation(h, fade_struct.ch_length, est_par.BEM.Q,est_par.BEM.type,w);
@@ -315,8 +330,8 @@ dv.run_time_str=[num2str(run_time.hour) ' hours and ' num2str(run_time.min) ' mi
 %% Save files
 save(filename,'indv','dv','sys_par','est_par','tx_par','rx_par','snr','fade_struct','td_window');
 disp('------------------------------------------------');
-figure
-semilogy(indv.range,dv.BER(1,:),'-d');
+figure(1)
+semilogy(indv.range,dv.BER(end,:),'-d');
 xlabel('SNR');
 ylabel('BER');
 grid on;
