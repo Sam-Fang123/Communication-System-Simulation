@@ -18,15 +18,15 @@ td_window.type =1;
 td_window.Q = 4;
 %% System parameters(Frame structure)
 sys_par.ts_type_str = {'Non-optiaml','Optiaml'};
-sys_par.ts_type = 1;  % 1: Non-optiaml
+sys_par.ts_type = 2;  % 1: Non-optiaml
                       % 2: Optiaml
 sys_par.cpzp_type_str = {'CP','ZP'};
 sys_par.cpzp_type = 1;  % 1: CP
                       % 2: ZP
-sys_par.tblock = 64; %Blocksize
+sys_par.tblock = 256; %Blocksize
 %sys_par.P = 14;%pilot cluster length: P+1, P is even
 %sys_par.G = 6;%cluster number: G
-sys_par.M = 8;%CP length + 1: M
+sys_par.M = 5;%CP length + 1: M
 %sys_par.nts = sys_par.G*(sys_par.P+1); %Number of total pilot symbols
 %sys_par.ndata = sys_par.tblock - sys_par.nts; % Number of data symbols
 %sys_par.bandwidth_efficiency = sys_par.ndata/sys_par.tblock*100;
@@ -37,10 +37,10 @@ sys_par.random_seed = 0;
 %% Channel parameters 硄笵把计
 fade_struct.ch_length = sys_par.M;
 fade_struct.fading_flag=1;
-fade_struct.ch_model=4;
+fade_struct.ch_model=3;
 fade_struct.nrms = 10;
 
-fade_struct.fd = 0;% Doppler frequency
+fade_struct.fd = 0.2;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 %% SNR parameters(Noise) 馒癟
 snr.db = 10;
@@ -66,7 +66,7 @@ est_par.plot_taps = 0;%plot the taps or not
 est_par.plot_taps_blockindex = 1;
 
 %% ZP把计砞﹚
-if(sys_par.ts_type==2||sys_par.ts_type==1)  % Optimal and Non-optimal!!
+if(sys_par.ts_type==2||sys_par.ts_type==1)  % Optimal and Non-optimal using same system!!
     sys_par.L = sys_par.M-1;
     est_par.l = sys_par.L;
     sys_par.P = 2*(sys_par.L);
@@ -95,7 +95,7 @@ tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellat
 tx_par.nblock= 100; % Number of transmitted blocks
 %% Train parameters 癡絤才じ把计
 ts_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
-ts_par.mod_type = 2; % 1: BPSK
+ts_par.mod_type = 1; % 1: BPSK
                      % 2: QPSK
                      % 3: 16QAM
                    
@@ -132,7 +132,7 @@ rx_par.type_str={
     
     'Zero_forcing'  
     };
-rx_par.type = 10;
+rx_par.type = 7;
 
 %{
 Parameters for IBDFE ==> 
