@@ -18,19 +18,19 @@ td_window.type =1;
 td_window.Q = 4;
 %% System parameters(Frame structure)
 sys_par.ts_type_str = {'Non-optiaml','Optiaml'};
-sys_par.ts_type = 2;  % 1: Non-optiaml
+sys_par.ts_type = 1;  % 1: Non-optiaml
                       % 2: Optiaml
 sys_par.cpzp_type_str = {'CP','ZP'};
 sys_par.cpzp_type = 1;  % 1: CP
                       % 2: ZP
 sys_par.tblock = 64; %Blocksize
-sys_par.P = 14;%pilot cluster length: P+1, P is even
-sys_par.G = 6;%cluster number: G
+%sys_par.P = 14;%pilot cluster length: P+1, P is even
+%sys_par.G = 6;%cluster number: G
 sys_par.M = 8;%CP length + 1: M
-sys_par.nts = sys_par.G*(sys_par.P+1); %Number of total pilot symbols
-sys_par.ndata = sys_par.tblock - sys_par.nts; % Number of data symbols
-sys_par.bandwidth_efficiency = sys_par.ndata/sys_par.tblock*100;
-sys_par.pilot_shift = 15;
+%sys_par.nts = sys_par.G*(sys_par.P+1); %Number of total pilot symbols
+%sys_par.ndata = sys_par.tblock - sys_par.nts; % Number of data symbols
+%sys_par.bandwidth_efficiency = sys_par.ndata/sys_par.tblock*100;
+%sys_par.pilot_shift = 42;
 sys_par.pilot_random_seed = 0;
 sys_par.pilot_scheme = 1;
 sys_par.random_seed = 0;
@@ -52,7 +52,11 @@ est_par.type = 3;
 est_par.BEM.str = ["CE-BEM","GCE-BEM","P-BEM"];
 est_par.BEM.typenum = size(est_par.BEM.str,2);
 est_par.BEM.type = 2;
-est_par.BEM.I = 3;  %number of bases
+if(sys_par.tblock<255)
+    est_par.BEM.I = 1;  %number of bases
+else
+    est_par.BEM.I = 5;
+end
 est_par.BEM.Q = floor(est_par.BEM.I/2);
 
 est_par.l = 4;%parameter l determines the range of observation vector used for channel estimation(l>=0, l<=(P+M-1)/2 for SC system);
@@ -62,7 +66,7 @@ est_par.plot_taps = 0;%plot the taps or not
 est_par.plot_taps_blockindex = 1;
 
 %% ZP把计砞﹚
-if(sys_par.ts_type==2)  % Optimal training
+if(sys_par.ts_type==2||sys_par.ts_type==1)  % Optimal and Non-optimal!!
     sys_par.L = sys_par.M-1;
     est_par.l = sys_par.L;
     sys_par.P = 2*(sys_par.L);
@@ -91,7 +95,7 @@ tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellat
 tx_par.nblock= 100; % Number of transmitted blocks
 %% Train parameters 癡絤才じ把计
 ts_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
-ts_par.mod_type = 1; % 1: BPSK
+ts_par.mod_type = 2; % 1: BPSK
                      % 2: QPSK
                      % 3: 16QAM
                    
@@ -149,7 +153,7 @@ rx_par.iteration = 4;
 %% Independent variable 北跑
 indv.str = ["SNR(Es/No)","fd","IBDFE's eta","observation parameter l"];
 indv.option = 1;
-indv.range = 0:4:24;
+indv.range = 0:5:25;
 %% Dependent variable 莱跑跑
 %BER,SER
 if(rx_par.type == 2||rx_par.type == 4||rx_par.type == 6||rx_par.type == 10)%Ideal case ==> No Iteration
@@ -189,9 +193,9 @@ for kk = 1:size(indv.range,2)
     
     %initialization
     switch(sys_par.ts_type)
-        case(1) % Optiaml
+        case(1) % Non-optimal
             [pilot,data,observation,contaminating_data,w,U,A,Rc] = SC_system_initialization(sys_par,tx_par,ts_par,est_par,td_window,fade_struct);
-        case(2) % Non-optimal
+        case(2) % Optimal
             [pilot,data,observation,contaminating_data,w,U,A,Rc] = SC_system_initialization_Op(sys_par,tx_par,ts_par,est_par,td_window,fade_struct);
     end
     

@@ -13,6 +13,12 @@ switch(DE_option.type)
     case(3)
         filename = filename + "D&E-mode";
 end
+switch(fade_struct.ch_model)
+    case(3)
+        filename = filename + "_No_Uni_ch";
+    case(4)
+        filename = filename + "_Uni_ch";
+end
 
 filename = filename + "_" + td_window.str(td_window.type);
 filename = filename + "_" + sys_par.cpzp_type_str(sys_par.cpzp_type);
@@ -40,5 +46,9 @@ end
 
 filename = filename + "_" + tx_par.mod_type_str(tx_par.mod_type);
 filename = filename + "_fd=" + num2str(fade_struct.fd);
+filename = filename + "_N=" + num2str(sys_par.tblock);
+filename = filename + "_I=" + num2str(est_par.BEM.I);
+filename = filename + "_M=" + num2str(sys_par.M);
 filename = filename + "_Nblock=" + num2str(tx_par.nblock);
+filename = filename + "_BW=" + num2str(sys_par.bandwidth_efficiency);
 filename = filename + ".mat";

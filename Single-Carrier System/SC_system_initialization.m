@@ -22,7 +22,7 @@ function [pilot,data,observation,contaminating_data,w,U,A,Rc] = SC_system_initia
     %Calculate the starting index and length of each cluster(Pg,Dg,Og)
     %Then the positions are also calculated
     subblock_length = floor(sys_par.tblock/sys_par.G);
-    pilot.start_index = (0:sys_par.G-1)*subblock_length + 1 + sys_par.pilot_shift;
+    pilot.start_index = (1:sys_par.G)*subblock_length-sys_par.P;
     observation.start_index = pilot.start_index + est_par.l;
     pilot.start_index = mod(pilot.start_index-1,sys_par.tblock)+1;
     observation.start_index = mod(observation.start_index-1,sys_par.tblock)+1;
