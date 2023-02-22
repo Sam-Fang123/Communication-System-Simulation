@@ -5,7 +5,7 @@ clc;
 clear all;
 tic; %timer
 %% Options(Channel Estimation & Detection)
-DE_option.estimation_on = 1;
+DE_option.estimation_on = 0;
 DE_option.detection_on = 1;
 DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 0: Not Working
@@ -153,7 +153,7 @@ rx_par.iteration = 4;
 %% Independent variable 控制變因
 indv.str = ["SNR(Es/No)","fd","IBDFE's eta","observation parameter l"];
 indv.option = 1;
-indv.range = 0:5:25;
+indv.range = 0:4:24;
 %% Dependent variable 應變變因
 %BER,SER
 if(rx_par.type == 2||rx_par.type == 4||rx_par.type == 6||rx_par.type == 10)%Ideal case ==> No Iteration

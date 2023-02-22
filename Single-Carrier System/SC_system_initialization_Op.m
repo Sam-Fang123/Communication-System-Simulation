@@ -88,6 +88,13 @@ function [pilot,data,observation,contaminating_data,w,U,A,Rc] = SC_system_initia
         pilot.clusters_symbol = [reshape(pilot.clusters_symbol.',1,[]) zeros(1,sys_par.tblock-subblock_length*sys_par.G)];
         pilot.clusters_dec = [reshape(pilot.clusters_dec.',1,[]) zeros(1,sys_par.tblock-subblock_length*sys_par.G)];
     end
+    pilot.position = reshape(pilot.position.',1,[]);
+    index = 1:sys_par.nts;
+    pilot.on_index = index(reshape((pilot.clusters_symbol~=0).',1,[]));
+    pilot.on_num = size(pilot.on_index,2);
+    pilot.off_index = reshape((pilot.clusters_symbol==0).',1,[]);
+    %pilot.off_position = pilot.position(reshape((pilot.clusters_symbol==0).',1,[]));
+    %pilot.on_position = pilot.position(reshape((pilot.clusters_symbol~=0).',1,[]));
     
     %% Rc
     channel_autocorrelation = besselj(0,(-(sys_par.tblock-1):(sys_par.tblock-1))*2*pi*fade_struct.nor_fd);

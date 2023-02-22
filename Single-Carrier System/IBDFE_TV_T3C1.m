@@ -4,8 +4,13 @@
 %  2. Three correlation estimation method are supported(1.Genie-Aided 2.Using TS 3.A Way proposed by Our Lab)
 %
 
-function [data_hat_dec data_hat_bit] = IBDFE_TV_T3C1(sys_par,tx_par,ts_par,rx_par,H,Y,noise_pwr,pilot,data,w)
+function [data_hat_dec, data_hat_bit] = IBDFE_TV_T3C1(sys_par,tx_par,ts_par,rx_par,H,Y,noise_pwr,pilot,data,w)
 
+data_hat_dec = zeros(rx_par.iteration,sys_par.ndata);
+data_hat_bit = zeros(rx_par.iteration,sys_par.ndata*tx_par.nbits_per_sym);
+data_hat_const = zeros(1,sys_par.ndata);
+pn_hat_dec = zeros(rx_par.iteration,sys_par.nts);
+pn_hat_const = zeros(1,sys_par.nts);
 for n=1:rx_par.iteration
     if (n==1)
         signal_pwr=1;
@@ -13,9 +18,9 @@ for n=1:rx_par.iteration
         cor=0;
         coreff=0;
         if(rx_par.IBDFE.first_iteration_full == 1)
-            [C B beta]=coeff_IBDFE_T2C1(sys_par,H,signal_pwr,decision_pwr,noise_pwr,cor,coreff,w); % ?? check B valid? or NaN
+            [C, B, beta]=coeff_IBDFE_T2C1(sys_par,H,signal_pwr,decision_pwr,noise_pwr,cor,coreff,w); % ?? check B valid? or NaN
         else
-            [C B beta]=coeff_IBDFE_T3C1(sys_par,H,signal_pwr,decision_pwr,noise_pwr,cor,coreff,rx_par.IBDFE.D,w);
+            [C, B, beta]=coeff_IBDFE_T3C1(sys_par,H,signal_pwr,decision_pwr,noise_pwr,cor,coreff,rx_par.IBDFE.D,w);
         end
         
         S_temp = C*Y;  % Y is a column vector (ok... here B is not involved. Thus, B being NaN is OK.)         
@@ -45,7 +50,7 @@ for n=1:rx_par.iteration
             coreff=1;
         end
         
-        [C B beta]=coeff_IBDFE_T3C1(sys_par,H,signal_pwr,decision_pwr,noise_pwr,cor,coreff,rx_par.IBDFE.D,w);
+        [C, B, beta]=coeff_IBDFE_T3C1(sys_par,H,signal_pwr,decision_pwr,noise_pwr,cor,coreff,rx_par.IBDFE.D,w);
         hc = beta;     
         S_temp=C*Y+B*S_dec;
     end%end if (n==1)
@@ -58,13 +63,23 @@ for n=1:rx_par.iteration
     pn_temp=s_temp(reshape(pilot.position.',1,[])); %TS
     
     %Symbol Slicing
-    for ii=1:size(data.position,2)
-        [data_hat_dec(n,ii) data_hat_const(ii)] = sc_symbol_slicing(data_temp(ii),tx_par,data.power);
+    for ii=1:sys_par.ndata
+        [data_hat_dec(n,ii), data_hat_const(ii)] = sc_symbol_slicing(data_temp(ii),tx_par,data.power);
     end%end ii=1:sys_par.ndata
     
-    for ii=1:size(reshape(pilot.position.',1,[]),2)
-        [pn_hat_dec(n,ii) pn_hat_const(ii)] = sc_symbol_slicing(pn_temp(ii),ts_par,pilot.power);
-    end%end ii=1:sys_par.nts
+    if(sys_par.ts_type == 1)    % Non-optimal
+        for ii=1:sys_par.nts
+            [pn_hat_dec(n,ii), pn_hat_const(ii)] = sc_symbol_slicing(pn_temp(ii),ts_par,pilot.power);
+        end%end ii=1:sys_par.nts
+    else    % Optimal
+        pn_hat_dec(pilot.off_index) = 0;
+        pn_hat_const(pilot.off_index) = 0;
+        for ii=1:pilot.on_num
+            kk = pilot.on_index(ii);
+            [pn_hat_dec(n,kk), pn_hat_const(kk)] = sc_symbol_slicing(pn_temp(kk),ts_par,pilot.power);
+        end  
+    end
+  
     
     %Translate to bits
     for ii=1:sys_par.ndata
@@ -72,8 +87,8 @@ for n=1:rx_par.iteration
     end% end ii=1:sys_par.ndata
     
     s_dec = zeros(sys_par.tblock,1);
-    s_dec(data.position) = data_hat_const;
-    s_dec(reshape(pilot.position.',1,[])) = pn_hat_const;
+    s_dec(data.position) = data_hat_const*sqrt(data.power);
+    s_dec(reshape(pilot.position.',1,[])) = pn_hat_const*sqrt(pilot.power);
     S_dec=fft(s_dec,sys_par.tblock)./sqrt(sys_par.tblock);
     
     S_est = S_temp;  % estimate of S; used for correlation estimation.
