@@ -16,7 +16,7 @@ function [pilot,data,observation,contaminating_data,w,U,A,Rc] = SC_system_initia
     U = diag(w)*U; %let the basis matrix absorb the-time domain window
     U = orth(U);
     % Optimal power allocation
-    power_allocation = 1/(1+sqrt((sys_par.L+1)/(sys_par.ndata/sys_par.G)));
+    power_allocation = 1/(1+sqrt((sys_par.L+1)/floor(sys_par.ndata/sys_par.G)))
     %power_allocation=0.5;
     pilot.power = sys_par.tblock*(1-power_allocation)/sys_par.G;
     data.power = sys_par.tblock*power_allocation/sys_par.ndata;
