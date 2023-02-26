@@ -26,7 +26,7 @@ sys_par.cpzp_type = 2;  % 1: CP
 sys_par.tblock = 64; %Blocksize
 %sys_par.P = 14;%pilot cluster length: P+1, P is even
 %sys_par.G = 6;%cluster number: G
-sys_par.M = 3;%CP length + 1: M
+sys_par.M = 5;%CP length + 1: M
 %sys_par.nts = sys_par.G*(sys_par.P+1); %Number of total pilot symbols
 %sys_par.ndata = sys_par.tblock - sys_par.nts; % Number of data symbols
 %sys_par.bandwidth_efficiency = sys_par.ndata/sys_par.tblock*100;
@@ -40,7 +40,7 @@ fade_struct.fading_flag=1;
 fade_struct.ch_model=3;
 fade_struct.nrms = 10;
 
-fade_struct.fd = 0.2;% Doppler frequency
+fade_struct.fd = 0;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 %% SNR parameters(Noise) Âø°T
 snr.db = 10;
