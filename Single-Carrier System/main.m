@@ -5,7 +5,7 @@ clc;
 clear all;
 tic; %timer
 %% Options(Channel Estimation & Detection)
-DE_option.estimation_on = 0;
+DE_option.estimation_on = 1;
 DE_option.detection_on = 1;
 DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 0: Not Working
@@ -40,7 +40,7 @@ fade_struct.fading_flag=1;
 fade_struct.ch_model=3;
 fade_struct.nrms = 10;
 
-fade_struct.fd = 1;% Doppler frequency
+fade_struct.fd = 0.2;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 %% SNR parameters(Noise) Âø°T
 snr.db = 10;
@@ -53,7 +53,7 @@ est_par.BEM.str = ["CE-BEM","GCE-BEM","P-BEM"];
 est_par.BEM.typenum = size(est_par.BEM.str,2);
 est_par.BEM.type = 2;
 if(sys_par.tblock<255)
-    est_par.BEM.I = 5;  %number of bases
+    est_par.BEM.I = 3;  %number of bases
 else
     est_par.BEM.I = 5;
 end
