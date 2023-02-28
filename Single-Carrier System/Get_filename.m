@@ -19,7 +19,11 @@ switch(fade_struct.ch_model)
     case(4)
         filename = filename + "_Uni_ch";
 end
-%filename = filename + "_" + "Equal";
+
+if(sys_par.equal_power==1)
+    filename = filename + "_" + "Equalpower";
+end
+
 filename = filename + "_" + td_window.str(td_window.type);
 filename = filename + "_" + sys_par.cpzp_type_str(sys_par.cpzp_type);
 filename = filename + "_" + sys_par.ts_type_str(sys_par.ts_type);

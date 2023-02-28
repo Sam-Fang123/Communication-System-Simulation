@@ -5,7 +5,7 @@ clc;
 clear all;
 tic; %timer
 %% Options(Channel Estimation & Detection)
-DE_option.estimation_on = 0;
+DE_option.estimation_on = 1;
 DE_option.detection_on = 1;
 DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 0: Not Working
@@ -23,10 +23,11 @@ sys_par.ts_type = 2;  % 1: Non-optiaml
 sys_par.cpzp_type_str = {'CP','ZP'};
 sys_par.cpzp_type = 2;  % 1: CP
                       % 2: ZP
+sys_par.equal_power = 0;    % 1: On
 sys_par.tblock = 64; %Blocksize
 %sys_par.P = 14;%pilot cluster length: P+1, P is even
 %sys_par.G = 6;%cluster number: G
-sys_par.M = 5;%CP length + 1: M
+sys_par.M = 4;%CP length + 1: M
 %sys_par.nts = sys_par.G*(sys_par.P+1); %Number of total pilot symbols
 %sys_par.ndata = sys_par.tblock - sys_par.nts; % Number of data symbols
 %sys_par.bandwidth_efficiency = sys_par.ndata/sys_par.tblock*100;
@@ -40,7 +41,7 @@ fade_struct.fading_flag=1;
 fade_struct.ch_model=3;
 fade_struct.nrms = 10;
 
-fade_struct.fd = 0.2;% Doppler frequency
+fade_struct.fd = 1;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 %% SNR parameters(Noise) Âø°T
 snr.db = 10;
@@ -53,7 +54,7 @@ est_par.BEM.str = ["CE-BEM","GCE-BEM","P-BEM"];
 est_par.BEM.typenum = size(est_par.BEM.str,2);
 est_par.BEM.type = 2;
 if(sys_par.tblock<255)
-    est_par.BEM.I = 3;  %number of bases
+    est_par.BEM.I = 5;  %number of bases
 else
     est_par.BEM.I = 5;
 end
@@ -332,7 +333,7 @@ dv.run_time_str=[num2str(run_time.hour) ' hours and ' num2str(run_time.min) ' mi
 %    [dv.Theory_BEM_MSE] = Theoretical_BEM_MSE(sys_par,fade_struct,snr,est_par,tx_par,rx_par,td_window,indv);
 %end
 %% Save files
-save(filename,'indv','dv','sys_par','est_par','tx_par','rx_par','snr','fade_struct','td_window');
+save(filename,'indv','dv','sys_par','est_par','tx_par','rx_par','snr','fade_struct','td_window','pilot');
 disp('------------------------------------------------');
 figure(100)
 semilogy(indv.range,dv.BER(end,:),'-o');
