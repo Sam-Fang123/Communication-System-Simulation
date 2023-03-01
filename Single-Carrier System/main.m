@@ -27,7 +27,7 @@ sys_par.equal_power = 0;    % 1: On
 sys_par.tblock = 64; %Blocksize
 %sys_par.P = 14;%pilot cluster length: P+1, P is even
 %sys_par.G = 6;%cluster number: G
-sys_par.M = 4;%CP length + 1: M
+sys_par.M = 8;%CP length + 1: M
 %sys_par.nts = sys_par.G*(sys_par.P+1); %Number of total pilot symbols
 %sys_par.ndata = sys_par.tblock - sys_par.nts; % Number of data symbols
 %sys_par.bandwidth_efficiency = sys_par.ndata/sys_par.tblock*100;
@@ -38,10 +38,10 @@ sys_par.random_seed = 0;
 %% Channel parameters 硄笵把计
 fade_struct.ch_length = sys_par.M;
 fade_struct.fading_flag=1;
-fade_struct.ch_model=3;
+fade_struct.ch_model=4;
 fade_struct.nrms = 10;
 
-fade_struct.fd = 1;% Doppler frequency
+fade_struct.fd = 0;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 %% SNR parameters(Noise) 馒癟
 snr.db = 10;
@@ -54,7 +54,7 @@ est_par.BEM.str = ["CE-BEM","GCE-BEM","P-BEM"];
 est_par.BEM.typenum = size(est_par.BEM.str,2);
 est_par.BEM.type = 2;
 if(sys_par.tblock<255)
-    est_par.BEM.I = 5;  %number of bases
+    est_par.BEM.I = 1;  %number of bases
 else
     est_par.BEM.I = 5;
 end
@@ -63,7 +63,7 @@ est_par.BEM.Q = floor(est_par.BEM.I/2);
 est_par.l = 4;%parameter l determines the range of observation vector used for channel estimation(l>=0, l<=(P+M-1)/2 for SC system);
 est_par.BLUE_iterative_times = 5;
 
-est_par.plot_taps = 0;%plot the taps or not
+est_par.plot_taps = 1;%plot the taps or not
 est_par.plot_taps_blockindex = 1;
 
 %% ZP把计砞﹚
@@ -133,7 +133,7 @@ rx_par.type_str={
     
     'Zero_forcing'  
     };
-rx_par.type = 7;
+rx_par.type = 10;
 
 %{
 Parameters for IBDFE ==> 
