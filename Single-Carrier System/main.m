@@ -21,27 +21,27 @@ sys_par.ts_type_str = {'Non-optiaml','Optiaml'};
 sys_par.ts_type = 2;  % 1: Non-optiaml
                       % 2: Optiaml
 sys_par.cpzp_type_str = {'CP','ZP'};
-sys_par.cpzp_type = 2;  % 1: CP
+sys_par.cpzp_type = 1;  % 1: CP
                       % 2: ZP
 sys_par.equal_power = 0;    % 1: On
-sys_par.tblock = 64; %Blocksize
+sys_par.tblock = 256; %Blocksize
 %sys_par.P = 14;%pilot cluster length: P+1, P is even
 %sys_par.G = 6;%cluster number: G
-sys_par.M = 8;%CP length + 1: M
+sys_par.M = 5;%CP length + 1: M
 %sys_par.nts = sys_par.G*(sys_par.P+1); %Number of total pilot symbols
 %sys_par.ndata = sys_par.tblock - sys_par.nts; % Number of data symbols
 %sys_par.bandwidth_efficiency = sys_par.ndata/sys_par.tblock*100;
-%sys_par.pilot_shift = 42;
+%sys_par.pilot_shift = 15;
 sys_par.pilot_random_seed = 0;
 sys_par.pilot_scheme = 1;
 sys_par.random_seed = 0;
 %% Channel parameters 硄笵把计
 fade_struct.ch_length = sys_par.M;
 fade_struct.fading_flag=1;
-fade_struct.ch_model=4;
+fade_struct.ch_model=3;
 fade_struct.nrms = 10;
 
-fade_struct.fd = 0;% Doppler frequency
+fade_struct.fd = 0.2;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 %% SNR parameters(Noise) 馒癟
 snr.db = 10;
@@ -54,7 +54,7 @@ est_par.BEM.str = ["CE-BEM","GCE-BEM","P-BEM"];
 est_par.BEM.typenum = size(est_par.BEM.str,2);
 est_par.BEM.type = 2;
 if(sys_par.tblock<255)
-    est_par.BEM.I = 1;  %number of bases
+    est_par.BEM.I = 3;  %number of bases
 else
     est_par.BEM.I = 5;
 end
@@ -63,7 +63,7 @@ est_par.BEM.Q = floor(est_par.BEM.I/2);
 est_par.l = 4;%parameter l determines the range of observation vector used for channel estimation(l>=0, l<=(P+M-1)/2 for SC system);
 est_par.BLUE_iterative_times = 5;
 
-est_par.plot_taps = 1;%plot the taps or not
+est_par.plot_taps = 0;%plot the taps or not
 est_par.plot_taps_blockindex = 1;
 
 %% ZP把计砞﹚
@@ -93,7 +93,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 100; % Number of transmitted blocks
+tx_par.nblock= 10; % Number of transmitted blocks
 %% Train parameters 癡絤才じ把计
 ts_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
 ts_par.mod_type = 1; % 1: BPSK
@@ -133,7 +133,7 @@ rx_par.type_str={
     
     'Zero_forcing'  
     };
-rx_par.type = 10;
+rx_par.type = 7;
 
 %{
 Parameters for IBDFE ==> 
@@ -154,7 +154,7 @@ rx_par.iteration = 4;
 %% Independent variable 北跑
 indv.str = ["SNR(Es/No)","fd","IBDFE's eta","observation parameter l"];
 indv.option = 1;
-indv.range = 0:5:25;
+indv.range = 0:4:24;
 %% Dependent variable 莱跑跑
 %BER,SER
 if(rx_par.type == 2||rx_par.type == 4||rx_par.type == 6||rx_par.type == 10)%Ideal case ==> No Iteration
@@ -209,6 +209,7 @@ for kk = 1:size(indv.range,2)
     dv.sym_error_count = zeros(size(dv.SER,1),1);
     dv.BEM_MSE_count = 0;
     dv.CH_MSE_count = 0;
+    
     
     re = zeros(sys_par.tblock,sys_par.tblock);
     for ii=1:tx_par.nblock
