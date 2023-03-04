@@ -1,14 +1,14 @@
 
 figure(1)
-semilogy(indv.range,dv.BER(end,:),'-o');
+semilogy(indv.range,dv.BER(end,:),'--o');
 xlabel('SNR (dB)');
 ylabel('average BER');
 grid on;
 hold on;
-semilogy(indv.range,dv2.BER(end,:),'-*');
-semilogy(indv.range,dv3.BER(end,:),'-');
-%semilogy(indv.range,dv4.BER(end,:),'-*');
-%semilogy(indv.range,dv5.BER(end,:),'-');
+semilogy(indv.range,dv2.BER(end,:),'--*');
+semilogy(indv.range,dv3.BER(end,:),'--');
+semilogy(indv.range,dv4.BER(end,:),'-*');
+semilogy(indv.range,dv5.BER(end,:),'-');
 
 %legend('ZP (MMSE)','ZP (Ideal)','ZP (Non-optimal)(MMSE)');
 %title('Optimal vs Non-optimal with N=256, BW eff=82.4, fd=0.2, IBDFE-T3C1')
@@ -23,5 +23,8 @@ semilogy(indv.range,dv3.BER(end,:),'-');
 %legend('MMSE','Ideal')
 %legend('LS estimator','MMSE estimator','Ideal')
 %legend('Optimal', 'Equal-powered','Ideal')
+legend('LS estimator(Non-op)','MMSE estimator(Non-op)','Ideal(Non-op)','new corr MMSE(Optimal)','new corr ideal(Optimal)');
+title('Optimal vs Non-optimal with N=256, BW eff=82.4, fd=0.2, IBDFE-T3C1')
+%legend('New corr MMSE','New corr ideal', 'MMSE','Ideal')
 xlim([0 indv.range(end)]);
 xticks(indv.range)

@@ -33,24 +33,12 @@ for n=1:rx_par.iteration
                 trans_block = zeros(sys_par.tblock,1);
                 trans_block(reshape(pilot.position.',1,[])) = reshape(pilot.clusters_symbol.',1,[]);
                 trans_block(data.position) = data.const_data;
-                if(sys_par.ts_type==1)  %Non-optimal
-                    cor=sum(trans_block.*conj(s_dec),1)/sys_par.tblock;
-                elseif(sys_par.ts_type==2)  %Optimal
-                    cor=sum(trans_block.*conj(s_dec),1)/(pilot.on_num+sys_par.ndata);
-                end
+                cor=sum(trans_block.*conj(s_dec),1)/sys_par.tblock;
             case(2)
-                 pilot_symbol = reshape(pilot.clusters_symbol.',1,[]);
-                 if(sys_par.ts_type==1)  %Non-optimal
-                    cor=rx_par.IBDFE.eta*sum(pilot_symbol.*conj(pn_hat_const),2)/sys_par.nts;
-                 elseif(sys_par.ts_type==2)  %Optimal
-                      cor=rx_par.IBDFE.eta*sum(pilot_symbol.*conj(pn_hat_const),2)/pilot.on_num;
-                 end
-            case(3)
-                if(sys_par.ts_type==1)  %Non-optimal
-                    cor=rx_par.IBDFE.eta*sum((S_est.')* conj(S_dec))/sys_par.tblock;
-                elseif(sys_par.ts_type==2)  %Optimal
-                    cor=rx_par.IBDFE.eta*sum((S_est.')* conj(S_dec))/(pilot.on_num+sys_par.ndata);
-                end
+                 pilot_symbol = reshape(pilot.clusters_symbol.',1,[]);                 
+                 cor=rx_par.IBDFE.eta*sum(pilot_symbol.*conj(pn_hat_const),2)/sys_par.nts;
+            case(3)   
+                 cor=rx_par.IBDFE.eta*sum((S_est.')* conj(S_dec))/sys_par.tblock;
             case(4)
                 error("Correlation Type 4 is for IBDFE_TI.");
             case(5)
