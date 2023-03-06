@@ -84,7 +84,11 @@ function [pilot,data,observation,contaminating_data,w,U,A,Rc] = SC_system_initia
         end
         A = [A;Ag];
     end
-    
+    observation.pos_len = reshape(observation.position.',1,[]);
+    observation.matrix = zeros(observation.cluster_length*sys_par.G,sys_par.tblock);
+    for i=1:observation.cluster_length*sys_par.G
+        observation.matrix(i,observation.pos_len(i))=1;
+    end
     
     %% Rc
     channel_autocorrelation = besselj(0,(-(sys_par.tblock-1):(sys_par.tblock-1))*2*pi*fade_struct.nor_fd);

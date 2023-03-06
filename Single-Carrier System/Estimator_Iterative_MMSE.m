@@ -1,10 +1,12 @@
 
 function [h_est, h_taps_est, c_est] = Estimator_Iterative_MMSE(sys_par,A,y_O,noise_pwr,observation,est_par,U,w,h_avg_pwr,Rc)
 
-F = fft(eye(sys_par.tblock))/sqrt(sys_par.tblock);
-windowed_noise_cov = F*diag(w)*noise_pwr*diag(w')*F';
-noise_pwr = windowed_noise_cov(1,1);
-c_est = (inv(Rc)+conj(A.')*A/noise_pwr)\(conj(A.')*y_O)/noise_pwr;
+%F = fft(eye(sys_par.tblock))/sqrt(sys_par.tblock);
+windowed_noise_cov = observation.matrix*diag(w)*noise_pwr*diag(w')*observation.matrix';
+%noise_pwr = windowed_noise_cov(1,1);
+%c_est = (inv(Rc)+conj(A.')*A/noise_pwr)\(conj(A.')*y_O)/noise_pwr;
+c_est = (A'*A+windowed_noise_cov/Rc)\(A'*y_O);
+
 h_taps_est = U*reshape(c_est,sys_par.M,[]).';
 
 h_est = [fliplr(h_taps_est) zeros(sys_par.tblock,sys_par.tblock-sys_par.M)];

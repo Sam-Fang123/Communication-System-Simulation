@@ -3,7 +3,12 @@ function [data_hat_dec data_hat_bit] = Zero_Force(sys_par,tx_par,ts_par,rx_par,h
 
 data_hat_dec = zeros(1,sys_par.ndata);
 data_hat_const = zeros(1,sys_par.ndata);
-y_dec = pinv(h)*y;             
+if(sys_par.cpzp_type==2)    %ZP
+    h_zp = h(:,1:end-sys_par.L);
+    y_dec = pinv(h_zp)*y;
+else
+    y_dec = pinv(h)*y;
+end
 y_data = y_dec(data.position); 
  %Symbol Slicing
 for ii=1:size(data.position,2)

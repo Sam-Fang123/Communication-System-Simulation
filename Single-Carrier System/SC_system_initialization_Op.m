@@ -102,6 +102,11 @@ function [pilot,data,observation,contaminating_data,w,U,A,Rc] = SC_system_initia
     %pilot.off_position = pilot.position(reshape((pilot.clusters_symbol==0).',1,[]));
     %pilot.on_position = pilot.position(reshape((pilot.clusters_symbol~=0).',1,[]));
     
+    observation.pos_len = reshape(observation.position.',1,[]);
+    observation.matrix = zeros(observation.cluster_length*sys_par.G,sys_par.tblock);
+    for i=1:observation.cluster_length*sys_par.G
+        observation.matrix(i,observation.pos_len(i))=1;
+    end
     %% Rc
     channel_autocorrelation = besselj(0,(-(sys_par.tblock-1):(sys_par.tblock-1))*2*pi*fade_struct.nor_fd);
                     ch_ac_matrix = zeros(sys_par.tblock,sys_par.tblock);
@@ -125,5 +130,6 @@ function [pilot,data,observation,contaminating_data,w,U,A,Rc] = SC_system_initia
                     pseudo_U = (U'*U)\(U');
                     Rhl_normalized = pseudo_U*diag(w)*ch_ac_matrix*diag(w')*pseudo_U';
                     Rc = kron(Rhl_normalized,diag(avg_pwr));
+                    
        
 end

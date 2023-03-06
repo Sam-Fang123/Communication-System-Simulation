@@ -5,7 +5,7 @@ clc;
 clear all;
 tic; %timer
 %% Options(Channel Estimation & Detection)
-DE_option.estimation_on = 0;
+DE_option.estimation_on = 1;
 DE_option.detection_on = 1;
 DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 0: Not Working
@@ -54,7 +54,11 @@ est_par.BEM.str = ["CE-BEM","GCE-BEM","P-BEM"];
 est_par.BEM.typenum = size(est_par.BEM.str,2);
 est_par.BEM.type = 2;
 if(sys_par.tblock<255)
-    est_par.BEM.I = 3;  %number of bases
+    if(fade_struct.fd==0)
+        est_par.BEM.I = 1;
+    else
+        est_par.BEM.I = 3;  %number of bases
+    end
 else
     est_par.BEM.I = 5;
 end
@@ -63,7 +67,7 @@ est_par.BEM.Q = floor(est_par.BEM.I/2);
 est_par.l = 4;%parameter l determines the range of observation vector used for channel estimation(l>=0, l<=(P+M-1)/2 for SC system);
 est_par.BLUE_iterative_times = 5;
 
-est_par.plot_taps = 0;%plot the taps or not
+est_par.plot_taps = 1;%plot the taps or not
 est_par.plot_taps_blockindex = 1;
 
 %% ZP把计砞﹚
@@ -93,7 +97,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 100; % Number of transmitted blocks
+tx_par.nblock= 1; % Number of transmitted blocks
 %% Train parameters 癡絤才じ把计
 ts_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
 ts_par.mod_type = 1; % 1: BPSK
