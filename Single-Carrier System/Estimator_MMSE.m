@@ -1,5 +1,5 @@
 
-function [h_est, h_taps_est, c_est] = Estimator_Iterative_MMSE(sys_par,A,y_O,noise_pwr,observation,est_par,U,w,h_avg_pwr,Rc)
+function [h_est, h_taps_est, c_est] = Estimator_MMSE(sys_par,A,y_O,noise_pwr,observation,est_par,U,w,h_avg_pwr,Rc)
 
 %F = fft(eye(sys_par.tblock))/sqrt(sys_par.tblock);
 windowed_noise_cov = observation.matrix*diag(w)*noise_pwr*diag(w')*observation.matrix';

@@ -67,7 +67,7 @@ est_par.BEM.Q = floor(est_par.BEM.I/2);
 est_par.l = 4;%parameter l determines the range of observation vector used for channel estimation(l>=0, l<=(P+M-1)/2 for SC system);
 est_par.BLUE_iterative_times = 5;
 
-est_par.plot_taps = 1;%plot the taps or not
+est_par.plot_taps = 0;%plot the taps or not
 est_par.plot_taps_blockindex = 1;
 
 %% ZP的參數設定
@@ -268,7 +268,7 @@ for kk = 1:size(indv.range,2)
                 case(2)%Iterative BLUE
                     [h_est, h_taps_est, c_est] = Estimator_Iterative_BLUE(sys_par,A,y_O,snr.noise_pwr,observation,contaminating_data,est_par,U,w);
                 case(3)%MMSE
-                    [h_est, h_taps_est, c_est] = Estimator_Iterative_MMSE(sys_par,A,y_O,snr.noise_pwr,observation,est_par,U,w,h_avg_pwr,Rc);
+                    [h_est, h_taps_est, c_est] = Estimator_MMSE(sys_par,A,y_O,snr.noise_pwr,observation,est_par,U,w,h_avg_pwr,Rc);
             end
             dv.CH_MSE_count = dv.CH_MSE_count + trace((h_taps_est - h_taps)*(h_taps_est - h_taps)');
             [h_approx,h_taps_approx,c] = BEM_approximation(h, fade_struct.ch_length, est_par.BEM.Q,est_par.BEM.type,w);
