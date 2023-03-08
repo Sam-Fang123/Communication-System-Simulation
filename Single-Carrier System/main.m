@@ -5,7 +5,7 @@ clc;
 clear all;
 tic; %timer
 %% Options(Channel Estimation & Detection)
-DE_option.estimation_on = 0;
+DE_option.estimation_on = 1;
 DE_option.detection_on = 1;
 DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 0: Not Working
@@ -14,7 +14,7 @@ DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 3: Channel Estimation And Detection Both Working
 %% Time Domain Window parameter 办跌怠耾猧竟
 td_window.str = ["No-windowing","MBAE-SOE","Tang"];
-td_window.type =3;
+td_window.type =1;
 td_window.Q = 4;
 %% System parameters(Frame structure)
 sys_par.ts_type_str = {'Non-optiaml','Optiaml'};
@@ -53,6 +53,8 @@ est_par.type = 3;
 est_par.BEM.str = ["CE-BEM","GCE-BEM","P-BEM"];
 est_par.BEM.typenum = size(est_par.BEM.str,2);
 est_par.BEM.type = 2;
+est_par.BEM.window_str = ["OW-","O-"];
+est_par.BEM.window = 1;
 if(sys_par.tblock<255)
     if(fade_struct.fd==0)
         est_par.BEM.I = 1;
@@ -97,7 +99,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 10; % Number of transmitted blocks
+tx_par.nblock= 100; % Number of transmitted blocks
 %% Train parameters 癡絤才じ把计
 ts_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
 ts_par.mod_type = 1; % 1: BPSK
@@ -261,7 +263,13 @@ for kk = 1:size(indv.range,2)
         %Channel Estimation...
         if(DE_option.estimation_on == 1)
             
-            y_O = y(reshape(observation.position.',1,[]));
+            if(est_par.BEM.window==2)   % O-basis
+                y_original = diag(w)\y;
+                y_O = y(reshape(observation.position.',1,[]));
+            else
+                y_O = y(reshape(observation.position.',1,[]));
+            end
+            
             switch(est_par.type)
                 case(1)%LS
                     [h_est, h_taps_est, c_est] = Estimator_LS(sys_par,A,y_O,U);

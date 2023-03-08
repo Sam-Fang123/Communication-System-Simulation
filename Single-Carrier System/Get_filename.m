@@ -32,7 +32,7 @@ if(td_window.type == 2)
 end
 
 if(DE_option.estimation_on == 1)
-   filename = filename + "_" + est_par.BEM.str(est_par.BEM.type) + "_" + est_par.type_str(est_par.type);
+   filename = filename+"_"+est_par.BEM.window_str(est_par.BEM.window)+ est_par.BEM.str(est_par.BEM.type) + "_" + est_par.type_str(est_par.type);
 end
 
 if(DE_option.detection_on == 1)
