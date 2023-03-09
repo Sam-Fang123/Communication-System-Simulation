@@ -14,7 +14,7 @@ DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 3: Channel Estimation And Detection Both Working
 %% Time Domain Window parameter 時域視窗濾波器
 td_window.str = ["No-windowing","MBAE-SOE","Tang"];
-td_window.type =1;
+td_window.type =3;
 td_window.Q = 4;
 %% System parameters(Frame structure)
 sys_par.ts_type_str = {'Non-optiaml','Optiaml'};
@@ -54,7 +54,7 @@ est_par.BEM.str = ["CE-BEM","GCE-BEM","P-BEM"];
 est_par.BEM.typenum = size(est_par.BEM.str,2);
 est_par.BEM.type = 2;
 est_par.BEM.window_str = ["OW-","O-"];
-est_par.BEM.window = 1;
+est_par.BEM.window = 2;
 if(sys_par.tblock<255)
     if(fade_struct.fd==0)
         est_par.BEM.I = 1;
@@ -69,7 +69,7 @@ est_par.BEM.Q = floor(est_par.BEM.I/2);
 est_par.l = 4;%parameter l determines the range of observation vector used for channel estimation(l>=0, l<=(P+M-1)/2 for SC system);
 est_par.BLUE_iterative_times = 5;
 
-est_par.plot_taps = 1;%plot the taps or not
+est_par.plot_taps = 0;%plot the taps or not
 est_par.plot_taps_blockindex = 1;
 
 %% ZP的參數設定
@@ -265,7 +265,7 @@ for kk = 1:size(indv.range,2)
             
             if(est_par.BEM.window==2)   % O-basis
                 y_original = diag(w)\y;
-                y_O = y(reshape(observation.position.',1,[]));
+                y_O = y_original(reshape(observation.position.',1,[]));
             else
                 y_O = y(reshape(observation.position.',1,[]));
             end

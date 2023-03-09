@@ -2,7 +2,8 @@
 function [w]=Tang_ODM_window(N,Q,fd)
 
 
-F = dftmtx(N)/sqrt(N);
+%F = dftmtx(N)/sqrt(N);
+F = fft(eye(N))/sqrt(N);
 B_N = [F(:,1:Q/2+1) F(:,end-Q/2+1:end)];
 Rho_BN = eye(N)-B_N*pinv(B_N);
 I = eye(N);
