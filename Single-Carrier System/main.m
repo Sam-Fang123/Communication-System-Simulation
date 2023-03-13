@@ -153,7 +153,7 @@ rx_par.IBDFE.cor_type_str={'GA cor','EST cor td', 'EST cor fd', 'TI cor_noth', '
 rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 rx_par.IBDFE.D = 2;%For IBDFE T3C1 and T2C1_Quasibanded
-rx_par.IBDFE.first_iteration_full = 1;%For IBDFE T1C1, T3C1 ==> 1: use full block MMSE for first 
+rx_par.IBDFE.first_iteration_full = 2;%For IBDFE T1C1, T3C1 ==> 1: use full block MMSE for first  2: use banded channel matrix
 
 %Parameter for iterative equalizer;
 rx_par.iteration = 4;

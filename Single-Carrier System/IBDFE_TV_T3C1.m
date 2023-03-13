@@ -19,6 +19,9 @@ for n=1:rx_par.iteration
         coreff=0;
         if(rx_par.IBDFE.first_iteration_full == 1)
             [C, B, beta]=coeff_IBDFE_T2C1(sys_par,H,signal_pwr,decision_pwr,noise_pwr,cor,coreff,w); % ?? check B valid? or NaN
+        elseif(rx_par.IBDFE.first_iteration_full == 2)  % Banded MMSE
+            % Here!!
+            [C, B, beta]=coeff_IBDFE_T2C1(sys_par,H,signal_pwr,decision_pwr,noise_pwr,cor,coreff,rx_par.IBDFE.D,w);
         else
             [C, B, beta]=coeff_IBDFE_T3C1(sys_par,H,signal_pwr,decision_pwr,noise_pwr,cor,coreff,rx_par.IBDFE.D,w);
         end

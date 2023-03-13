@@ -24,6 +24,10 @@ if(sys_par.equal_power==1)
     filename = filename + "_" + "Equalpower";
 end
 
+if(rx_par.IBDFE.first_iteration_full==2)
+    filename = filename + "_" + "1stBanded";
+end
+
 filename = filename + "_" + td_window.str(td_window.type);
 filename = filename + "_" + sys_par.cpzp_type_str(sys_par.cpzp_type);
 filename = filename + "_" + sys_par.ts_type_str(sys_par.ts_type);
