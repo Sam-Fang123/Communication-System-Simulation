@@ -35,7 +35,7 @@ legend('No window','Ideal','Tang O-GCE','Tang OW-GCE','Ideal(Tang)')
 xlim([0 indv.range(end)]);
 xticks(indv.range)
 
-
+%{
 figure(2)
 semilogy(indv.range,dv.BER(1,:),'--d');
 xlabel('SNR (dB)');
@@ -51,4 +51,4 @@ title('Optimal placement with N=256, BW eff=82.4, fd=0.2, MMSE-FD-LE')
 legend('No window','Ideal','Tang O-GCE','Tang OW-GCE','Ideal(Tang)')
 xlim([0 indv.range(end)]);
 xticks(indv.range)
-
+%}

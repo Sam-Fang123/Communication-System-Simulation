@@ -3,7 +3,7 @@ function [C B beta]=coeff_IBDFE_T2C1(sys_par,H_FD,signal_pwr,decision_pwr,noise_
 F = fft(eye(sys_par.tblock))/sqrt(sys_par.tblock);
 windowed_noise_cov = F*diag(w)*noise_pwr*diag(w')*F';
 
-K=(windowed_noise_cov/signal_pwr)+(1-coreff)*H_FD*H_FD';
+K=(windowed_noise_cov/signal_pwr)+(1-coreff)*H_FD*(H_FD');
 %L=sum(diag(H_FD'*inv(K)*H_FD),1);
 %temp=1+coreff/sys_par.tblock*L;
 %C=H_FD'*inv(K.*temp);

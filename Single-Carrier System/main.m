@@ -14,7 +14,7 @@ DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 3: Channel Estimation And Detection Both Working
 %% Time Domain Window parameter 办跌怠耾猧竟
 td_window.str = ["No-windowing","MBAE-SOE","Tang"];
-td_window.type =3;
+td_window.type =1;
 td_window.Q = 4;
 %% System parameters(Frame structure)
 sys_par.ts_type_str = {'Non-optiaml','Optiaml'};
@@ -99,7 +99,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 100; % Number of transmitted blocks
+tx_par.nblock= 10; % Number of transmitted blocks
 %% Train parameters 癡絤才じ把计
 ts_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
 ts_par.mod_type = 1; % 1: BPSK
@@ -154,7 +154,7 @@ rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 rx_par.IBDFE.D = 2;%For IBDFE T3C1 and T2C1_Quasibanded
 rx_par.IBDFE.first_iteration_full = 2;%For IBDFE T1C1, T3C1 ==> 1: use full block MMSE for first  2: use banded channel matrix
-
+rx_par.IBDFE.frist_banded_D = 2;
 %Parameter for iterative equalizer;
 rx_par.iteration = 4;
 %% Independent variable 北跑
@@ -180,6 +180,14 @@ dv.Theory_BEM_MSE = zeros(1,size(indv.range,2));
 [filename] = Get_filename(DE_option,td_window,sys_par,fade_struct,est_par,tx_par,rx_par,indv,dv);
 filename
 
+%% Banded Mask
+if(rx_par.IBDFE.first_iteration_full==2)    % 1st Banded
+    B_mtx = zeros(sys_par.tblock,sys_par.tblock);
+    for k=0:sys_par.tblock-1
+        rho = mod(k-rx_par.IBDFE.frist_banded_D-1+(1:rx_par.IBDFE.frist_banded_D*2+1),sys_par.tblock)+1;
+        B_mtx(rho,k+1) = 1;
+    end  
+end
 %% initialization
 trans_block=zeros(1,sys_par.tblock); % transmission (constellation) block
 for kk = 1:size(indv.range,2)
@@ -312,7 +320,7 @@ for kk = 1:size(indv.range,2)
                 case(6) %IBDFE_TV_T2C1_Quasibanded(Ideal Feedback)
                     [data.hat_dec data.hat_bit]=IBDFE_TV_T2C1_Quasibanded_Ideal(sys_par,tx_par,ts_par,rx_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);
                 case(7) %IBDFE_TV_T3C1
-                    [data.hat_dec data.hat_bit]=IBDFE_TV_T3C1(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
+                    [data.hat_dec data.hat_bit]=IBDFE_TV_T3C1(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w,B_mtx);
                 case(8) %IBDFE_TV_T3C1(Ideal Feedback)
                     [data.hat_dec data.hat_bit]=IBDFE_TV_T3C1_Ideal(sys_par,tx_par,ts_par,rx_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);
                 case(9) %IBDFE_TI

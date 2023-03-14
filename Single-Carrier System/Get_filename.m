@@ -24,10 +24,6 @@ if(sys_par.equal_power==1)
     filename = filename + "_" + "Equalpower";
 end
 
-if(rx_par.IBDFE.first_iteration_full==2)
-    filename = filename + "_" + "1stBanded";
-end
-
 filename = filename + "_" + td_window.str(td_window.type);
 filename = filename + "_" + sys_par.cpzp_type_str(sys_par.cpzp_type);
 filename = filename + "_" + sys_par.ts_type_str(sys_par.ts_type);
@@ -45,7 +41,10 @@ if(DE_option.detection_on == 1)
     if(rx_par.type == 1||rx_par.type == 7)
         if(rx_par.IBDFE.first_iteration_full == 1)
             filename = filename + "_1st_full";
-        end
+        elseif(rx_par.IBDFE.first_iteration_full==2)   
+            filename = filename + "_" + "1stBanded=";
+            filename = filename + num2str(rx_par.IBDFE.frist_banded_D);
+        end    
     end
     if(rx_par.type == 5||rx_par.type == 6||rx_par.type == 7||rx_par.type == 8)
         filename = filename + "_D=" + num2str(rx_par.IBDFE.D);
