@@ -19,9 +19,5 @@ for i = 0:sys_par.tblock-1
     h_est(i+1,:) = circshift(h_est(i+1,:), -(sys_par.M-1-i),2);
 end
 
-if(est_par.BEM.window==2)   % O-basis
-    h_taps_est = diag(w)*h_taps_est;
-    h_est = diag(w)*h_est;
-end
 
 

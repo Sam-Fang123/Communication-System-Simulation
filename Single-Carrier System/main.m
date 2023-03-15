@@ -5,7 +5,7 @@ clc;
 clear all;
 tic; %timer
 %% Options(Channel Estimation & Detection)
-DE_option.estimation_on = 1;
+DE_option.estimation_on = 0;
 DE_option.detection_on = 1;
 DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 0: Not Working
@@ -14,7 +14,7 @@ DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 3: Channel Estimation And Detection Both Working
 %% Time Domain Window parameter 時域視窗濾波器
 td_window.str = ["No-windowing","MBAE-SOE","Tang"];
-td_window.type =1;
+td_window.type =3;
 td_window.Q = 4;
 %% System parameters(Frame structure)
 sys_par.ts_type_str = {'Non-optiaml','Optiaml'};
@@ -155,6 +155,7 @@ rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 rx_par.IBDFE.D = 2;%For IBDFE T3C1 and T2C1_Quasibanded
 rx_par.IBDFE.first_iteration_full = 2;%For IBDFE T1C1, T3C1 ==> 1: use full block MMSE for first  2: use banded channel matrix
 rx_par.IBDFE.frist_banded_D = 2;
+td_window.Q = rx_par.IBDFE.frist_banded_D*2;
 %Parameter for iterative equalizer;
 rx_par.iteration = 4;
 %% Independent variable 控制變因
@@ -180,13 +181,15 @@ dv.Theory_BEM_MSE = zeros(1,size(indv.range,2));
 [filename] = Get_filename(DE_option,td_window,sys_par,fade_struct,est_par,tx_par,rx_par,indv,dv);
 filename
 
-%% Banded Mask
+%% Banded Mask initialization
 if(rx_par.IBDFE.first_iteration_full==2)    % 1st Banded
     B_mtx = zeros(sys_par.tblock,sys_par.tblock);
     for k=0:sys_par.tblock-1
         rho = mod(k-rx_par.IBDFE.frist_banded_D-1+(1:rx_par.IBDFE.frist_banded_D*2+1),sys_par.tblock)+1;
         B_mtx(rho,k+1) = 1;
-    end  
+    end
+elseif(rx_par.IBDFE.first_iteration_full==1)
+    B_mtx = ones(sys_par.tblock,sys_par.tblock);
 end
 %% initialization
 trans_block=zeros(1,sys_par.tblock); % transmission (constellation) block
@@ -286,6 +289,10 @@ for kk = 1:size(indv.range,2)
                 case(3)%MMSE
                     [h_est, h_taps_est, c_est] = Estimator_MMSE(sys_par,A,y_O,snr.noise_pwr,observation,est_par,U,w,h_avg_pwr,Rc);
             end
+            if(est_par.BEM.window==2)   % O-basis
+                h_taps_est = diag(w)*h_taps_est;
+                h_est = diag(w)*h_est;
+            end
             dv.CH_MSE_count = dv.CH_MSE_count + trace((h_taps_est - h_taps)*(h_taps_est - h_taps)');
             [h_approx,h_taps_approx,c] = BEM_approximation(h, fade_struct.ch_length, est_par.BEM.Q,est_par.BEM.type,w);
             dv.BEM_MSE_count = dv.BEM_MSE_count + trace((c_est - c)*(c_est-c)');
@@ -304,29 +311,29 @@ for kk = 1:size(indv.range,2)
         end
         
         %Detection...
-        if(DE_option.detection_on ==1)
+        if(DE_option.detection_on ==1)     
             
             switch(rx_par.type)
                 case(1) %IBDFE_TV_T1C1
-                    [data.hat_dec data.hat_bit]=IBDFE_TV_T1C1(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T1C1(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
                 case(2) %IBDFE_TV_T1C1(Ideal Feedback)
-                    [data.hat_dec data.hat_bit]=IBDFE_TV_T1C1_Ideal(sys_par,tx_par,ts_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T1C1_Ideal(sys_par,tx_par,ts_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);
                 case(3) %IBDFE_TV_T2C1
-                    [data.hat_dec data.hat_bit]=IBDFE_TV_T2C1(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T2C1(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w,B_mtx);
                 case(4) %IBDFE_TV_T2C1(Ideal Feedback)
-                    [data.hat_dec data.hat_bit]=IBDFE_TV_T2C1_Ideal(sys_par,tx_par,ts_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);      
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T2C1_Ideal(sys_par,tx_par,ts_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);      
                 case(5) %IBDFE_TV_T2C1_Quasibanded
-                    [data.hat_dec data.hat_bit] = IBDFE_TV_T2C1_Quasibanded(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
+                    [data.hat_dec, data.hat_bit] = IBDFE_TV_T2C1_Quasibanded(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
                 case(6) %IBDFE_TV_T2C1_Quasibanded(Ideal Feedback)
-                    [data.hat_dec data.hat_bit]=IBDFE_TV_T2C1_Quasibanded_Ideal(sys_par,tx_par,ts_par,rx_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T2C1_Quasibanded_Ideal(sys_par,tx_par,ts_par,rx_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);
                 case(7) %IBDFE_TV_T3C1
-                    [data.hat_dec data.hat_bit]=IBDFE_TV_T3C1(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w,B_mtx);
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T3C1(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w,B_mtx);
                 case(8) %IBDFE_TV_T3C1(Ideal Feedback)
-                    [data.hat_dec data.hat_bit]=IBDFE_TV_T3C1_Ideal(sys_par,tx_par,ts_par,rx_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T3C1_Ideal(sys_par,tx_par,ts_par,rx_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);
                 case(9) %IBDFE_TI
-                     [data.hat_dec data.hat_bit] = IBDFE_TI(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
+                     [data.hat_dec, data.hat_bit] = IBDFE_TI(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
                 case(10)
-                     [data.hat_dec data.hat_bit] = Zero_Force(sys_par,tx_par,ts_par,rx_par,h_est,y,snr.noise_pwr,pilot,data,w);
+                     [data.hat_dec, data.hat_bit] = Zero_Force(sys_par,tx_par,ts_par,rx_par,h_est,y,snr.noise_pwr,pilot,data,w);
             end% end rx_par.type
 
             dv.sym_error_count(:,1) = dv.sym_error_count(:,1) + sum((data.hat_dec-data.dec_data)~=0,2);

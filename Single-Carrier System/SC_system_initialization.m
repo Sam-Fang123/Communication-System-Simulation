@@ -13,7 +13,9 @@ function [pilot,data,observation,contaminating_data,w,U,A,Rc] = SC_system_initia
         case(3)
             U = BEM_P_Basis_Matrix(sys_par.tblock,est_par.BEM.Q);
     end
-    U = diag(w)*U; %let the basis matrix absorb the-time domain window
+    if(est_par.BEM.window==1)   % OW basis
+        U = diag(w)*U; %let the basis matrix absorb the-time domain window
+    end
     U = orth(U);
     % Equal power allocation
     pilot.power = 1;
@@ -111,7 +113,12 @@ function [pilot,data,observation,contaminating_data,w,U,A,Rc] = SC_system_initia
                             avg_pwr = 1/fade_struct.ch_length*ones(1,fade_struct.ch_length);
                     end
                     pseudo_U = (U'*U)\(U');
-                    Rhl_normalized = pseudo_U*diag(w)*ch_ac_matrix*diag(w')*pseudo_U';
+                    if(est_par.BEM.window==1)   % OW basis
+                        Rhl_normalized = pseudo_U*diag(w)*ch_ac_matrix*diag(w')*pseudo_U';
+                    else
+                        Rhl_normalized = pseudo_U*ch_ac_matrix*pseudo_U';
+                    end
+                    
                     Rc = kron(Rhl_normalized,diag(avg_pwr));
        
 end
