@@ -38,7 +38,7 @@ end
 if(DE_option.detection_on == 1)
     filename = filename + "_" + rx_par.type_str(rx_par.type);
     
-    if(rx_par.type == 1||rx_par.type == 7)
+    if(rx_par.type == 1||rx_par.type == 7||rx_par.type == 3)
         if(rx_par.IBDFE.first_iteration_full == 1)
             filename = filename + "_1st_full";
         elseif(rx_par.IBDFE.first_iteration_full==2)   

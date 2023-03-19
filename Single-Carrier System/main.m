@@ -5,7 +5,7 @@ clc;
 clear all;
 tic; %timer
 %% Options(Channel Estimation & Detection)
-DE_option.estimation_on = 0;
+DE_option.estimation_on = 1;
 DE_option.detection_on = 1;
 DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 0: Not Working
@@ -139,7 +139,7 @@ rx_par.type_str={
     
     'Zero_forcing'  
     };
-rx_par.type = 7;
+rx_par.type = 3;
 
 %{
 Parameters for IBDFE ==> 
@@ -154,7 +154,7 @@ rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 rx_par.IBDFE.D = 2;%For IBDFE T3C1 and T2C1_Quasibanded
 rx_par.IBDFE.first_iteration_full = 2;%For IBDFE T1C1, T3C1 ==> 1: use full block MMSE for first  2: use banded channel matrix
-rx_par.IBDFE.frist_banded_D = 2;
+rx_par.IBDFE.frist_banded_D = 4;
 td_window.Q = rx_par.IBDFE.frist_banded_D*2;
 %Parameter for iterative equalizer;
 rx_par.iteration = 4;
