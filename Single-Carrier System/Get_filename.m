@@ -41,8 +41,11 @@ if(DE_option.detection_on == 1)
     if(rx_par.type == 1||rx_par.type == 7||rx_par.type == 3)
         if(rx_par.IBDFE.first_iteration_full == 1)
             filename = filename + "_1st_full";
-        elseif(rx_par.IBDFE.first_iteration_full==2)   
+        elseif(rx_par.IBDFE.first_iteration_full==2&&rx_par.type == 7)   
             filename = filename + "_" + "1stBanded=";
+            filename = filename + num2str(rx_par.IBDFE.frist_banded_D);
+        elseif(rx_par.IBDFE.first_iteration_full==2&&rx_par.type == 3)
+            filename = filename + "_" + "AllBanded=";
             filename = filename + num2str(rx_par.IBDFE.frist_banded_D);
         end    
     end

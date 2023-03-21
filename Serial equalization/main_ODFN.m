@@ -6,7 +6,7 @@ clc;
 DE_option.detection_on = 1;
 
 %% System parameters(Frame structure)
-sys_par.tblock = 128;   %Blocksize
+sys_par.tblock = 32;   %Blocksize
 sys_par.M = 5;   %CP length + 1: M
 sys_par.pilot_random_seed = 0;
 sys_par.pilot_scheme = 1;
@@ -75,7 +75,7 @@ rx_par.SE.SC_PIC_iter = 2;
 rx_par.IBDFE.cor_type_str={'GA cor','EST cor td', 'EST cor fd', 'TI cor_noth', 'TI cor_th'};% correlation coefficient
 rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
-rx_par.IBDFE.D_type = [4];%For IBDFE T3C1 and T2C1_Quasibanded
+rx_par.IBDFE.D_type = [2];%For IBDFE T3C1 and T2C1_Quasibanded
 rx_par.IBDFE.first_iteration_full = 1;%For IBDFE T1C1, T3C1 ==> 1: use full block MMSE for first iteration
 %Parameter for iterative equalizer;
 rx_par.iteration = 4;
@@ -84,7 +84,7 @@ window_par.type_str={'no_window','Tang_window_ODM'};
 window_par.type = 2;
 window_par.Q =rx_par.IBDFE.D_type*2 ;
 window_par.banded_str = {'Not Banded','Banded','Strictly Banded'};
-window_par.banded = 3;
+window_par.banded = 2;
 
 if(window_par.type==2&&window_par.banded==1)
     error("Tang's window should use banded channel");
@@ -209,6 +209,7 @@ for kk = 1:size(indv.range,2)
                     B_mtx(rho,k+1) = 1;
                 end
                 H = H.*B_mtx;
+                [L D] = LDL_fun(H*conj(H.'),window_par.Q(nn)/2);
             elseif(window_par.banded==3)
                 % Strictly banded matrix
                 B_mtx = zeros(sys_par.tblock,sys_par.tblock);

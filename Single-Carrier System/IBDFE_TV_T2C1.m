@@ -4,7 +4,7 @@
 %  2. Three correlation estimation method are supported(1.Genie-Aided 2.Using TS 3.A Way proposed by Our Lab)
 %
 
-function [data_hat_dec data_hat_bit] = IBDFE_TV_T2C1(sys_par,tx_par,ts_par,rx_par,H,Y,noise_pwr,pilot,data,w,B_mtx)
+function [data_hat_dec data_hat_bit] = IBDFE_TV_T2C1(sys_par,tx_par,ts_par,rx_par,H,Y,noise_pwr,pilot,data,w,B_mtx,B_mtx2)
 
 data_hat_dec = zeros(rx_par.iteration,sys_par.ndata);
 data_hat_bit = zeros(rx_par.iteration,sys_par.ndata*tx_par.nbits_per_sym);
@@ -12,18 +12,17 @@ data_hat_const = zeros(1,sys_par.ndata);
 pn_hat_dec = zeros(rx_par.iteration,sys_par.nts);
 pn_hat_const = zeros(1,sys_par.nts);
 
+if(rx_par.IBDFE.first_iteration_full==2)
+    H = H.*B_mtx;
+end
+
 for n=1:rx_par.iteration
     if (n==1)
         signal_pwr=1;
         decision_pwr=0;  % ?? 0/0 in IBDFE_coeff_T2C1() ??
         cor=0;
         coreff=0; % ok
-        if(rx_par.IBDFE.first_iteration_full == 2)
-            H_b = H.*B_mtx;
-            [C B beta]=coeff_IBDFE_T2C1(sys_par,H_b,signal_pwr,decision_pwr,noise_pwr,cor,coreff,w); % ?? check B valid? or NaN
-        else
-            [C B beta]=coeff_IBDFE_T2C1(sys_par,H,signal_pwr,decision_pwr,noise_pwr,cor,coreff,w); % ?? check B valid? or NaN
-        end
+        [C B beta]=coeff_IBDFE_T2C1(sys_par,H,signal_pwr,decision_pwr,noise_pwr,cor,coreff,w,B_mtx2); % ?? check B valid? or NaN
         S_temp = C*Y;  % Y is a column vector (ok... here B is not involved. Thus, B being NaN is OK.)         
         hc = 1; % MMSE-LE criterion enforces this
     else
@@ -51,7 +50,7 @@ for n=1:rx_par.iteration
             coreff=1;
         end
         
-        [C B beta]=coeff_IBDFE_T2C1(sys_par,H,signal_pwr,decision_pwr,noise_pwr,cor,coreff,w);
+        [C B beta]=coeff_IBDFE_T2C1(sys_par,H,signal_pwr,decision_pwr,noise_pwr,cor,coreff,w,B_mtx2);
         hc = beta;     
         S_temp=C*Y+B*S_dec;
     end%end if (n==1)

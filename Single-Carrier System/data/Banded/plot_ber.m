@@ -1,5 +1,5 @@
 
-
+%{
 figure(1)
 semilogy(indv.range,dv.BER(1,:),'--o');
 xlabel('SNR (dB)');
@@ -20,7 +20,7 @@ legend('1st iteration(Estimated)','1st iteration(Ideal)','4th iteration(Estimate
 xlim([0 indv.range(end)]);
 ylim([10^-5 0.5]);
 xticks(indv.range)
-
+%}
 
 %{
 figure(1)
@@ -41,7 +41,8 @@ legend('D = 2(With Tang window Q = 2)','D = 4(With Tang window Q = 4)','full(Wit
 xlim([0 indv.range(end)]);
 ylim([10^-5 0.5]);
 xticks(indv.range)
-
+%}
+%{
 figure(2)
 semilogy(indv.range,dv.BER(end,:),'-<');
 xlabel('SNR (dB)');
@@ -50,14 +51,37 @@ grid on;
 hold on;
 semilogy(indv.range,dv2.BER(end,:),'-d');
 semilogy(indv.range,dv3.BER(end,:),'-*');
-%semilogy(indv.range,dv4.BER(end,:),'-+');
-%semilogy(indv.range,dv5.BER(end,:),'-x');
-%semilogy(indv.range,dv6.BER(end,:),'->');
+semilogy(indv.range,dv4.BER(end,:),'-+');
+semilogy(indv.range,dv5.BER(end,:),'-x');
+semilogy(indv.range,dv6.BER(end,:),'->');
 %semilogy(indv.range,dv7.BER(end,:),'-o');
 title('Optimal placement with N=256, BW eff=82.4, fd=0.2, IBDFE-T3C1 (Ideal channel)')
 %legend('D = 24','D = 48','D = 96','D = 128','full')
-legend('D = 2(With Tang window Q = 2)','D = 4(With Tang window Q = 4)','full(Without window)')
+%legend('D = 2(With Tang window Q = 2)','D = 4(With Tang window Q = 4)','full(Without window)')
+legend('D=2(Tang) T2C1(Est)','D=4(Tang) T2C1(Est)','T3C1 D=2 1st full(Est)','D=2(Tang) T2C1','D=4(Tang) T2C1','T3C1 D=2 1st full')
 xlim([0 indv.range(end)]);
 ylim([10^-5 0.5]);
 xticks(indv.range)
 %}
+
+figure(2)
+semilogy(indv.range,dv.BER(end,:),'--o');
+xlabel('SNR (dB)');
+ylabel('average BER');
+grid on;
+hold on;
+semilogy(indv.range,dv2.BER(end,:),'--d');
+semilogy(indv.range,dv3.BER(end,:),'--*');
+semilogy(indv.range,dv4.BER(end,:),'--x');
+semilogy(indv.range,dv5.BER(end,:),'-o');
+semilogy(indv.range,dv6.BER(end,:),'-d');
+semilogy(indv.range,dv7.BER(end,:),'-*');
+semilogy(indv.range,dv8.BER(end,:),'-x');
+title('Optimal placement with N=256, BW eff=82.4, fd=0.2, IBDFE-T3C1 vs IBDFE-T2C1 Banded')
+%legend('D = 24','D = 48','D = 96','D = 128','full')
+%legend('D = 2(With Tang window Q = 2)','D = 4(With Tang window Q = 4)','full(Without window)')
+legend('D=2(Tang) T2C1(Estimated)','D=4(Tang) T2C1(Estimated)','T3C1 D=2 1st full(Estimated)','T2C1 (Estimated)','D=2(Tang) T2C1','D=4(Tang) T2C1','T3C1 D=2 1st full','T2C1')
+xlim([0 indv.range(end)]);
+%ylim([10^-5 0.5]);
+xticks(indv.range)
+
