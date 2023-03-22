@@ -81,6 +81,7 @@ title('Optimal placement with N=256, BW eff=82.4, fd=0.2, IBDFE-T3C1 vs IBDFE-T2
 %legend('D = 24','D = 48','D = 96','D = 128','full')
 %legend('D = 2(With Tang window Q = 2)','D = 4(With Tang window Q = 4)','full(Without window)')
 legend('D=2(Tang) T2C1(Estimated)','D=4(Tang) T2C1(Estimated)','T3C1 D=2 1st full(Estimated)','T2C1 (Estimated)','D=2(Tang) T2C1','D=4(Tang) T2C1','T3C1 D=2 1st full','T2C1')
+%legend('D=2 T2C1(Estimated)','D=4 T2C1(Estimated)','T3C1 D=2 1st full(Estimated)','T2C1 (Estimated)','D=2 T2C1','D=4 T2C1','T3C1 D=2 1st full','T2C1')
 xlim([0 indv.range(end)]);
 %ylim([10^-5 0.5]);
 xticks(indv.range)
