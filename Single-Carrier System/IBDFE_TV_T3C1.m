@@ -4,7 +4,7 @@
 %  2. Three correlation estimation method are supported(1.Genie-Aided 2.Using TS 3.A Way proposed by Our Lab)
 %
 
-function [data_hat_dec, data_hat_bit] = IBDFE_TV_T3C1(sys_par,tx_par,ts_par,rx_par,H,Y,noise_pwr,pilot,data,w,B_mtx,B_mtx2)
+function [data_hat_dec, data_hat_bit] = IBDFE_TV_T3C1(sys_par,tx_par,ts_par,rx_par,H,Y,noise_pwr,pilot,data,w,B_mtx,B_mtx2,Y_original,H_original)
 
 data_hat_dec = zeros(rx_par.iteration,sys_par.ndata);
 data_hat_bit = zeros(rx_par.iteration,sys_par.ndata*tx_par.nbits_per_sym);
@@ -53,9 +53,9 @@ for n=1:rx_par.iteration
             coreff=1;
         end
         
-        [C, B, beta]=coeff_IBDFE_T3C1(sys_par,H,signal_pwr,decision_pwr,noise_pwr,cor,coreff,rx_par.IBDFE.D,w);
+        [C, B, beta]=coeff_IBDFE_T3C1(sys_par,H_original,signal_pwr,decision_pwr,noise_pwr,cor,coreff,rx_par.IBDFE.D,ones(1,sys_par.tblock));
         hc = beta;     
-        S_temp=C*Y+B*S_dec;
+        S_temp=C*Y_original+B*S_dec;
     end%end if (n==1)
     
     s_temp=ifft(S_temp).*sqrt(sys_par.tblock); % normalized    

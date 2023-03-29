@@ -5,7 +5,7 @@ clc;
 clear all;
 tic; %timer
 %% Options(Channel Estimation & Detection)
-DE_option.estimation_on = 0;
+DE_option.estimation_on = 1;
 DE_option.detection_on = 1;
 DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 0: Not Working
@@ -83,7 +83,7 @@ end
 
 %% Tx parameters 傳送端參數
 tx_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
-tx_par.mod_type = 3; % 1: BPSK
+tx_par.mod_type = 2; % 1: BPSK
                      % 2: QPSK
                      % 3: 16QAM
                    
@@ -128,11 +128,10 @@ rx_par.type_str={
     'IBDFE_TV_T3C1(Ideal Feedback)';
     
     'IBDFE_TI';%5 Correlation Estimator Type
-    'Zero_forcing'
     
-    'IBDFE_TV_T4C1'
+    'Zero_forcing'
     };
-rx_par.type = 3;
+rx_par.type = 7;
 
 %{
 Parameters for IBDFE ==> 
@@ -155,10 +154,10 @@ rx_par.iteration = 4;
 if(td_window.type==3&&rx_par.IBDFE.first_iteration_full==1)
     error('Tang window should use banded channel');
 end
-if(rx_par.IBDFE.first_iteration_full~=2&&rx_par.type==11)
-    error('T4C1 should use banded matrix in first iteration')
+if(rx_par.IBDFE.first_iteration_full==1&&td_window.type~=1)
+    error('Full matrix should not use windwo');
 end
-=
+
 %% Independent variable 控制變因
 indv.str = ["SNR(Es/No)","fd","IBDFE's eta","observation parameter l"];
 indv.option = 1;
@@ -267,19 +266,20 @@ for kk = 1:size(indv.range,2)
         
         trans_block_FD = fft(trans_block,sys_par.tblock)/sqrt(sys_par.tblock);%column vector
         
-        H = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock); %column vector
+        %H = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock); %column vector
         noise_block_FD=fft(noise_block,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
         
         y = h*trans_block + noise_block;
         %y = h*trans_block;  % Test the algo is correct or not
         Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
         
+        y_original = diag(w)\y;
+        Y_original = fft(y_original,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
     
         %Channel Estimation...
         if(DE_option.estimation_on == 1)
             
             if(est_par.BEM.window==2)   % O-basis
-                y_original = diag(w)\y;
                 y_O = y_original(reshape(observation.position.',1,[]));
             else
                 y_O = y(reshape(observation.position.',1,[]));
@@ -297,6 +297,9 @@ for kk = 1:size(indv.range,2)
                 h_taps_est = diag(w)*h_taps_est;
                 h_est = diag(w)*h_est;
             end
+            h_original = diag(w)\h_est;
+            H_original = fft(h_original,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock); %column vector
+            
             dv.CH_MSE_count = dv.CH_MSE_count + trace((h_taps_est - h_taps)*(h_taps_est - h_taps)');
             [h_approx,h_taps_approx,c] = BEM_approximation(h, fade_struct.ch_length, est_par.BEM.Q,est_par.BEM.type,w);
             dv.BEM_MSE_count = dv.BEM_MSE_count + trace((c_est - c)*(c_est-c)');
@@ -312,6 +315,8 @@ for kk = 1:size(indv.range,2)
         else
             H_est = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
             h_est = h;
+            h_original = diag(w)\h_est;
+            H_original = fft(h_original,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock); %column vector
         end
         
         %Detection...
@@ -331,15 +336,13 @@ for kk = 1:size(indv.range,2)
                 case(6) %IBDFE_TV_T2C1_Quasibanded(Ideal Feedback)
                     [data.hat_dec, data.hat_bit]=IBDFE_TV_T2C1_Quasibanded_Ideal(sys_par,tx_par,ts_par,rx_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);
                 case(7) %IBDFE_TV_T3C1
-                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T3C1(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2);
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T3C1(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2,Y_original,H_original);
                 case(8) %IBDFE_TV_T3C1(Ideal Feedback)
                     [data.hat_dec, data.hat_bit]=IBDFE_TV_T3C1_Ideal(sys_par,tx_par,ts_par,rx_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);
                 case(9) %IBDFE_TI
                      [data.hat_dec, data.hat_bit] = IBDFE_TI(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
                 case(10)
                      [data.hat_dec, data.hat_bit] = Zero_Force(sys_par,tx_par,ts_par,rx_par,h_est,y,snr.noise_pwr,pilot,data,w);
-                case(11)
-                     [data.hat_dec, data.hat_bit] = IBDFE_TV_T3C1(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2);
             end% end rx_par.type
 
             dv.sym_error_count(:,1) = dv.sym_error_count(:,1) + sum((data.hat_dec-data.dec_data)~=0,2);
