@@ -4,7 +4,7 @@
 %  2. Three correlation estimation method are supported(1.Genie-Aided 2.Using TS 3.A Way proposed by Our Lab)
 %
 
-function [data_hat_dec, data_hat_bit] = IBDFE_TV_T3C1(sys_par,tx_par,ts_par,rx_par,H,Y,noise_pwr,pilot,data,w,B_mtx)
+function [data_hat_dec, data_hat_bit] = IBDFE_TV_T3C1(sys_par,tx_par,ts_par,rx_par,H,Y,noise_pwr,pilot,data,w,B_mtx,B_mtx2)
 
 data_hat_dec = zeros(rx_par.iteration,sys_par.ndata);
 data_hat_bit = zeros(rx_par.iteration,sys_par.ndata*tx_par.nbits_per_sym);
@@ -18,10 +18,10 @@ for n=1:rx_par.iteration
         cor=0;
         coreff=0;
         if(rx_par.IBDFE.first_iteration_full == 1)
-            [C, B, beta]=coeff_IBDFE_T2C1(sys_par,H,signal_pwr,decision_pwr,noise_pwr,cor,coreff,w); % ?? check B valid? or NaN
+            [C, B, beta]=coeff_IBDFE_T2C1(sys_par,H,signal_pwr,decision_pwr,noise_pwr,cor,coreff,w,B_mtx2); % ?? check B valid? or NaN
         elseif(rx_par.IBDFE.first_iteration_full == 2)  % Banded MMSE
             H_b = H.*B_mtx;
-            [C, B, beta]=coeff_IBDFE_T2C1(sys_par,H_b,signal_pwr,decision_pwr,noise_pwr,cor,coreff,w); % ?? check B valid? or NaN
+            [C, B, beta]=coeff_IBDFE_T2C1(sys_par,H_b,signal_pwr,decision_pwr,noise_pwr,cor,coreff,w,B_mtx2); % ?? check B valid? or NaN
         else
             [C, B, beta]=coeff_IBDFE_T3C1(sys_par,H,signal_pwr,decision_pwr,noise_pwr,cor,coreff,rx_par.IBDFE.D,w);
         end
