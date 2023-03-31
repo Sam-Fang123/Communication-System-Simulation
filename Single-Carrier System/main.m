@@ -6,7 +6,7 @@ clear all;
 tic; %timer
 %% Options(Channel Estimation & Detection)
 DE_option.estimation_on = 1;
-DE_option.detection_on = 0;
+DE_option.detection_on = 1;
 DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 0: Not Working
 %Type 1: Estimation Mode(No Detection)
@@ -146,7 +146,7 @@ rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 rx_par.IBDFE.D = 2;%For IBDFE T3C1 and T2C1_Quasibanded
 rx_par.IBDFE.first_iteration_full = 2;%For IBDFE T1C1, T3C1==>1:use full block MMSE for first 2:use banded channel matrix(For T2C1, all iteration using banded)
-rx_par.IBDFE.frist_banded_D = 2;
+rx_par.IBDFE.frist_banded_D = 4;
 td_window.Q = rx_par.IBDFE.frist_banded_D*2;
 %Parameter for iterative equalizer;
 rx_par.iteration = 4;
@@ -268,6 +268,9 @@ for kk = 1:size(indv.range,2)
         y_w = diag(w)*y;
         Y_w = fft(y_w,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
         
+        h_w = diag(w)*h;
+        H_w = fft(h_w,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
+        
         %Channel Estimation...
         if(DE_option.estimation_on == 1)
             
@@ -323,8 +326,8 @@ for kk = 1:size(indv.range,2)
             H_est_w = fft(h_est_w,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
         end
         
-        H_b = H_est_w.*B_mtx;
-        dv.CH_banded_approx_count = dv.CH_banded_approx_count + norm(H_b-H_est_w); 
+        
+        dv.CH_banded_approx_count = dv.CH_banded_approx_count + norm(H_w-H_est_w); 
         %Detection...
         if(DE_option.detection_on ==1)     
             
