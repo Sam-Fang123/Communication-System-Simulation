@@ -327,7 +327,7 @@ for kk = 1:size(indv.range,2)
         end
         
         
-        dv.CH_banded_approx_count = dv.CH_banded_approx_count + norm(H_w-H_est_w); 
+        dv.CH_banded_approx_count = dv.CH_banded_approx_count + norm(H_w.*B_mtx-H_est_w.*B_mtx); 
         %Detection...
         if(DE_option.detection_on ==1)     
             
