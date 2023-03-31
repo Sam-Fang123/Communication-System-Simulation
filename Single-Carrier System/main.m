@@ -14,7 +14,7 @@ DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 3: Channel Estimation And Detection Both Working
 %% Time Domain Window parameter ®É°ìµøµ¡Âoªi¾¹
 td_window.str = ["No-windowing","MBAE-SOE","Tang"];
-td_window.type = 1;
+td_window.type = 3;
 td_window.Q = 4;
 %% System parameters(Frame structure)
 sys_par.ts_type_str = {'Non-optiaml','Optiaml'};
@@ -146,7 +146,7 @@ rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 rx_par.IBDFE.D = 2;%For IBDFE T3C1 and T2C1_Quasibanded
 rx_par.IBDFE.first_iteration_full = 2;%For IBDFE T1C1, T3C1==>1:use full block MMSE for first 2:use banded channel matrix(For T2C1, all iteration using banded)
-rx_par.IBDFE.frist_banded_D = 4;
+rx_par.IBDFE.frist_banded_D = 2;
 td_window.Q = rx_par.IBDFE.frist_banded_D*2;
 %Parameter for iterative equalizer;
 rx_par.iteration = 4;
@@ -175,6 +175,7 @@ end
 %MSE
 dv.BEM_MSE = zeros(1,size(indv.range,2));
 dv.CH_MSE = zeros(1,size(indv.range,2));
+dv.CH_banded_approx = zeros(1,size(indv.range,2));
 dv.Theory_BEM_MSE = zeros(1,size(indv.range,2));
 
 %% get filename
@@ -229,6 +230,7 @@ for kk = 1:size(indv.range,2)
     dv.sym_error_count = zeros(size(dv.SER,1),1);
     dv.BEM_MSE_count = 0;
     dv.CH_MSE_count = 0;
+    dv.CH_banded_approx_count = 0;
     
     
     re = zeros(sys_par.tblock,sys_par.tblock);
@@ -321,6 +323,8 @@ for kk = 1:size(indv.range,2)
             H_est_w = fft(h_est_w,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
         end
         
+        H_b = H_est_w.*B_mtx;
+        dv.CH_banded_approx_count = dv.CH_banded_approx_count + norm(H_b-H_est_w); 
         %Detection...
         if(DE_option.detection_on ==1)     
             
@@ -361,6 +365,7 @@ for kk = 1:size(indv.range,2)
     
     dv.BEM_MSE(1,kk) = dv.BEM_MSE_count/tx_par.nblock;
     dv.CH_MSE(1,kk) = dv.CH_MSE_count/tx_par.nblock;
+    dv.CH_banded_approx(1,kk) = dv.CH_banded_approx_count/tx_par.nblock;
 end% end kk = 1:size(indv.range,2);
 % execution time
 run_time.total=fix(toc/60); % unit: minute
