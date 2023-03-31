@@ -63,7 +63,7 @@ xlim([0 indv.range(end)]);
 ylim([10^-5 0.5]);
 xticks(indv.range)
 %}
-
+%{
 figure(2)
 semilogy(indv.range,dv.BER(end,:),'--*');
 xlabel('SNR (dB)');
@@ -93,8 +93,9 @@ xlim([0 indv.range(end)]);
 ylim([10^-5 0.5]);
 %ylim([10^-3 0.5])
 xticks(indv.range)
+%}
 
-%{
+
 figure(2)
 semilogy(indv.range,dv.BER(end,:),'--d');
 xlabel('SNR (dB)');
@@ -103,8 +104,8 @@ grid on;
 hold on;
 semilogy(indv.range,dv2.BER(end,:),'-d');
 title('Optimal placement with N=256, BW eff=82.4, fd=0.2,IBDFE-T2C1 Banded')
-legend('D=1(Tang) T2C1(Estimated)','D=1(Tang) T2C1(Ideal)')
+legend('D=4(Tang) T2C1(Estimated)','D=4(Tang) T2C1(Ideal)')
 xlim([0 indv.range(end)]);
-ylim([10^-3 0.5]);
+%ylim([10^-3 0.5]);
 xticks(indv.range)
-%}
+

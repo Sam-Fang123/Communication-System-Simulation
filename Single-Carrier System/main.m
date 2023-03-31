@@ -6,7 +6,7 @@ clear all;
 tic; %timer
 %% Options(Channel Estimation & Detection)
 DE_option.estimation_on = 1;
-DE_option.detection_on = 1;
+DE_option.detection_on = 0;
 DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 0: Not Working
 %Type 1: Estimation Mode(No Detection)
@@ -14,7 +14,7 @@ DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 3: Channel Estimation And Detection Both Working
 %% Time Domain Window parameter ®É°ìµøµ¡Âoªi¾¹
 td_window.str = ["No-windowing","MBAE-SOE","Tang"];
-td_window.type = 3;
+td_window.type = 1;
 td_window.Q = 4;
 %% System parameters(Frame structure)
 sys_par.ts_type_str = {'Non-optiaml','Optiaml'};
@@ -146,7 +146,7 @@ rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 rx_par.IBDFE.D = 2;%For IBDFE T3C1 and T2C1_Quasibanded
 rx_par.IBDFE.first_iteration_full = 2;%For IBDFE T1C1, T3C1==>1:use full block MMSE for first 2:use banded channel matrix(For T2C1, all iteration using banded)
-rx_par.IBDFE.frist_banded_D = 2;
+rx_par.IBDFE.frist_banded_D = 4;
 td_window.Q = rx_par.IBDFE.frist_banded_D*2;
 %Parameter for iterative equalizer;
 rx_par.iteration = 4;
@@ -253,36 +253,26 @@ for kk = 1:size(indv.range,2)
         %        h_taps(zz,end-sys_par.L+zz:end)=0;
         %    end
         %end
-        h = diag(w)*h;
-        h_taps = diag(w)*h_taps;
-        
-        if(rx_par.type==10)
-            if(rank(h)~=sys_par.tblock)    % If the channel matrix isnt full rank, it isn't invertible !!
-                continue        % It can not use zero forcing !!
-            end
-        end
-        
-        noise_block = diag(w)*noise_block;
-        
-        trans_block_FD = fft(trans_block,sys_par.tblock)/sqrt(sys_par.tblock);%column vector
+
+        %trans_block_FD = fft(trans_block,sys_par.tblock)/sqrt(sys_par.tblock);%column vector
         
         %H = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock); %column vector
-        noise_block_FD=fft(noise_block,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
+        %noise_block_FD=fft(noise_block,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
         
         y = h*trans_block + noise_block;
         %y = h*trans_block;  % Test the algo is correct or not
         Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
         
-        y_original = diag(w)\y;
-        Y_original = fft(y_original,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
-    
+        y_w = diag(w)*y;
+        Y_w = fft(y_w,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
+        
         %Channel Estimation...
         if(DE_option.estimation_on == 1)
             
             if(est_par.BEM.window==2)   % O-basis
-                y_O = y_original(reshape(observation.position.',1,[]));
-            else
                 y_O = y(reshape(observation.position.',1,[]));
+            else
+                y_O = y_w(reshape(observation.position.',1,[]));
             end
             
             switch(est_par.type)
@@ -293,30 +283,42 @@ for kk = 1:size(indv.range,2)
                 case(3)%MMSE
                     [h_est, h_taps_est, c_est] = Estimator_MMSE(sys_par,A,y_O,snr.noise_pwr,observation,est_par,U,w,h_avg_pwr,Rc);
             end
-            if(est_par.BEM.window==2)   % O-basis
-                h_taps_est = diag(w)*h_taps_est;
-                h_est = diag(w)*h_est;
-            end
-            h_original = diag(w)\h_est;
-            H_original = fft(h_original,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock); %column vector
             
-            dv.CH_MSE_count = dv.CH_MSE_count + trace((h_taps_est - h_taps)*(h_taps_est - h_taps)');
-            [h_approx,h_taps_approx,c] = BEM_approximation(h, fade_struct.ch_length, est_par.BEM.Q,est_par.BEM.type,w);
+            if(est_par.BEM.window==2)   % O-basis
+                h_taps_est_w = diag(w)*h_taps_est;
+                h_est_w = diag(w)*h_est;
+            else
+                h_taps_est_w = h_taps_est;
+                h_est_w = h_est;
+                h_est = diag(w)\h_est; 
+            end
+            
+            H_est = fft(h_est,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
+            H_est_w = fft(h_est_w,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock); 
+            
+            if(est_par.BEM.window==2)
+                dv.CH_MSE_count = dv.CH_MSE_count + trace((h_taps_est - h_taps)*(h_taps_est - h_taps)');
+            else
+                dv.CH_MSE_count = dv.CH_MSE_count + trace((h_taps_est - diag(w)*h_taps)*(h_taps_est - diag(w)*h_taps)');
+            end
+            [h_approx,h_taps_approx,c] = BEM_approximation(h, fade_struct.ch_length, est_par.BEM.Q,est_par.BEM.type,w,est_par);
             dv.BEM_MSE_count = dv.BEM_MSE_count + trace((c_est - c)*(c_est-c)');
             %dv.BEM_MSE_count = dv.BEM_MSE_count + trace((h_taps_est - h_taps_approx)*(h_taps_est - h_taps_approx)');
             
-            H_est = fft(h_est,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);  
-            
             %plot taps
             if(est_par.plot_taps == 1 && ii == est_par.plot_taps_blockindex)
-                plot_BEM_estimated_channel(sys_par,h_taps,h_taps_est,h_taps_approx);
+                if(est_par.BEM.window==2)
+                    plot_BEM_estimated_channel(sys_par,h_taps,h_taps_est,h_taps_approx);
+                else
+                    plot_BEM_estimated_channel(sys_par,diag(w)*h_taps,h_taps_est,h_taps_approx);
+                end
                 sgtitle(est_par.BEM.str(est_par.BEM.type) + " by " + est_par.type_str(est_par.type) + " Estimator ( fd = " + num2str(fade_struct.fd) + ", SNR = "+ num2str(snr.db) + ", \gamma = "+num2str(est_par.l)+" )");
             end
         else
             H_est = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
             h_est = h;
-            h_original = diag(w)\h_est;
-            H_original = fft(h_original,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock); %column vector
+            h_est_w = diag(w)*h;
+            H_est_w = fft(h_est_w,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
         end
         
         %Detection...
@@ -324,25 +326,25 @@ for kk = 1:size(indv.range,2)
             
             switch(rx_par.type)
                 case(1) %IBDFE_TV_T1C1
-                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T1C1(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T1C1(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w);
                 case(2) %IBDFE_TV_T1C1(Ideal Feedback)
-                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T1C1_Ideal(sys_par,tx_par,ts_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T1C1_Ideal(sys_par,tx_par,ts_par,H_est_w,Y_w,trans_block_FD,snr.noise_pwr,pilot,data,w);
                 case(3) %IBDFE_TV_T2C1
-                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T2C1(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2);
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T2C1(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2);
                 case(4) %IBDFE_TV_T2C1(Ideal Feedback)
-                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T2C1_Ideal(sys_par,tx_par,ts_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);      
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T2C1_Ideal(sys_par,tx_par,ts_par,H_est_w,Y_w,trans_block_FD,snr.noise_pwr,pilot,data,w);      
                 case(5) %IBDFE_TV_T2C1_Quasibanded
-                    [data.hat_dec, data.hat_bit] = IBDFE_TV_T2C1_Quasibanded(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
+                    [data.hat_dec, data.hat_bit] = IBDFE_TV_T2C1_Quasibanded(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w);
                 case(6) %IBDFE_TV_T2C1_Quasibanded(Ideal Feedback)
-                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T2C1_Quasibanded_Ideal(sys_par,tx_par,ts_par,rx_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T2C1_Quasibanded_Ideal(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,trans_block_FD,snr.noise_pwr,pilot,data,w);
                 case(7) %IBDFE_TV_T3C1
-                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T3C1(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2,Y_original,H_original);
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T3C1(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2,Y,H_est);
                 case(8) %IBDFE_TV_T3C1(Ideal Feedback)
-                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T3C1_Ideal(sys_par,tx_par,ts_par,rx_par,H_est,Y,trans_block_FD,snr.noise_pwr,pilot,data,w);
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T3C1_Ideal(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,trans_block_FD,snr.noise_pwr,pilot,data,w);
                 case(9) %IBDFE_TI
-                     [data.hat_dec, data.hat_bit] = IBDFE_TI(sys_par,tx_par,ts_par,rx_par,H_est,Y,snr.noise_pwr,pilot,data,w);
+                     [data.hat_dec, data.hat_bit] = IBDFE_TI(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w);
                 case(10)
-                     [data.hat_dec, data.hat_bit] = Zero_Force(sys_par,tx_par,ts_par,rx_par,h_est,y,snr.noise_pwr,pilot,data,w);
+                     [data.hat_dec, data.hat_bit] = Zero_Force(sys_par,tx_par,ts_par,rx_par,h_est_w,y_w,snr.noise_pwr,pilot,data,w);
             end% end rx_par.type
 
             dv.sym_error_count(:,1) = dv.sym_error_count(:,1) + sum((data.hat_dec-data.dec_data)~=0,2);
