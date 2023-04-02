@@ -6,7 +6,7 @@ clear all;
 tic; %timer
 %% Options(Channel Estimation & Detection)
 DE_option.estimation_on = 1;
-DE_option.detection_on = 1;
+DE_option.detection_on = 0;
 DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 0: Not Working
 %Type 1: Estimation Mode(No Detection)
@@ -91,7 +91,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 100; % Number of transmitted blocks
+tx_par.nblock= 5; % Number of transmitted blocks
 %% Train parameters °V½m²Å¤¸°Ñ¼Æ
 ts_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
 ts_par.mod_type = 1; % 1: BPSK
@@ -146,7 +146,7 @@ rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 rx_par.IBDFE.D = 2;%For IBDFE T3C1 and T2C1_Quasibanded
 rx_par.IBDFE.first_iteration_full = 2;%For IBDFE T1C1, T3C1==>1:use full block MMSE for first 2:use banded channel matrix(For T2C1, all iteration using banded)
-rx_par.IBDFE.frist_banded_D = 4;
+rx_par.IBDFE.frist_banded_D = 3;
 td_window.Q = rx_par.IBDFE.frist_banded_D*2;
 %Parameter for iterative equalizer;
 rx_par.iteration = 4;
@@ -328,6 +328,8 @@ for kk = 1:size(indv.range,2)
         
         
         dv.CH_banded_approx_count = dv.CH_banded_approx_count + norm(H_w.*B_mtx-H_est_w.*B_mtx); 
+        H_w_b = H_w.*B_mtx;
+        H_est_w_b = H_est_w.*B_mtx;
         %Detection...
         if(DE_option.detection_on ==1)     
             
