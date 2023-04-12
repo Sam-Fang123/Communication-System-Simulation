@@ -97,14 +97,15 @@ xticks(indv.range)
 
 
 figure(2)
-semilogy(indv.range,dv.BER(end,:),'--d');
+semilogy(indv.range,dv.BER(end,:),'-o');
 xlabel('SNR (dB)');
 ylabel('average BER');
 grid on;
 hold on;
 semilogy(indv.range,dv2.BER(end,:),'-d');
-title('Optimal placement with N=256, BW eff=82.4, fd=0.2,IBDFE-T2C1 Banded')
-legend('D=4(Tang) T2C1(Estimated)','D=4(Tang) T2C1(Ideal)')
+semilogy(indv.range,dv3.BER(end,:),'-');
+title('Optimal placement with N=256, BW eff=82.4, fd=0.2, IBDFE-T3C1 1st Banded')
+legend('D=4(Tang) O-GCE','D=4(Tang) OW-GCE','D=4 Ideal')
 xlim([0 indv.range(end)]);
 %ylim([10^-3 0.5]);
 xticks(indv.range)
