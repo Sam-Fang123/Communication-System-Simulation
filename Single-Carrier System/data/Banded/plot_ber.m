@@ -105,7 +105,7 @@ hold on;
 semilogy(indv.range,dv2.BER(end,:),'-d');
 semilogy(indv.range,dv3.BER(end,:),'-');
 title('Optimal placement with N=256, BW eff=82.4, fd=0.2, IBDFE-T3C1 1st Banded')
-legend('D=4(Tang) O-GCE','D=4(Tang) OW-GCE','D=4 Ideal')
+legend('D=1(Tang) O-GCE','D=1(Tang) OW-GCE','D=1 Ideal')
 xlim([0 indv.range(end)]);
 %ylim([10^-3 0.5]);
 xticks(indv.range)
