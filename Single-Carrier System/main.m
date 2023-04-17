@@ -5,7 +5,7 @@ clc;
 clear all;
 tic; %timer
 %% Options(Channel Estimation & Detection)
-DE_option.estimation_on = 0;
+DE_option.estimation_on = 1;
 DE_option.detection_on = 1;
 DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 0: Not Working
@@ -54,7 +54,7 @@ est_par.BEM.str = ["CE-BEM","GCE-BEM","P-BEM"];
 est_par.BEM.typenum = size(est_par.BEM.str,2);
 est_par.BEM.type = 2;
 est_par.BEM.window_str = ["OW-","O-"];
-est_par.BEM.window = 2;
+est_par.BEM.window = 1;
 est_par.BEM.I = 5;
 est_par.BEM.Q = floor(est_par.BEM.I/2);
 
