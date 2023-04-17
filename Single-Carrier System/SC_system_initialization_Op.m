@@ -134,8 +134,10 @@ function [pilot,data,observation,contaminating_data,w,U,A,Rc] = SC_system_initia
                             avg_pwr = 1/fade_struct.ch_length*ones(1,fade_struct.ch_length);
                     end
                     pseudo_U = (U'*U)\(U');
+                    %pseudo_U = pinv(U);
                     if(est_par.BEM.window==1)   % OW basis
                         Rhl_normalized = pseudo_U*diag(w)*ch_ac_matrix*diag(w')*pseudo_U';
+                        %Rhl_normalized = pseudo_U*ch_ac_matrix*pseudo_U';
                     else
                         Rhl_normalized = pseudo_U*ch_ac_matrix*pseudo_U';
                     end
