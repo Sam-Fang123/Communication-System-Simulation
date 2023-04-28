@@ -129,7 +129,9 @@ rx_par.type_str={
     
     'IBDFE_TI';%5 Correlation Estimator Type
     
-    'Zero_forcing'
+    'Zero_forcing';
+    
+    'IBDFE_T4C1';
     };
 rx_par.type = 7;
 
@@ -147,6 +149,7 @@ rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 rx_par.IBDFE.D = 2;%For IBDFE T3C1 and T2C1_Quasibanded
 rx_par.IBDFE.first_iteration_full = 2;%For IBDFE T1C1, T3C1==>1:use full block MMSE for first 2:use banded channel matrix(For T2C1, all iteration using banded)
 rx_par.IBDFE.frist_banded_D = 2;
+rx_par.IBDFE.FB_D = 4;  % For IBDFE T4C1
 td_window.Q = rx_par.IBDFE.frist_banded_D*2;
 %Parameter for iterative equalizer;
 rx_par.iteration = 4;
@@ -155,7 +158,7 @@ if(td_window.type==3&&rx_par.IBDFE.first_iteration_full==1)
     error('Tang window should use banded channel');
 end
 if(rx_par.IBDFE.first_iteration_full==1&&td_window.type~=1)
-    error('Full matrix should not use windwo');
+    error('Full matrix should not use window');
 end
 
 %% Independent variable ±±®Ó≈‹¶]
@@ -249,12 +252,6 @@ for kk = 1:size(indv.range,2)
         
         [h,h_taps,h_avg_pwr] = gen_ch_imp(fade_struct, sys_par,ii);
         %[h,h_taps] = ZX_gen_ch_imp(fade_struct, sys_par,(ii-1)*(sys_par.tblock + fade_struct.ch_length));
-        %if(sys_par.cpzp_type==2)  % ZP
-        %    for zz = 1:sys_par.L
-        %        h(zz,end-sys_par.L+zz:end) = 0;
-        %        h_taps(zz,end-sys_par.L+zz:end)=0;
-        %    end
-        %end
 
         %trans_block_FD = fft(trans_block,sys_par.tblock)/sqrt(sys_par.tblock);%column vector
         
@@ -354,6 +351,8 @@ for kk = 1:size(indv.range,2)
                      [data.hat_dec, data.hat_bit] = IBDFE_TI(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w);
                 case(10)
                      [data.hat_dec, data.hat_bit] = Zero_Force(sys_par,tx_par,ts_par,rx_par,h_est_w,y_w,snr.noise_pwr,pilot,data,w);
+                case(11)
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T4C1(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2,Y,H_est);
             end% end rx_par.type
 
             dv.sym_error_count(:,1) = dv.sym_error_count(:,1) + sum((data.hat_dec-data.dec_data)~=0,2);
