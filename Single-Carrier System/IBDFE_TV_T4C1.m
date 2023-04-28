@@ -50,7 +50,7 @@ for n=1:rx_par.iteration
             coreff=1;
         end
         
-        [C, B, beta]=coeff_IBDFE_T4C1(sys_par,H_original,signal_pwr,decision_pwr,noise_pwr,cor,coreff,rx_par.IBDFE.D,rx_par.IBDFE.D2,ones(1,sys_par.tblock));
+        [C, B, beta]=coeff_IBDFE_T4C1(sys_par,H_original,signal_pwr,decision_pwr,noise_pwr,cor,coreff,rx_par.IBDFE.D,rx_par.IBDFE.FB_D,ones(1,sys_par.tblock));
         hc = beta;     
         S_temp=C*Y_original+B*S_dec;
     end%end if (n==1)
