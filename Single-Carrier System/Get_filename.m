@@ -52,8 +52,11 @@ if(DE_option.detection_on == 1)
             filename = filename + num2str(rx_par.IBDFE.frist_banded_D);
         end    
     end
-    if(rx_par.type == 5||rx_par.type == 6||rx_par.type == 7||rx_par.type == 8)
+    if(rx_par.type == 5||rx_par.type == 6||rx_par.type == 7||rx_par.type == 8||rx_par.type == 11)
         filename = filename + "_D=" + num2str(rx_par.IBDFE.D);
+        if(rx_par.type == 11)
+            filename = filename + "_D2=" + num2str(rx_par.IBDFE.FB_D);
+        end
     end
 end
 
