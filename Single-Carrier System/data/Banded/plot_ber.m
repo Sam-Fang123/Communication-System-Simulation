@@ -103,13 +103,36 @@ ylabel('average BER');
 grid on;
 hold on;
 semilogy(indv.range,dv2.BER(end,:),'-d');
-semilogy(indv.range,dv3.BER(end,:),'-');
-title('Optimal placement with N=256, BW eff=89.4, fd=0.02, IBDFE-T3C1 1st Banded')
-legend('D=4(Tang) O-GCE','D=4(Tang) OW-GCE','D=4(Tang) Ideal')
+%semilogy(indv.range,dv3.BER(end,:),'-');
+title('Optimal placement with N=256, BW eff=89.4, fd=0.02, IBDFE-T3C1 1st Banded, D2=0')
+legend('D1=2(Tang) O-GCE','D1=2(Tang) Ideal')
 xlim([0 indv.range(end)]);
-%ylim([10^-3 0.5]);
+ylim([10^-7 1]);
 xticks(indv.range)
 %}
+
+%{
+figure(4)
+semilogy(indv.range,dv.BER(end,:),'-o');
+xlabel('SNR (dB)');
+ylabel('average BER');
+grid on;
+hold on;
+semilogy(indv.range,dv2.BER(end,:),'-d');
+semilogy(indv.range,dv3.BER(end,:),'-*');
+%semilogy(indv.range,dv4.BER(end,:),'-^');
+%semilogy(indv.range,dv5.BER(end,:),'-');
+%title('Optimal placement with N=256, BW eff=82.4, fd=0.2, IBDFE-T3C1 1st Banded, D2=1, Ideal')
+title('Optimal placement with N=256, BW eff=89.4, fd=0.02, IBDFE-T3C1 1st Banded, D2=0, Est')
+legend('D1=1(Tang)','D1=2(Tang)','D1 full')
+grid on;
+hold on;
+xlim([0 indv.range(end)]);
+ylim([10^-7 1]);
+xticks(indv.range)
+%}
+
+
 
 figure(2)
 semilogy(indv.range,dv.BER(end,:),'--o');
@@ -125,9 +148,10 @@ semilogy(indv.range,dv6.BER(end,:),'-d');
 semilogy(indv.range,dv7.BER(end,:),'-*');
 semilogy(indv.range,dv8.BER(end,:),'-');
 %title('Optimal placement N=256, BW eff=82.4, fd=0.2, T3C1 vs T4C1 1st Banded D1=2(Tang), D2=2, Ideal')
-title('Optimal placement N=256, BW eff=82.4, fd=0.2, T3C1 vs T4C1 1st Banded D1=2(Tang), D2=2')
-legend('T4C1 D3=4 Est','T4C1 D3=6 Est','T4C1 D3=8 Est','T3C1 Est','T4C1 D3=4 Ideal','T4C1 D3=6 Ideal','T4C1 D3=8 Ideal','T3C1 Ideal')
+%title('Optimal placement N=256, BW eff=82.4, fd=0.2, T3C1 vs T4C1 1st Banded D1=2(Tang), D2=1')
+title('Optimal placement N=256, BW eff=89.4, fd=0.02, T3C1 vs T4C1 1st Banded D1=1(Tang), D2=0')
+legend('T4C1 D3=2 Est','T4C1 D3=4 Est','T4C1 D3=6 Est','T3C1 Est','T4C1 D3=2 Ideal','T4C1 D3=4 Ideal','T4C1 D3=6 Ideal','T3C1 Ideal')
 xlim([0 indv.range(end)]);
-%ylim([10^-3 0.5]);
+ylim([10^-7 1]);
 xticks(indv.range)
 
