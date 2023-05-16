@@ -5,7 +5,7 @@ clc;
 clear all;
 tic; %timer
 %% Options(Channel Estimation & Detection)
-DE_option.estimation_on = 0;
+DE_option.estimation_on = 1;
 DE_option.detection_on = 1;
 DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 0: Not Working
@@ -27,7 +27,7 @@ sys_par.equal_power = 0;    % 1: On
 sys_par.tblock = 256; %Blocksize
 %sys_par.P = 14;%pilot cluster length: P+1, P is even
 %sys_par.G = 6;%cluster number: G
-sys_par.M = 5;%CP length + 1: M
+sys_par.M = 10;%CP length + 1: M
 %sys_par.nts = sys_par.G*(sys_par.P+1); %Number of total pilot symbols
 %sys_par.ndata = sys_par.tblock - sys_par.nts; % Number of data symbols
 %sys_par.bandwidth_efficiency = sys_par.ndata/sys_par.tblock*100;
@@ -55,7 +55,7 @@ est_par.BEM.typenum = size(est_par.BEM.str,2);
 est_par.BEM.type = 2;
 est_par.BEM.window_str = ["OW-","O-"];
 est_par.BEM.window = 2;
-est_par.BEM.I = 5;
+est_par.BEM.I = 6;
 est_par.BEM.Q = floor(est_par.BEM.I/2);
 
 est_par.l = 4;%parameter l determines the range of observation vector used for channel estimation(l>=0, l<=(P+M-1)/2 for SC system);

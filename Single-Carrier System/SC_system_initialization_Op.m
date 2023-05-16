@@ -114,6 +114,14 @@ function [pilot,data,observation,contaminating_data,w,U,A,Rc] = SC_system_initia
         observation.matrix(i,observation.pos_len(i))=1;
     end
     %% Rc
+    ch_ac = zeros(sys_par.tblock,sys_par.tblock);
+    for p = 1:sys_par.block
+        for q = 1:sys_par.block
+            ch_ac = besselj(0,2*pi*fade_struct.nor_fd*((p-1)-(q-1)));
+        end
+    end
+    
+    %{
     channel_autocorrelation = besselj(0,(-(sys_par.tblock-1):(sys_par.tblock-1))*2*pi*fade_struct.nor_fd);
                     ch_ac_matrix = zeros(sys_par.tblock,sys_par.tblock);
                     for p = 1:sys_par.tblock
@@ -142,6 +150,7 @@ function [pilot,data,observation,contaminating_data,w,U,A,Rc] = SC_system_initia
                         Rhl_normalized = pseudo_U*ch_ac_matrix*pseudo_U';
                     end
                     
-                    Rc = kron(Rhl_normalized,diag(avg_pwr));      
-       
+                    Rc = kron(Rhl_normalized,diag(avg_pwr)); 
+     %}
+
 end
