@@ -115,11 +115,29 @@ function [pilot,data,observation,contaminating_data,w,U,A,Rc] = SC_system_initia
     end
     %% Rc
     ch_ac = zeros(sys_par.tblock,sys_par.tblock);
-    for p = 1:sys_par.block
-        for q = 1:sys_par.block
-            ch_ac = besselj(0,2*pi*fade_struct.nor_fd*((p-1)-(q-1)));
+    for p = 1:sys_par.tblock
+        for q = 1:sys_par.tblock
+            ch_ac(p,q) = besselj(0,2*pi*fade_struct.nor_fd*((p-1)-(q-1)));
         end
     end
+    switch(fade_struct.ch_model)
+        case(3)
+        inv_nrms=1/fade_struct.nrms;
+        var0=((1-exp(-inv_nrms))/(1-exp(-fade_struct.ch_length*inv_nrms))); % c value
+        avg_pwr=var0*exp(-(0:fade_struct.ch_length-1)*inv_nrms);
+        case(4)
+        avg_pwr = 1/fade_struct.ch_length*ones(1,fade_struct.ch_length);
+    end
+    pseudo_U = pinv(U);
+    if(est_par.BEM.window==1)   % OW basis
+        Rhl_normalized = pseudo_U*diag(w)*ch_ac*diag(w')*pseudo_U';
+    else
+        Rhl_normalized = pseudo_U*ch_ac*pseudo_U';
+    end
+    
+    R_muth = diag(avg_pwr);
+    Rc = kron(Rhl_normalized,R_muth);
+    
     
     %{
     channel_autocorrelation = besselj(0,(-(sys_par.tblock-1):(sys_par.tblock-1))*2*pi*fade_struct.nor_fd);

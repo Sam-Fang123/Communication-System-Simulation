@@ -27,7 +27,7 @@ sys_par.equal_power = 0;    % 1: On
 sys_par.tblock = 256; %Blocksize
 %sys_par.P = 14;%pilot cluster length: P+1, P is even
 %sys_par.G = 6;%cluster number: G
-sys_par.M = 10;%CP length + 1: M
+sys_par.M = 5;%CP length + 1: M
 %sys_par.nts = sys_par.G*(sys_par.P+1); %Number of total pilot symbols
 %sys_par.ndata = sys_par.tblock - sys_par.nts; % Number of data symbols
 %sys_par.bandwidth_efficiency = sys_par.ndata/sys_par.tblock*100;
@@ -55,7 +55,7 @@ est_par.BEM.typenum = size(est_par.BEM.str,2);
 est_par.BEM.type = 2;
 est_par.BEM.window_str = ["OW-","O-"];
 est_par.BEM.window = 2;
-est_par.BEM.I = 6;
+est_par.BEM.I = 5;
 est_par.BEM.Q = floor(est_par.BEM.I/2);
 
 est_par.l = 4;%parameter l determines the range of observation vector used for channel estimation(l>=0, l<=(P+M-1)/2 for SC system);
@@ -91,7 +91,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 10000; % Number of transmitted blocks
+tx_par.nblock= 100; % Number of transmitted blocks
 %% Train parameters 訓練符元參數
 ts_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
 ts_par.mod_type = 1; % 1: BPSK
@@ -146,7 +146,7 @@ Correlation Type for IBDFE_TI: 1.Genie-Aided 2.TS 3.Proposed 4.Original
 rx_par.IBDFE.cor_type_str={'GA cor','EST cor td', 'EST cor fd', 'TI cor_noth', 'TI cor_th'};% correlation coefficient
 rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
-rx_par.IBDFE.D = 2;%For IBDFE T3C1 and T2C1_Quasibanded
+rx_par.IBDFE.D = 1;%For IBDFE T3C1 and T2C1_Quasibanded
 rx_par.IBDFE.first_iteration_full = 2;%For IBDFE T1C1, T3C1==>1:use full block MMSE for first 2:use banded channel matrix(For T2C1, all iteration using banded)
 rx_par.IBDFE.frist_banded_D = 2;
 rx_par.IBDFE.FB_D = 4;  % For IBDFE T4C1
@@ -168,11 +168,19 @@ indv.range = 0:4:24;
 %% Dependent variable 應變變因
 %BER,SER
 if(rx_par.type == 2||rx_par.type == 4||rx_par.type == 6||rx_par.type == 10)%Ideal case ==> No Iteration
-    dv.BER = zeros(1,size(indv.range,2));
-    dv.SER = zeros(1,size(indv.range,2));
+    dv.BER_ideal = zeros(1,size(indv.range,2));
+    dv.SER_ideal = zeros(1,size(indv.range,2));
+    if(DE_option.estimation_on == 1)
+        dv.BER_est = zeros(1,size(indv.range,2));
+        dv.SER_est = zeros(1,size(indv.range,2));
+    end
 else
-    dv.BER = zeros(rx_par.iteration,size(indv.range,2));
-    dv.SER = zeros(rx_par.iteration,size(indv.range,2));
+    dv.BER_ideal = zeros(rx_par.iteration,size(indv.range,2));
+    dv.SER_ideal = zeros(rx_par.iteration,size(indv.range,2));
+    if(DE_option.estimation_on == 1)
+        dv.BER_est = zeros(rx_par.iteration,size(indv.range,2));
+        dv.SER_est = zeros(rx_par.iteration,size(indv.range,2));
+    end
 end
 
 %MSE
@@ -229,11 +237,12 @@ for kk = 1:size(indv.range,2)
     %Set random seed
     rand('state',sys_par.random_seed);
     randn('state',sys_par.random_seed);
-    dv.bit_error_count = zeros(size(dv.BER,1),1);
-    dv.sym_error_count = zeros(size(dv.SER,1),1);
+    dv.bit_error_count_id = zeros(size(dv.BER_ideal,1),1);
+    dv.sym_error_count_id = zeros(size(dv.SER_ideal,1),1);
+    dv.bit_error_count_est = zeros(size(dv.BER_est,1),1);
+    dv.sym_error_count_est = zeros(size(dv.SER_est,1),1);
     dv.BEM_MSE_count = 0;
     dv.CH_MSE_count = 0;
-    dv.CH_banded_approx_count = 0;
     
     
     re = zeros(sys_par.tblock,sys_par.tblock);
@@ -266,6 +275,8 @@ for kk = 1:size(indv.range,2)
         Y_w = fft(y_w,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
         
         h_w = diag(w)*h;
+        
+        H = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
         H_w = fft(h_w,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
         
         %Channel Estimation...
@@ -316,27 +327,30 @@ for kk = 1:size(indv.range,2)
                 end
                 sgtitle(est_par.BEM.str(est_par.BEM.type) + " by " + est_par.type_str(est_par.type) + " Estimator ( fd = " + num2str(fade_struct.fd) + ", SNR = "+ num2str(snr.db) + ", \gamma = "+num2str(est_par.l)+" )");
             end
-        else
-            H_est = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
-            h_est = h;
-            h_est_w = diag(w)*h;
-            H_est_w = fft(h_est_w,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
         end
         
-        
-        dv.CH_banded_approx_count = dv.CH_banded_approx_count + norm(H_w.*B_mtx-H_est_w.*B_mtx); 
-        H_w_b = H_w.*B_mtx;
-        H_est_w_b = H_est_w.*B_mtx;
         %Detection...
         if(DE_option.detection_on ==1)     
             
             switch(rx_par.type)
                 case(1) %IBDFE_TV_T1C1
-                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T1C1(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w);
+                    if(DE_option.estimation_on == 1)
+                        [data.hat_dec2, data.hat_bit2]=IBDFE_TV_T1C1(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w);
+                    end
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T1C1(sys_par,tx_par,ts_par,rx_par,H_w,Y_w,snr.noise_pwr,pilot,data,w);
+                    
                 case(2) %IBDFE_TV_T1C1(Ideal Feedback)
-                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T1C1_Ideal(sys_par,tx_par,ts_par,H_est_w,Y_w,trans_block_FD,snr.noise_pwr,pilot,data,w);
+                    if(DE_option.estimation_on == 1)
+                        [data.hat_dec2, data.hat_bit2]=IBDFE_TV_T1C1_Ideal(sys_par,tx_par,ts_par,H_est_w,Y_w,trans_block_FD,snr.noise_pwr,pilot,data,w);
+                    end
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T1C1_Ideal(sys_par,tx_par,ts_par,H_w,Y_w,trans_block_FD,snr.noise_pwr,pilot,data,w);
+                    
                 case(3) %IBDFE_TV_T2C1
-                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T2C1(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2);
+                    if(DE_option.estimation_on == 1)
+                        [data.hat_dec2, data.hat_bit2]=IBDFE_TV_T2C1(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2);
+                    end
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T2C1(sys_par,tx_par,ts_par,rx_par,H_w,Y_w,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2);
+                    
                 case(4) %IBDFE_TV_T2C1(Ideal Feedback)
                     [data.hat_dec, data.hat_bit]=IBDFE_TV_T2C1_Ideal(sys_par,tx_par,ts_par,H_est_w,Y_w,trans_block_FD,snr.noise_pwr,pilot,data,w);      
                 case(5) %IBDFE_TV_T2C1_Quasibanded
@@ -344,7 +358,11 @@ for kk = 1:size(indv.range,2)
                 case(6) %IBDFE_TV_T2C1_Quasibanded(Ideal Feedback)
                     [data.hat_dec, data.hat_bit]=IBDFE_TV_T2C1_Quasibanded_Ideal(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,trans_block_FD,snr.noise_pwr,pilot,data,w);
                 case(7) %IBDFE_TV_T3C1
-                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T3C1(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2,Y,H_est);
+                    if(DE_option.estimation_on == 1)
+                        [data.hat_dec2, data.hat_bit2]=IBDFE_TV_T3C1(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2,Y,H_est);
+                    end
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T3C1(sys_par,tx_par,ts_par,rx_par,H_w,Y_w,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2,Y,H);
+                    
                 case(8) %IBDFE_TV_T3C1(Ideal Feedback)
                     [data.hat_dec, data.hat_bit]=IBDFE_TV_T3C1_Ideal(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,trans_block_FD,snr.noise_pwr,pilot,data,w);
                 case(9) %IBDFE_TI
@@ -352,11 +370,19 @@ for kk = 1:size(indv.range,2)
                 case(10)
                      [data.hat_dec, data.hat_bit] = Zero_Force(sys_par,tx_par,ts_par,rx_par,h_est_w,y_w,snr.noise_pwr,pilot,data,w);
                 case(11)
-                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T4C1(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2,Y,H_est);
+                    if(DE_option.estimation_on == 1)
+                        [data.hat_dec2, data.hat_bit2]=IBDFE_TV_T4C1(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2,Y,H_est);
+                    end
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T4C1(sys_par,tx_par,ts_par,rx_par,H_w,Y_w,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2,Y,H);
+                    
             end% end rx_par.type
 
-            dv.sym_error_count(:,1) = dv.sym_error_count(:,1) + sum((data.hat_dec-data.dec_data)~=0,2);
-            dv.bit_error_count(:,1) = dv.bit_error_count(:,1) + sum((data.hat_bit-data.bit_data)~=0,2);
+            dv.sym_error_count_id(:,1) = dv.sym_error_count_id(:,1) + sum((data.hat_dec-data.dec_data)~=0,2);
+            dv.bit_error_count_id(:,1) = dv.bit_error_count_id(:,1) + sum((data.hat_bit-data.bit_data)~=0,2);
+            if(DE_option.estimation_on == 1)
+                dv.sym_error_count_est(:,1) = dv.sym_error_count_est(:,1) + sum((data.hat_dec2-data.dec_data)~=0,2);
+                dv.bit_error_count_est(:,1) = dv.bit_error_count_est(:,1) + sum((data.hat_bit2-data.bit_data)~=0,2);
+            end
             %if sum((data.hat_bit-data.bit_data)~=0,2) Test the algo is correct or not
             %    error("!!")
             %end
@@ -364,12 +390,15 @@ for kk = 1:size(indv.range,2)
         end
     end % end ii=1:tx_par.nblock
     
-    dv.SER(:,kk) = dv.sym_error_count/(tx_par.nblock*sys_par.ndata);
-    dv.BER(:,kk) = dv.bit_error_count/(tx_par.nblock*sys_par.ndata*tx_par.nbits_per_sym);
+    dv.SER_ideal(:,kk) = dv.sym_error_count_id/(tx_par.nblock*sys_par.ndata);
+    dv.BER_ideal(:,kk) = dv.bit_error_count_id/(tx_par.nblock*sys_par.ndata*tx_par.nbits_per_sym);
+    if(DE_option.estimation_on == 1)
+        dv.SER_est(:,kk) = dv.sym_error_count_est/(tx_par.nblock*sys_par.ndata);
+        dv.BER_est(:,kk) = dv.bit_error_count_est/(tx_par.nblock*sys_par.ndata*tx_par.nbits_per_sym);
+    end
     
     dv.BEM_MSE(1,kk) = dv.BEM_MSE_count/tx_par.nblock;
     dv.CH_MSE(1,kk) = dv.CH_MSE_count/tx_par.nblock;
-    dv.CH_banded_approx(1,kk) = dv.CH_banded_approx_count/tx_par.nblock;
 end% end kk = 1:size(indv.range,2);
 % execution time
 run_time.total=fix(toc/60); % unit: minute
@@ -384,9 +413,12 @@ dv.run_time_str=[num2str(run_time.hour) ' hours and ' num2str(run_time.min) ' mi
 save(filename,'indv','dv','sys_par','est_par','tx_par','rx_par','snr','fade_struct','td_window','pilot');
 disp('------------------------------------------------');
 figure(100)
-semilogy(indv.range,dv.BER(end,:),'-o');
+semilogy(indv.range,dv.BER_ideal(end,:),'-o');
 xlabel('SNR');
 ylabel('BER');
 grid on;
 hold on;
-
+if(DE_option.estimation_on == 1)
+    semilogy(indv.range,dv.BER_est(end,:),'-d');
+end
+legend('Ideal','Est')

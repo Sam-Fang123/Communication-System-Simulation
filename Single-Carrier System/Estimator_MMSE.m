@@ -10,7 +10,7 @@ end
 
 %noise_pwr = windowed_noise_cov(1,1);
 %c_est = (inv(Rc)+conj(A.')*A/noise_pwr)\(conj(A.')*y_O)/noise_pwr;
-c_est = (A'*A+windowed_noise_cov/Rc)\(A'*y_O);
+c_est = Rc*A'*((A*Rc*A'+windowed_noise_cov)\y_O);
 
 h_taps_est = U*reshape(c_est,sys_par.M,[]).';
 
