@@ -133,7 +133,7 @@ rx_par.type_str={
     
     'IBDFE_T4C1';
     };
-rx_par.type = 11;
+rx_par.type = 7;
 
 %{
 Parameters for IBDFE ==> 
