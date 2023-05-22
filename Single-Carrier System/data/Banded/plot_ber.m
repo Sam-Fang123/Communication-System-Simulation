@@ -133,7 +133,7 @@ xticks(indv.range)
 %}
 
 
-
+%{
 figure(2)
 semilogy(indv.range,dv.BER(end,:),'-o');
 xlabel('SNR (dB)');
@@ -152,6 +152,27 @@ title('Optimal placement N=256, BW eff=82.4, fd=0.2, T4C1 1st Banded D1=2(Tang),
 legend('T4C1 D3=2','T4C1 D3=4','T4C1 D3=8','T4C1 D3=16','T4C1 D3=32','T4C1 D3=64','T3C1')
 xlim([0 indv.range(end)]);
 ylim([10^-5 1]);
+xticks(indv.range)
+%}
+
+figure(2)
+semilogy(indv.range,dv.BER_est(end,:),'-o');
+xlabel('SNR (dB)');
+ylabel('average BER');
+grid on;
+hold on;
+semilogy(indv.range,dv2.BER(end,:),'-d');
+semilogy(indv.range,dv3.BER(end,:),'-*');
+semilogy(indv.range,dv4.BER(end,:),'->');
+semilogy(indv.range,dv5.BER(end,:),'-');
+semilogy(indv.range,dv6.BER_est(end,:),'--');
+%semilogy(indv.range,dv7.BER(end,:),'-');
+%title('Optimal placement N=256, BW eff=82.4, fd=0.2, T3C1 vs T4C1 1st Banded D1=2(Tang), D2=2, Ideal')
+%title('Optimal placement N=256, BW eff=82.4, fd=0.2, T3C1 vs T4C1 1st Banded D1=2(Tang), D2=1')
+title('Optimal placement N=256, BW eff=82.4, fd=0.02, T4C1 1st Banded D1=1(Tang), D2=0, Est channel')
+legend('T4C1 D3=1','T4C1 D3=2','T4C1 D3=4','T4C1 D3=6','T3C1','T3C1 1st full')
+xlim([0 indv.range(end)]);
+ylim([10^-6 1]);
 xticks(indv.range)
 
 
