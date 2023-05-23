@@ -160,6 +160,9 @@ end
 if(rx_par.IBDFE.first_iteration_full==1&&td_window.type~=1)
     error('Full matrix should not use window');
 end
+if(rx_par.IBDFE.first_iteration_full==2&&td_window.type==1)
+    error('Banded matrix should use window');
+end
 
 %% Independent variable ±±®Ó≈‹¶]
 indv.str = ["SNR(Es/No)","fd","IBDFE's eta","observation parameter l"];
