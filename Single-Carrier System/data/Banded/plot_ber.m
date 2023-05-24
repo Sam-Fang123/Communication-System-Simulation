@@ -204,10 +204,10 @@ ylabel('average BER');
 grid on;
 hold on;
 semilogy(indv.range,dv2.BER_est(end,:),'--d');
-semilogy(indv.range,dv3.BER_est(end,:),'--');
+semilogy(indv.range,dv3.BER_est(end,:),'--*');
 semilogy(indv.range,dv.BER_ideal(end,:),'-o');
 semilogy(indv.range,dv2.BER_ideal(end,:),'-d');
-semilogy(indv.range,dv3.BER_ideal(end,:),'-');
+semilogy(indv.range,dv3.BER_ideal(end,:),'-*');
 title('Optimal placement N=256, BW eff=89.4, fd=0.02, 1st Banded D1=1(Tang), D2=0 16QAM')
 legend('T4C1 D3=0 est','T3C1 est','T3C1 1st full est','T4C1 D3=0 ideal','T3C1 ideal','T3C1 1st full ideal')
 xlim([0 indv.range(end)]);

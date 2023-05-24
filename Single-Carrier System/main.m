@@ -14,7 +14,7 @@ DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 3: Channel Estimation And Detection Both Working
 %% Time Domain Window parameter 办跌怠耾猧竟
 td_window.str = ["No-windowing","MBAE-SOE","Tang"];
-td_window.type = 3;
+td_window.type = 1;
 td_window.Q = 4;
 %% System parameters(Frame structure)
 sys_par.ts_type_str = {'Non-optiaml','Optiaml'};
@@ -41,7 +41,7 @@ fade_struct.fading_flag=1;
 fade_struct.ch_model=3;
 fade_struct.nrms = 10;
 
-fade_struct.fd = 0.02;% Doppler frequency
+fade_struct.fd = 0.2;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 %% SNR parameters(Noise) 馒癟
 snr.db = 10;
@@ -96,7 +96,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 10000; % Number of transmitted blocks
+tx_par.nblock= 100; % Number of transmitted blocks
 %% Train parameters 癡絤才じ把计
 ts_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
 ts_par.mod_type = 1; % 1: BPSK
@@ -138,7 +138,7 @@ rx_par.type_str={
     
     'IBDFE_T4C1';
     };
-rx_par.type = 11;
+rx_par.type = 9;
 
 %{
 Parameters for IBDFE ==> 
@@ -152,7 +152,7 @@ rx_par.IBDFE.cor_type_str={'GA cor','EST cor td', 'EST cor fd', 'TI cor_noth', '
 rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 rx_par.IBDFE.D = 1;%For IBDFE T3C1 and T2C1_Quasibanded
-rx_par.IBDFE.first_iteration_full = 2;%For IBDFE T1C1, T3C1==>1:use full block MMSE for first 2:use banded channel matrix(For T2C1, all iteration using banded)
+rx_par.IBDFE.first_iteration_full = 1;%For IBDFE T1C1, T3C1==>1:use full block MMSE for first 2:use banded channel matrix(For T2C1, all iteration using banded)
 rx_par.IBDFE.frist_banded_D = 2;
 rx_par.IBDFE.FB_D = 4;  % For IBDFE T4C1
 td_window.Q = rx_par.IBDFE.frist_banded_D*2;
@@ -167,6 +167,9 @@ if(rx_par.IBDFE.first_iteration_full==1&&td_window.type~=1)
 end
 if(rx_par.IBDFE.first_iteration_full==2&&td_window.type==1)
     error('Banded matrix should use window');
+end
+if(td_window.type~=1&&rx_par.type==9)
+    error('IBDFE TI should not use window');
 end
 
 %% Independent variable 北跑
@@ -374,7 +377,10 @@ for kk = 1:size(indv.range,2)
                 case(8) %IBDFE_TV_T3C1(Ideal Feedback)
                     [data.hat_dec, data.hat_bit]=IBDFE_TV_T3C1_Ideal(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,trans_block_FD,snr.noise_pwr,pilot,data,w);
                 case(9) %IBDFE_TI
-                     [data.hat_dec, data.hat_bit] = IBDFE_TI(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w);
+                    if(DE_option.estimation_on == 1)
+                        [data.hat_dec2, data.hat_bit2] = IBDFE_TI(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w);
+                    end
+                    [data.hat_dec, data.hat_bit] = IBDFE_TI(sys_par,tx_par,ts_par,rx_par,H_w,Y_w,snr.noise_pwr,pilot,data,w);
                 case(10)
                      [data.hat_dec, data.hat_bit] = Zero_Force(sys_par,tx_par,ts_par,rx_par,h_est_w,y_w,snr.noise_pwr,pilot,data,w);
                 case(11)
