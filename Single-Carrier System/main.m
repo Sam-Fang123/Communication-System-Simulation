@@ -21,7 +21,7 @@ sys_par.ts_type_str = {'Non-optiaml','Optiaml'};
 sys_par.ts_type = 2;  % 1: Non-optiaml
                       % 2: Optiaml
 sys_par.cpzp_type_str = {'CP','ZP'};
-sys_par.cpzp_type = 1;  % 1: CP
+sys_par.cpzp_type = 2;  % 1: CP
                       % 2: ZP
 sys_par.equal_power = 0;    % 1: On
 sys_par.tblock = 256; %Blocksize
@@ -41,7 +41,7 @@ fade_struct.fading_flag=1;
 fade_struct.ch_model=3;
 fade_struct.nrms = 10;
 
-fade_struct.fd = 0.2;% Doppler frequency
+fade_struct.fd = 0.02;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 %% SNR parameters(Noise) 雜訊
 snr.db = 10;
@@ -55,10 +55,15 @@ est_par.BEM.typenum = size(est_par.BEM.str,2);
 est_par.BEM.type = 2;
 est_par.BEM.window_str = ["OW-","O-"];
 est_par.BEM.window = 2;
-est_par.BEM.I = 5;
+if(fade_struct.fd==0.2)
+    est_par.BEM.I = 5;
+elseif(fade_struct.fd==0.02)
+    est_par.BEM.I = 3;
+end
+
 est_par.BEM.Q = floor(est_par.BEM.I/2);
 
-est_par.l = 4;%parameter l determines the range of observation vector used for channel estimation(l>=0, l<=(P+M-1)/2 for SC system);
+%est_par.l = 4;%parameter l determines the range of observation vector used for channel estimation(l>=0, l<=(P+M-1)/2 for SC system);
 est_par.BLUE_iterative_times = 5;
 
 est_par.plot_taps = 0;%plot the taps or not
@@ -91,7 +96,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 100; % Number of transmitted blocks
+tx_par.nblock= 10000; % Number of transmitted blocks
 %% Train parameters 訓練符元參數
 ts_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
 ts_par.mod_type = 1; % 1: BPSK
@@ -133,7 +138,7 @@ rx_par.type_str={
     
     'IBDFE_T4C1';
     };
-rx_par.type = 7;
+rx_par.type = 11;
 
 %{
 Parameters for IBDFE ==> 
