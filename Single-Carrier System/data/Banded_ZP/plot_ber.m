@@ -103,22 +103,22 @@ xlim([0 indv.range(end)]);
 ylim([10^-3 1]);
 xticks(indv.range)
 %}
-%{
+
 figure(2)
-semilogy(indv.range,dv.BER_ideal(1,:),'-h');
+semilogy(indv.range,dv.BER_est(1,:),'-h');
 xlabel('SNR (dB)');
 ylabel('average BER');
 grid on;
 hold on;
-semilogy(indv.range,dv.BER_ideal(2,:),'-o');
-semilogy(indv.range,dv.BER_ideal(3,:),'-d');
-semilogy(indv.range,dv.BER_ideal(4,:),'-s');
-title('QPSK BER using Perfect CSI (Normalized Doppler Frequency = 0.02), IBDFE-TV D_F_F=0, D_F_B full')
-legend('Banded-matrix MMSE-LE Q=1','2nd iteration','3rd iteration','4th iteration')
+semilogy(indv.range,dv.BER_est(2,:),'-o');
+semilogy(indv.range,dv.BER_est(3,:),'-d');
+semilogy(indv.range,dv.BER_est(4,:),'-s');
+title('16QAM BER using Estimated CSI (Normalized Doppler Frequency = 0.2), IBDFE-TV D_F_F=1, D_F_B full')
+legend('Banded-matrix MMSE-LE Q=2','2nd iteration','3rd iteration','4th iteration')
 xlim([0 indv.range(end)]);
-ylim([10^-6 1]);
+ylim([10^-3 1]);
 xticks(indv.range)
-%}
+
 %{
 figure(2)
 semilogy(indv.range,dv.BER_est(1,:),'-h');
@@ -159,6 +159,7 @@ xlim([0 indv.range(end)]);
 ylim([10^-3 1]);
 xticks(indv.range)
 %}
+%{
 figure(2)
 semilogy(indv.range,dv.BER_ideal(3,:),'-x');
 xlabel('SNR (dB)');
@@ -178,3 +179,28 @@ legend('IBDFE-TI(Tomasin), 3th iteration, no windowing','Full-matrix MMSE-LE, no
 xlim([0 indv.range(end)]);
 ylim([10^-3 1]);
 xticks(indv.range)
+
+%{
+figure(2)
+semilogy(indv.range,dv.BER_ideal(3,:),'-x');
+xlabel('SNR (dB)');
+ylabel('average BER');
+grid on;
+hold on;
+semilogy(indv.range,dv2.BER_ideal(1,:),'-h');
+semilogy(indv.range,dv3.BER_ideal(3,:),'-o');
+semilogy(indv.range,dv4.BER_ideal(3,:),'-s');
+semilogy(indv.range,dv5.BER_ideal(3,:),'-d');
+semilogy(indv.range,dv6.BER_ideal(3,:),'-*');
+%title('QPSK BER using Estimated CSI (Normalized Doppler Frequency = 0.2), IBDFE-TV D_F_F=1')
+%title('QPSK BER using Perfect CSI (Normalized Doppler Frequency = 0.2), IBDFE-TV D_F_F=1')
+%title('16QAM BER using Estimated CSI (Normalized Doppler Frequency = 0.2), IBDFE-TV D_F_F=1')
+title('QPSK BER using Perfect CSI (Normalized Doppler Frequency = 0.2)')
+legend('IBDFE-TI(Tomasin), 3th iteration, no windowing','Full-matrix MMSE-LE, no windowing', ...
+    'IBDFE-TV D_F_F=1 D_F_B=16, 1st iteration use banded-matrix MMSE-LE Q=2, 3th iteration','IBDFE-TV D_F_F=2 D_F_B=4, 1st iteration use banded-matrix MMSE-LE Q=2, 3th iteration' ...
+    ,'IBDFE-TV D_F_F=3 D_F_B=5, 1st iteration use banded-matrix MMSE-LE Q=2, 3th iteration','IBDFE-TV D_F_B is full, 1st iteration use banded-matrix MMSE-LE Q=2, 3th iteration')
+xlim([0 indv.range(end)]);
+ylim([10^-5 1]);
+xticks(indv.range)
+%}
+%}
