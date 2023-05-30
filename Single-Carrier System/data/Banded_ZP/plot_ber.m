@@ -103,7 +103,7 @@ xlim([0 indv.range(end)]);
 ylim([10^-3 1]);
 xticks(indv.range)
 %}
-
+%{
 figure(2)
 semilogy(indv.range,dv.BER_est(1,:),'-h');
 xlabel('SNR (dB)');
@@ -118,6 +118,7 @@ legend('Banded-matrix MMSE-LE Q=2','2nd iteration','3rd iteration','4th iteratio
 xlim([0 indv.range(end)]);
 ylim([10^-3 1]);
 xticks(indv.range)
+%}
 
 %{
 figure(2)
@@ -139,6 +140,20 @@ xlim([0 indv.range(end)]);
 ylim([10^-3 1]);
 xticks(indv.range)
 %}
+figure(2)
+semilogy(indv.range,dv.BER_est(1,:),'-h');
+xlabel('SNR (dB)');
+ylabel('average BER');
+grid on;
+hold on;
+semilogy(indv.range,dv2.BER_est(1,:),'-o');
+semilogy(indv.range,dv3.BER_est(1,:),'-d');
+%semilogy(indv.range,dv4.BER_est(1,:),'-s');
+title('QPSK BER using Estimated CSI (Normalized Doppler Frequency = 0.1), MMSE-LE')
+legend('Banded MMSE-LE Q=1 [5]','Banded MMSE-LE Q=2 [5]','Banded MMSE-LE Q=3 [5]')
+xlim([0 indv.range(end)]);
+ylim([10^-5 1]);
+xticks(indv.range)
 %{
 figure(2)
 semilogy(indv.range,dv.BER_est(1,:),'-h');
