@@ -24,7 +24,7 @@ sys_par.cpzp_type_str = {'CP','ZP'};
 sys_par.cpzp_type = 2;  % 1: CP
                       % 2: ZP
 sys_par.equal_power = 0;    % 1: On
-sys_par.tblock = 256; %Blocksize
+sys_par.tblock = 64; %Blocksize
 %sys_par.P = 14;%pilot cluster length: P+1, P is even
 %sys_par.G = 6;%cluster number: G
 sys_par.M = 5;%CP length + 1: M
@@ -41,7 +41,7 @@ fade_struct.fading_flag=1;
 fade_struct.ch_model=3;
 fade_struct.nrms = 10;
 
-fade_struct.fd = 0.2;% Doppler frequency
+fade_struct.fd = 3;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 %% SNR parameters(Noise) Âø°T
 snr.db = 10;
@@ -55,7 +55,7 @@ est_par.BEM.typenum = size(est_par.BEM.str,2);
 est_par.BEM.type = 2;
 est_par.BEM.window_str = ["OW-","O-"];
 est_par.BEM.window = 2;
-if(fade_struct.fd==0.2)
+if(fade_struct.fd>=0.2)
     est_par.BEM.I = 5;
 elseif(fade_struct.fd==0.02)
     est_par.BEM.I = 3;
@@ -153,7 +153,7 @@ rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 rx_par.IBDFE.D = 1;%For IBDFE T3C1 and T2C1_Quasibanded
 rx_par.IBDFE.first_iteration_full = 2;%For IBDFE T1C1, T3C1==>1:use full block MMSE for first 2:use banded channel matrix(For T2C1, all iteration using banded)
-rx_par.IBDFE.frist_banded_D = 1;
+rx_par.IBDFE.frist_banded_D = 3;
 rx_par.IBDFE.FB_D = 3;  % For IBDFE T4C1
 td_window.Q = rx_par.IBDFE.frist_banded_D*2;
 %Parameter for iterative equalizer;
