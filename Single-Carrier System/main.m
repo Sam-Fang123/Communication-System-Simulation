@@ -1,4 +1,4 @@
-%%Single Carrier System Adopting Basis Expansion Model
+E/ %%Single Carrier System Adopting Basis Expansion Model
 %%2022/5/6 by Yi Cheng Lin
 %Assume signal power=1, channel total power = 1
 clc;
@@ -24,7 +24,7 @@ sys_par.cpzp_type_str = {'CP','ZP'};
 sys_par.cpzp_type = 2;  % 1: CP
                       % 2: ZP
 sys_par.equal_power = 0;    % 1: On
-sys_par.tblock = 16; %Blocksize
+sys_par.tblock = 256; %Blocksize
 %sys_par.P = 14;%pilot cluster length: P+1, P is even
 %sys_par.G = 6;%cluster number: G
 sys_par.M = 5;%CP length + 1: M
@@ -41,7 +41,7 @@ fade_struct.fading_flag=1;
 fade_struct.ch_model=3;
 fade_struct.nrms = 10;
 
-fade_struct.fd = 1;% Doppler frequency
+fade_struct.fd = 0.02;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 %% SNR parameters(Noise) 馒癟
 snr.db = 10;
@@ -55,7 +55,7 @@ est_par.BEM.typenum = size(est_par.BEM.str,2);
 est_par.BEM.type = 2;
 est_par.BEM.window_str = ["OW-","O-"];
 est_par.BEM.window = 2;
-if(fade_struct.fd>=0.2)
+if(fade_struct.fd>0.02)
     est_par.BEM.I = 5;
 elseif(fade_struct.fd==0.02)
     est_par.BEM.I = 3;
@@ -66,7 +66,7 @@ est_par.BEM.Q = floor(est_par.BEM.I/2);
 %est_par.l = 4;%parameter l determines the range of observation vector used for channel estimation(l>=0, l<=(P+M-1)/2 for SC system);
 est_par.BLUE_iterative_times = 5;
 
-est_par.plot_taps = 0;%plot the taps or not
+est_par.plot_taps = 1;%plot the taps or not
 est_par.plot_taps_blockindex = 1;
 
 %% ZP把计砞﹚
@@ -96,7 +96,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 10000; % Number of transmitted blocks
+tx_par.nblock= 1; % Number of transmitted blocks
 %% Train parameters 癡絤才じ把计
 ts_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
 ts_par.mod_type = 1; % 1: BPSK
@@ -153,7 +153,7 @@ rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 rx_par.IBDFE.D = 1;%For IBDFE T3C1 and T2C1_Quasibanded
 rx_par.IBDFE.first_iteration_full = 2;%For IBDFE T1C1, T3C1==>1:use full block MMSE for first 2:use banded channel matrix(For T2C1, all iteration using banded)
-rx_par.IBDFE.frist_banded_D = 1;
+rx_par.IBDFE.frist_banded_D = 2;
 rx_par.IBDFE.FB_D = 3;  % For IBDFE T4C1
 td_window.Q = rx_par.IBDFE.frist_banded_D*2;
 %Parameter for iterative equalizer;
@@ -335,7 +335,7 @@ for kk = 1:size(indv.range,2)
                 else
                     plot_BEM_estimated_channel(sys_par,diag(w)*h_taps,h_taps_est,h_taps_approx);
                 end
-                sgtitle(est_par.BEM.str(est_par.BEM.type) + " by " + est_par.type_str(est_par.type) + " Estimator ( fd = " + num2str(fade_struct.fd) + ", SNR = "+ num2str(snr.db) + ", \gamma = "+num2str(est_par.l)+" )");
+                sgtitle(est_par.BEM.str(est_par.BEM.type) + " by " + est_par.type_str(est_par.type) + " Estimator ( fd = " + num2str(fade_struct.fd) + ", SNR = "+ num2str(snr.db) + " )");
             end
         end
         

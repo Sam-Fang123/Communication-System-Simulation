@@ -4,6 +4,29 @@ legend('IBDFE-TV D_F_F=0, D_F_B is full, 1st iteration use banded-MMSE-LE Q=1 [5
     ,'IBDFE-TV D_F_F=2, D_F_B is full, 1st iteration use banded-MMSE-LE Q=1 [5], 3th iteration'...
     ,'IBDFE-TV D_F_F=3, D_F_B is full, 1st iteration use banded-MMSE-LE Q=1 [5], 3th iteration')
 %}
+figure(2)
+semilogy(indv.range,dv2.BER_est(1,:),'-*');
+xlabel('SNR (dB)');
+ylabel('average BER');
+grid on;
+hold on;
+semilogy(indv.range,dv2.BER_est(3,:),'-o');
+semilogy(indv.range,dv3.BER_est(3,:),'-d');
+semilogy(indv.range,dv2.BER_ideal(1,:),'--*');
+semilogy(indv.range,dv2.BER_ideal(3,:),'--s');
+semilogy(indv.range,dv3.BER_ideal(3,:),'--d');
+title('16QAM BER (Normalized Doppler Frequency = 0.02), IBDFE-TV D_F_F=0')
+legend('Banded-MMSE-LE Q=1 [5]', ...
+    'IBDFE-TV D_F_B=0, 1st iteration use Banded-MMSE-LE Q=1 [5], 3th iteration',...
+    'IBDFE-TV D_F_B is full, 1st iteration use Banded-MMSE-LE Q=1 [5], 3th iteration',...
+    'Banded-MMSE-LE Q=1 [5] (Perfect CSI)', ...
+    'IBDFE-TV D_F_B=0, 1st iteration use Banded-MMSE-LE Q=1 [5], 3th iteration (Perfect CSI)',...
+    'IBDFE-TV D_F_B is full, 1st iteration use Banded-MMSE-LE Q=1 [5], 3th iteration (Perfect CSI)')
+xlim([0 indv.range(end)]);
+ylim([10^-3 1]);
+xticks(indv.range)
+
+
 %{
 figure(2)
 semilogy(indv.range,dv.BER_ideal(3,:),'-x');

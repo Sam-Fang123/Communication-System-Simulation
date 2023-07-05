@@ -13,7 +13,7 @@ function [] = plot_BEM_estimated_channel(sys_par,h_taps,h_taps_est, h_taps_appro
         a=rand(1,3);
         plot(1:N,real(h_taps(:,i)), '--','color',colors(mod(i-1,7)+1),'Marker',all_marks{mod(i,13)},'MarkerSize',6,'MarkerIndices',marker_indices,'linewidth' ,0.5,'DisplayName',"channel tap "+num2str(i));hold on;
         plot(1:N,real(h_taps_est(:,i)), '-','color',colors(mod(i-1,7)+1),'Marker',all_marks{mod(i,13)},'MarkerSize',6,'MarkerIndices',marker_indices,'linewidth' ,0.5,'DisplayName',"estimated channel tap "+num2str(i));hold on;
-        plot(1:N,real(h_taps_approx(:,i)), '-.','color',colors(mod(i-1,7)+1),'Marker',all_marks{mod(i,13)},'MarkerSize',6,'MarkerIndices',marker_indices,'linewidth' ,0.5,'DisplayName',"BEM approximated channel tap "+num2str(i));hold on;
+        %plot(1:N,real(h_taps_approx(:,i)), '-.','color',colors(mod(i-1,7)+1),'Marker',all_marks{mod(i,13)},'MarkerSize',6,'MarkerIndices',marker_indices,'linewidth' ,0.5,'DisplayName',"BEM approximated channel tap "+num2str(i));hold on;
 
     end
     xlim([1 N]);
