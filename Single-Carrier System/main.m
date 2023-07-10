@@ -1,4 +1,4 @@
-E/ %%Single Carrier System Adopting Basis Expansion Model
+%%Single Carrier System Adopting Basis Expansion Model
 %%2022/5/6 by Yi Cheng Lin
 %Assume signal power=1, channel total power = 1
 clc;
@@ -41,7 +41,7 @@ fade_struct.fading_flag=1;
 fade_struct.ch_model=3;
 fade_struct.nrms = 10;
 
-fade_struct.fd = 0.02;% Doppler frequency
+fade_struct.fd = 0.2;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 %% SNR parameters(Noise) Âø°T
 snr.db = 10;
