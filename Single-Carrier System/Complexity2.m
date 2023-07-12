@@ -2,9 +2,9 @@
 clc;
 clear;
 N=256;
-D1=2;
-D2=1;
-D3=2;
+D1=1;
+D2=0;
+D3=0;
 N_I=3;
 
 first_iter_full = N*log2(N) + (7*N^3+12*N^2-7*N)/6+1
