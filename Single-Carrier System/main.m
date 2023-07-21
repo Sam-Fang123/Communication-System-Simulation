@@ -41,7 +41,7 @@ fade_struct.fading_flag=1;
 fade_struct.ch_model=3;
 fade_struct.nrms = 10;
 
-fade_struct.fd = 0.2;% Doppler frequency
+fade_struct.fd = 0.1;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 %% SNR parameters(Noise) 雜訊
 snr.db = 10;
@@ -55,10 +55,12 @@ est_par.BEM.typenum = size(est_par.BEM.str,2);
 est_par.BEM.type = 2;
 est_par.BEM.window_str = ["OW-","O-"];
 est_par.BEM.window = 2;
-if(fade_struct.fd>0.02)
+if(fade_struct.fd==0.1)
     est_par.BEM.I = 5;
 elseif(fade_struct.fd==0.02)
     est_par.BEM.I = 3;
+else
+    est_par.BEM.I = 5;
 end
 
 est_par.BEM.Q = floor(est_par.BEM.I/2);
@@ -120,25 +122,10 @@ end
 %% Rx parameter 接收端參數
 % IBDFE (Scaling Factor removed and divide beta before slicing)
 rx_par.type_str={
-    'IBDFE_TV_T1C1';%3 Correlation Estimator Type
-    'IBDFE_TV_T1C1(Ideal Feedback)';
-   
-    'IBDFE_TV_T2C1';%3 Correlation Estimator Type
-    'IBDFE_TV_T2C1(Ideal Feedback)';
-    
-    'IBDFE_TV_T2C1_Quasibanded';%3 Correlation Estimator Type
-    'IBDFE_TV_T2C1_Qusibanded(Ideal Feedback)';
-    
-    'IBDFE_TV_T3C1';%3 Correlation Estimator Type
-    'IBDFE_TV_T3C1(Ideal Feedback)';
-    
-    'IBDFE_TI';%5 Correlation Estimator Type
-    
-    'Zero_forcing';
-    
-    'IBDFE_T4C1';
+    'IBDFE_TI';     % 1
+    'IBDFE_T4C1';   % 2
     };
-rx_par.type = 11;
+rx_par.type = 2;
 
 %{
 Parameters for IBDFE ==> 
@@ -151,8 +138,9 @@ Correlation Type for IBDFE_TI: 1.Genie-Aided 2.TS 3.Proposed 4.Original
 rx_par.IBDFE.cor_type_str={'GA cor','EST cor td', 'EST cor fd', 'TI cor_noth', 'TI cor_th'};% correlation coefficient
 rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
-rx_par.IBDFE.D = 1;%For IBDFE T3C1 and T2C1_Quasibanded
-rx_par.IBDFE.first_iteration_full = 2;%For IBDFE T1C1, T3C1==>1:use full block MMSE for first 2:use banded channel matrix(For T2C1, all iteration using banded)
+
+rx_par.IBDFE.D = 1;
+rx_par.IBDFE.first_iteration_banded = 1;    % 1: for banded 1st
 rx_par.IBDFE.frist_banded_D = 2;
 rx_par.IBDFE.FB_D = 3;  % For IBDFE T4C1
 td_window.Q = rx_par.IBDFE.frist_banded_D*2;
@@ -178,21 +166,14 @@ indv.option = 1;
 indv.range = 0:4:24;
 %% Dependent variable 應變變因
 %BER,SER
-if(rx_par.type == 2||rx_par.type == 4||rx_par.type == 6||rx_par.type == 10)%Ideal case ==> No Iteration
-    dv.BER_ideal = zeros(1,size(indv.range,2));
-    dv.SER_ideal = zeros(1,size(indv.range,2));
-    if(DE_option.estimation_on == 1)
-        dv.BER_est = zeros(1,size(indv.range,2));
-        dv.SER_est = zeros(1,size(indv.range,2));
-    end
-else
-    dv.BER_ideal = zeros(rx_par.iteration,size(indv.range,2));
-    dv.SER_ideal = zeros(rx_par.iteration,size(indv.range,2));
-    if(DE_option.estimation_on == 1)
-        dv.BER_est = zeros(rx_par.iteration,size(indv.range,2));
-        dv.SER_est = zeros(rx_par.iteration,size(indv.range,2));
-    end
+
+dv.BER_ideal = zeros(rx_par.iteration,size(indv.range,2));
+dv.SER_ideal = zeros(rx_par.iteration,size(indv.range,2));
+if(DE_option.estimation_on == 1)
+    dv.BER_est = zeros(rx_par.iteration,size(indv.range,2));
+    dv.SER_est = zeros(rx_par.iteration,size(indv.range,2));
 end
+
 
 %MSE
 dv.BEM_MSE = zeros(1,size(indv.range,2));
@@ -205,7 +186,7 @@ dv.Theory_BEM_MSE = zeros(1,size(indv.range,2));
 filename
 
 %% Banded Mask initialization
-if(rx_par.IBDFE.first_iteration_full==2)    % 1st Banded
+if(rx_par.IBDFE.first_iteration_banded==1)    % 1st Banded
     B_mtx = zeros(sys_par.tblock,sys_par.tblock);
     B_mtx2 = zeros(sys_par.tblock,sys_par.tblock);
     for k=0:sys_par.tblock-1
@@ -213,7 +194,7 @@ if(rx_par.IBDFE.first_iteration_full==2)    % 1st Banded
         B_mtx(rho,k+1) = 1;
     end
     B_mtx2(B_mtx*B_mtx~=0)=1;
-elseif(rx_par.IBDFE.first_iteration_full==1)
+else
     B_mtx = ones(sys_par.tblock,sys_par.tblock);
     B_mtx2 = ones(sys_par.tblock,sys_par.tblock);
 end
@@ -342,48 +323,14 @@ for kk = 1:size(indv.range,2)
         %Detection...
         if(DE_option.detection_on ==1)     
             
-            switch(rx_par.type)
-                case(1) %IBDFE_TV_T1C1
-                    if(DE_option.estimation_on == 1)
-                        [data.hat_dec2, data.hat_bit2]=IBDFE_TV_T1C1(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w);
-                    end
-                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T1C1(sys_par,tx_par,ts_par,rx_par,H_w,Y_w,snr.noise_pwr,pilot,data,w);
-                    
-                case(2) %IBDFE_TV_T1C1(Ideal Feedback)
-                    if(DE_option.estimation_on == 1)
-                        [data.hat_dec2, data.hat_bit2]=IBDFE_TV_T1C1_Ideal(sys_par,tx_par,ts_par,H_est_w,Y_w,trans_block_FD,snr.noise_pwr,pilot,data,w);
-                    end
-                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T1C1_Ideal(sys_par,tx_par,ts_par,H_w,Y_w,trans_block_FD,snr.noise_pwr,pilot,data,w);
-                    
-                case(3) %IBDFE_TV_T2C1
-                    if(DE_option.estimation_on == 1)
-                        [data.hat_dec2, data.hat_bit2]=IBDFE_TV_T2C1(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2);
-                    end
-                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T2C1(sys_par,tx_par,ts_par,rx_par,H_w,Y_w,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2);
-                    
-                case(4) %IBDFE_TV_T2C1(Ideal Feedback)
-                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T2C1_Ideal(sys_par,tx_par,ts_par,H_est_w,Y_w,trans_block_FD,snr.noise_pwr,pilot,data,w);      
-                case(5) %IBDFE_TV_T2C1_Quasibanded
-                    [data.hat_dec, data.hat_bit] = IBDFE_TV_T2C1_Quasibanded(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w);
-                case(6) %IBDFE_TV_T2C1_Quasibanded(Ideal Feedback)
-                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T2C1_Quasibanded_Ideal(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,trans_block_FD,snr.noise_pwr,pilot,data,w);
-                case(7) %IBDFE_TV_T3C1
-                    if(DE_option.estimation_on == 1)
-                        [data.hat_dec2, data.hat_bit2]=IBDFE_TV_T3C1(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2,Y,H_est);
-                    end
-                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T3C1(sys_par,tx_par,ts_par,rx_par,H_w,Y_w,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2,Y,H);
-                    
-                case(8) %IBDFE_TV_T3C1(Ideal Feedback)
-                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T3C1_Ideal(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,trans_block_FD,snr.noise_pwr,pilot,data,w);
-                case(9) %IBDFE_TI
+            switch(rx_par.type)  
+                case(1) %IBDFE_TI
                     if(DE_option.estimation_on == 1)
                         [data.hat_dec2, data.hat_bit2] = IBDFE_TI(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w);
                     end
                     [data.hat_dec, data.hat_bit] = IBDFE_TI(sys_par,tx_par,ts_par,rx_par,H_w,Y_w,snr.noise_pwr,pilot,data,w);
-                case(10)
-                     [data.hat_dec, data.hat_bit] = Zero_Force(sys_par,tx_par,ts_par,rx_par,h_est_w,y_w,snr.noise_pwr,pilot,data,w);
-                case(11)
-                    if(DE_option.estimation_on == 1)
+                case(2)
+                    if(DE_option.estimation_on == 1)    % IBDFE_TV_T4C1
                         [data.hat_dec2, data.hat_bit2]=IBDFE_TV_T4C1(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2,Y,H_est);
                     end
                     [data.hat_dec, data.hat_bit]=IBDFE_TV_T4C1(sys_par,tx_par,ts_par,rx_par,H_w,Y_w,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2,Y,H);

@@ -14,14 +14,10 @@ for n=1:rx_par.iteration
         decision_pwr=0;  % ?? 0/0 in IBDFE_coeff_T2C1() ??
         cor=0;
         coreff=0;
-        if(rx_par.IBDFE.first_iteration_full == 1)
-            [C, B, beta]=coeff_IBDFE_T2C1(sys_par,H,signal_pwr,decision_pwr,noise_pwr,cor,coreff,w,B_mtx2); % ?? check B valid? or NaN
-        elseif(rx_par.IBDFE.first_iteration_full == 2)  % Banded MMSE
-            H_b = H.*B_mtx;
-            [C, B, beta]=coeff_IBDFE_T2C1(sys_par,H_b,signal_pwr,decision_pwr,noise_pwr,cor,coreff,w,B_mtx2); % ?? check B valid? or NaN
-        else
-            [C, B, beta]=coeff_IBDFE_T4C1(sys_par,H,signal_pwr,decision_pwr,noise_pwr,cor,coreff,rx_par.IBDFE.D,rx_par.IBDFE.D2,w);
-        end
+        
+        H_b = H.*B_mtx;
+        [C, B, beta]=coeff_IBDFE_T2C1(sys_par,H_b,signal_pwr,decision_pwr,noise_pwr,cor,coreff,w,B_mtx2); % ?? check B valid? or NaN
+
         
         S_temp = C*Y;  % Y is a column vector (ok... here B is not involved. Thus, B being NaN is OK.)         
         hc = 1; % MMSE-LE criterion enforces this
