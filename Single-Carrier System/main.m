@@ -55,12 +55,12 @@ est_par.BEM.typenum = size(est_par.BEM.str,2);
 est_par.BEM.type = 2;
 est_par.BEM.window_str = ["OW-","O-"];
 est_par.BEM.window = 2;
-if(fade_struct.fd==0.1)
+if(fade_struct.fd>=0.1&&fade_struct.fd<=0.2)
     est_par.BEM.I = 5;
 elseif(fade_struct.fd==0.02)
     est_par.BEM.I = 3;
 else
-    est_par.BEM.I = 5;
+    est_par.BEM.I = 7;
 end
 
 est_par.BEM.Q = floor(est_par.BEM.I/2);
@@ -98,7 +98,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 1; % Number of transmitted blocks
+tx_par.nblock= 100; % Number of transmitted blocks
 %% Train parameters 癡絤才じ把计
 ts_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
 ts_par.mod_type = 1; % 1: BPSK
@@ -109,15 +109,6 @@ ts_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 ts_par.nbits_per_sym = ts_par.mod_nbits_per_sym(ts_par.mod_type);
 ts_par.pts_mod_const=2^(ts_par.nbits_per_sym); % points in modulation constellation
 
-if(sys_par.ts_type==2)  %Optimal
-    if(ts_par.mod_type~=1)
-        error('Optimal training should use BPSK pilot symbol');
-    end
-elseif(sys_par.ts_type==1)  %Non-Optimal
-    if(tx_par.mod_type~=ts_par.mod_type)
-        error('Non-optimal should use same modulation type');
-    end
-end
 
 %% Rx parameter 钡Μ狠把计
 % IBDFE (Scaling Factor removed and divide beta before slicing)
@@ -139,26 +130,20 @@ rx_par.IBDFE.cor_type_str={'GA cor','EST cor td', 'EST cor fd', 'TI cor_noth', '
 rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 
-rx_par.IBDFE.D = 1;
-rx_par.IBDFE.first_iteration_banded = 1;    % 1: for banded 1st
-rx_par.IBDFE.frist_banded_D = 2;
-rx_par.IBDFE.FB_D = 3;  % For IBDFE T4C1
-td_window.Q = rx_par.IBDFE.frist_banded_D*2;
+rx_par.IBDFE.first_iteration_banded = 1;  % 1: IBDFE-TV 1st using Banded-MMSE-LE , 0: Full-MMSE-LE (usless on IBDFE-TI)
+rx_par.IBDFE.frist_banded_Q = 2;
+
+rx_par.IBDFE.D_FF_Full = 0; % 1: Full matrix FF Filter
+rx_par.IBDFE.D_FB_Full = 0; % 1: Full matrix FB Filter
+
+rx_par.IBDFE.D_FF = 1;
+rx_par.IBDFE.D_FB = 2;  
+
+td_window.Q = rx_par.IBDFE.frist_banded_Q*2;
 %Parameter for iterative equalizer;
 rx_par.iteration = 4;
 
-if(td_window.type==3&&rx_par.IBDFE.first_iteration_full==1)
-    error('Tang window should use banded channel');
-end
-if(rx_par.IBDFE.first_iteration_full==1&&td_window.type~=1)
-    error('Full matrix should not use window');
-end
-if(rx_par.IBDFE.first_iteration_full==2&&td_window.type==1)
-    error('Banded matrix should use window');
-end
-if(td_window.type~=1&&rx_par.type==9)
-    error('IBDFE TI should not use window');
-end
+error_message(td_window,sys_par,fade_struct,tx_par,ts_par,rx_par)
 
 %% Independent variable 北跑
 indv.str = ["SNR(Es/No)","fd","IBDFE's eta","observation parameter l"];
@@ -187,16 +172,16 @@ filename
 
 %% Banded Mask initialization
 if(rx_par.IBDFE.first_iteration_banded==1)    % 1st Banded
-    B_mtx = zeros(sys_par.tblock,sys_par.tblock);
-    B_mtx2 = zeros(sys_par.tblock,sys_par.tblock);
+    rx_par.B_mtx = zeros(sys_par.tblock,sys_par.tblock);
+    rx_par.B_mtx2 = zeros(sys_par.tblock,sys_par.tblock);
     for k=0:sys_par.tblock-1
-        rho = mod(k-rx_par.IBDFE.frist_banded_D-1+(1:rx_par.IBDFE.frist_banded_D*2+1),sys_par.tblock)+1;
-        B_mtx(rho,k+1) = 1;
+        rho = mod(k-rx_par.IBDFE.frist_banded_Q-1+(1:rx_par.IBDFE.frist_banded_Q*2+1),sys_par.tblock)+1;
+        rx_par.B_mtx(rho,k+1) = 1;
     end
-    B_mtx2(B_mtx*B_mtx~=0)=1;
+    rx_par.B_mtx2(rx_par.B_mtx*rx_par.B_mtx~=0)=1;
 else
-    B_mtx = ones(sys_par.tblock,sys_par.tblock);
-    B_mtx2 = ones(sys_par.tblock,sys_par.tblock);
+    rx_par.B_mtx = ones(sys_par.tblock,sys_par.tblock);
+    rx_par.B_mtx2 = ones(sys_par.tblock,sys_par.tblock);
 end
 %% initialization
 trans_block=zeros(1,sys_par.tblock); % transmission (constellation) block
@@ -213,7 +198,7 @@ for kk = 1:size(indv.range,2)
         case(3)
             rx_par.IBDFE.eta = indv.range(kk);
         case(4)
-                est_par.l = indv.range(kk);
+            est_par.l = indv.range(kk);
     end
     
     %initialization
@@ -331,9 +316,9 @@ for kk = 1:size(indv.range,2)
                     [data.hat_dec, data.hat_bit] = IBDFE_TI(sys_par,tx_par,ts_par,rx_par,H_w,Y_w,snr.noise_pwr,pilot,data,w);
                 case(2)
                     if(DE_option.estimation_on == 1)    % IBDFE_TV_T4C1
-                        [data.hat_dec2, data.hat_bit2]=IBDFE_TV_T4C1(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2,Y,H_est);
+                        [data.hat_dec2, data.hat_bit2]=IBDFE_TV_T4C1(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w,Y,H_est);
                     end
-                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T4C1(sys_par,tx_par,ts_par,rx_par,H_w,Y_w,snr.noise_pwr,pilot,data,w,B_mtx,B_mtx2,Y,H);
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T4C1(sys_par,tx_par,ts_par,rx_par,H_w,Y_w,snr.noise_pwr,pilot,data,w,Y,H);
                     
             end% end rx_par.type
 

@@ -1,7 +1,7 @@
 
 % ~2023/4/28
 
-function [data_hat_dec, data_hat_bit] = IBDFE_TV_T4C1(sys_par,tx_par,ts_par,rx_par,H,Y,noise_pwr,pilot,data,w,B_mtx,B_mtx2,Y_original,H_original)
+function [data_hat_dec, data_hat_bit] = IBDFE_TV_T4C1(sys_par,tx_par,ts_par,rx_par,H,Y,noise_pwr,pilot,data,w,Y_original,H_original)
 
 data_hat_dec = zeros(rx_par.iteration,sys_par.ndata);
 data_hat_bit = zeros(rx_par.iteration,sys_par.ndata*tx_par.nbits_per_sym);
@@ -15,10 +15,9 @@ for n=1:rx_par.iteration
         cor=0;
         coreff=0;
         
-        H_b = H.*B_mtx;
-        [C, B, beta]=coeff_IBDFE_T2C1(sys_par,H_b,signal_pwr,decision_pwr,noise_pwr,cor,coreff,w,B_mtx2); % ?? check B valid? or NaN
+        H_b = H.*rx_par.B_mtx;
+        [C]=coeff_MMSE_LE(sys_par,H_b,signal_pwr,noise_pwr,w,rx_par.B_mtx2); % ?? check B valid? or NaN
 
-        
         S_temp = C*Y;  % Y is a column vector (ok... here B is not involved. Thus, B being NaN is OK.)         
         hc = 1; % MMSE-LE criterion enforces this
     else
@@ -45,8 +44,15 @@ for n=1:rx_par.iteration
         if (coreff>1)  % cap out to 1
             coreff=1;
         end
-        
-        [C, B, beta]=coeff_IBDFE_T4C1(sys_par,H_original,signal_pwr,decision_pwr,noise_pwr,cor,coreff,rx_par.IBDFE.D,rx_par.IBDFE.FB_D,ones(1,sys_par.tblock));
+        if(rx_par.IBDFE.D_FB_Full==1)
+            if(rx_par.IBDFE.D_FF_Full==1)
+                [C, B, beta]=coeff_IBDFE_T2C1(sys_par,H_original,signal_pwr,decision_pwr,noise_pwr,cor,coreff);
+            else
+                [C, B, beta]=coeff_IBDFE_T3C1(sys_par,H_original,signal_pwr,decision_pwr,noise_pwr,cor,coreff,D_FF)
+            end
+        else       
+            [C, B, beta]=coeff_IBDFE_T4C1(sys_par,H_original,signal_pwr,decision_pwr,noise_pwr,cor,coreff,rx_par.IBDFE.D_FF,rx_par.IBDFE.D_FB);
+        end
         hc = beta;     
         S_temp=C*Y_original+B*S_dec;
     end%end if (n==1)

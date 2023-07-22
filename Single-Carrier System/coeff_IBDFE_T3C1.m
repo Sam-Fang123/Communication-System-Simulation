@@ -1,10 +1,10 @@
-function [C B beta]=coeff_IBDFE_T3C1(sys_par,H,signal_pwr,decision_pwr,noise_pwr,cor,coreff,D,w)
+function [C B beta]=coeff_IBDFE_T3C1(sys_par,H,signal_pwr,decision_pwr,noise_pwr,cor,coreff,D_FF)
 
 F = fft(eye(sys_par.tblock))/sqrt(sys_par.tblock);
-windowed_noise_cov = F*diag(w)*noise_pwr*diag(w')*F';
+windowed_noise_cov = diag(noise_pwr*ones(1,sys_par.tblock));
 
 index_set = 1:sys_par.tblock;
-t_set = index_set.'+(-D:D);
+t_set = index_set.'+(-D_FF:D_FF);
 t_set = mod(t_set-1,sys_par.tblock)+1;
 C = zeros(sys_par.tblock,sys_par.tblock);
 temp1 = H*H'*(1-coreff);

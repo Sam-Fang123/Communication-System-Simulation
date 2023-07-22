@@ -27,9 +27,7 @@ end
 filename = filename + "_" + td_window.str(td_window.type);
 filename = filename + "_" + sys_par.cpzp_type_str(sys_par.cpzp_type);
 filename = filename + "_" + sys_par.ts_type_str(sys_par.ts_type);
-if(td_window.type == 2)
-    filename = filename + "_Q=" +num2str(td_window.Q);
-end
+
 
 if(DE_option.estimation_on == 1)
    filename = filename+"_"+est_par.BEM.window_str(est_par.BEM.window)+ est_par.BEM.str(est_par.BEM.type) + "_" + est_par.type_str(est_par.type);
@@ -37,26 +35,23 @@ end
 
 if(DE_option.detection_on == 1)
     filename = filename + "_" + rx_par.type_str(rx_par.type);
-    
-    if(rx_par.type == 1||rx_par.type == 7||rx_par.type == 3||rx_par.type == 11)
-        if(rx_par.IBDFE.first_iteration_full == 1)
+    if(rx_par.type==2)
+        if(rx_par.IBDFE.first_iteration_banded==1)
+            filename = filename + "_1st_banded_Q="+ num2str(rx_par.IBDFE.frist_banded_Q);
+        else
             filename = filename + "_1st_full";
-        elseif(rx_par.IBDFE.first_iteration_full==2&&rx_par.type == 7)
-            filename = filename + "_" + "1stBanded=";
-            filename = filename + num2str(rx_par.IBDFE.frist_banded_D);
-        elseif(rx_par.IBDFE.first_iteration_full==2&&rx_par.type == 11)
-            filename = filename + "_" + "1stBanded=";
-            filename = filename + num2str(rx_par.IBDFE.frist_banded_D);
-        elseif(rx_par.IBDFE.first_iteration_full==2&&rx_par.type == 3)
-            filename = filename + "_" + "AllBanded=";
-            filename = filename + num2str(rx_par.IBDFE.frist_banded_D);
-        end    
-    end
-    if(rx_par.type == 5||rx_par.type == 6||rx_par.type == 7||rx_par.type == 8||rx_par.type == 11)
-        filename = filename + "_D=" + num2str(rx_par.IBDFE.D);
-        if(rx_par.type == 11)
-            filename = filename + "_D2=" + num2str(rx_par.IBDFE.FB_D);
         end
+        if(rx_par.IBDFE.D_FF_Full==1)
+            filename = filename + "_D_FF_full";
+        else
+            filename = filename + "_D_FF=" + num2str(rx_par.IBDFE.D_FF);
+        end
+        if(rx_par.IBDFE.D_FB_Full==1)
+            filename = filename + "_D_FB_full";
+        else
+            filename = filename + "_D_FB=" + num2str(rx_par.IBDFE.D_FB);
+        end
+        
     end
 end
 
