@@ -20,25 +20,28 @@ td_window.Q = 4;
 sys_par.ts_type_str = {'Non-optiaml','Optiaml'};
 sys_par.ts_type = 2;  % 1: Non-optiaml
                       % 2: Optiaml
-sys_par.cpzp_type_str = {'CP','ZP'};
+sys_par.cpzp_type_str = {'CP','ZP'};    % Only use for Optimal pilot
 sys_par.cpzp_type = 2;  % 1: CP
                       % 2: ZP
 sys_par.equal_power = 0;    % 1: On
+
 sys_par.tblock = 256; %Blocksize
-%sys_par.P = 14;%pilot cluster length: P+1, P is even
-%sys_par.G = 6;%cluster number: G
 sys_par.M = 5;%CP length + 1: M
-%sys_par.nts = sys_par.G*(sys_par.P+1); %Number of total pilot symbols
-%sys_par.ndata = sys_par.tblock - sys_par.nts; % Number of data symbols
-%sys_par.bandwidth_efficiency = sys_par.ndata/sys_par.tblock*100;
-%sys_par.pilot_shift = 15;
-sys_par.pilot_random_seed = 0;
+
+sys_par.P = 14;%pilot cluster length: P+1, P is even
+sys_par.G = 6;%cluster number: G
+sys_par.nts = sys_par.G*(sys_par.P+1); %Number of total pilot symbols
+sys_par.ndata = sys_par.tblock - sys_par.nts; % Number of data symbols
+sys_par.bandwidth_efficiency = sys_par.ndata/sys_par.tblock*100;
+sys_par.pilot_shift = 15;
 sys_par.pilot_scheme = 1;
+
+sys_par.pilot_random_seed = 0;
 sys_par.random_seed = 0;
 %% Channel parameters 硄笵把计
 fade_struct.ch_length = sys_par.M;
-fade_struct.fading_flag=1;
-fade_struct.ch_model=3;
+fade_struct.fading_flag = 1;  
+fade_struct.ch_model = 3; % 1: slow fading exponential PDP, 2: slow fading uniform PDP, 3: fast fading exponential PDP, 4:fast fading uniform PDP
 fade_struct.nrms = 10;
 
 fade_struct.fd = 0.1;% Doppler frequency
@@ -53,8 +56,7 @@ est_par.type = 3;
 est_par.BEM.str = ["CE-BEM","GCE-BEM","P-BEM"];
 est_par.BEM.typenum = size(est_par.BEM.str,2);
 est_par.BEM.type = 2;
-est_par.BEM.window_str = ["OW-","O-"];
-est_par.BEM.window = 2;
+
 if(fade_struct.fd>=0.1&&fade_struct.fd<=0.2)
     est_par.BEM.I = 5;
 elseif(fade_struct.fd==0.02)
@@ -68,11 +70,11 @@ est_par.BEM.Q = floor(est_par.BEM.I/2);
 %est_par.l = 4;%parameter l determines the range of observation vector used for channel estimation(l>=0, l<=(P+M-1)/2 for SC system);
 est_par.BLUE_iterative_times = 5;
 
-est_par.plot_taps = 1;%plot the taps or not
+est_par.plot_taps = 0;%plot the taps or not
 est_par.plot_taps_blockindex = 1;
 
 %% ZP把计砞﹚
-if(sys_par.ts_type==2||sys_par.ts_type==1)  % Optimal and Non-optimal using same system!!
+if(sys_par.ts_type==2) 
     sys_par.L = sys_par.M-1;
     est_par.l = sys_par.L;
     sys_par.P = 2*(sys_par.L);
@@ -113,10 +115,11 @@ ts_par.pts_mod_const=2^(ts_par.nbits_per_sym); % points in modulation constellat
 %% Rx parameter 钡Μ狠把计
 % IBDFE (Scaling Factor removed and divide beta before slicing)
 rx_par.type_str={
-    'IBDFE_TI';     % 1
-    'IBDFE_T4C1';   % 2
+    'IBDFE_TI';   % 1
+    'IBDFE_TV';   % 2
+    'MMSE_FD_LE'
     };
-rx_par.type = 2;
+rx_par.type = 3;
 
 %{
 Parameters for IBDFE ==> 
@@ -135,18 +138,21 @@ rx_par.IBDFE.frist_banded_Q = 2;
 
 rx_par.IBDFE.D_FF_Full = 0; % 1: Full matrix FF Filter
 rx_par.IBDFE.D_FB_Full = 0; % 1: Full matrix FB Filter
-
 rx_par.IBDFE.D_FF = 1;
 rx_par.IBDFE.D_FB = 2;  
 
 td_window.Q = rx_par.IBDFE.frist_banded_Q*2;
 %Parameter for iterative equalizer;
-rx_par.iteration = 4;
+rx_par.iteration = 3;
+
+if(rx_par.type==3)
+    rx_par.iteration = 1;
+end
 
 error_message(td_window,sys_par,fade_struct,tx_par,ts_par,rx_par)
 
 %% Independent variable 北跑
-indv.str = ["SNR(Es/No)","fd","IBDFE's eta","observation parameter l"];
+indv.str = ["SNR","fd"];
 indv.option = 1;
 indv.range = 0:4:24;
 %% Dependent variable 莱跑跑
@@ -167,7 +173,7 @@ dv.CH_banded_approx = zeros(1,size(indv.range,2));
 dv.Theory_BEM_MSE = zeros(1,size(indv.range,2));
 
 %% get filename
-[filename] = Get_filename(DE_option,td_window,sys_par,fade_struct,est_par,tx_par,rx_par,indv,dv);
+[filename, filename2] = Get_filename(DE_option,td_window,sys_par,fade_struct,est_par,tx_par,rx_par,indv,dv,snr);
 filename
 
 %% Banded Mask initialization
@@ -195,10 +201,6 @@ for kk = 1:size(indv.range,2)
         case(2)
             fade_struct.fd = indv.range(kk);
             fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
-        case(3)
-            rx_par.IBDFE.eta = indv.range(kk);
-        case(4)
-            est_par.l = indv.range(kk);
     end
     
     %initialization
@@ -227,7 +229,7 @@ for kk = 1:size(indv.range,2)
         
         %display(indv.str(indv.option)+' & block index  '+num2str(indv.range(kk))+'_'+num2str(ii));
         
-        [data.const_data data.dec_data, data.bit_data]=block_sym_mapping(sys_par.ndata,tx_par,ts_par,1);% generate data block
+        [data.const_data, data.dec_data, data.bit_data]=block_sym_mapping(sys_par.ndata,tx_par,ts_par,1);% generate data block
         trans_block = zeros(1,sys_par.tblock);
         trans_block(reshape(pilot.position.',1,[])) = reshape(pilot.clusters_symbol.',1,[]);
         trans_block(data.position) = data.const_data*sqrt(data.power);
@@ -237,32 +239,13 @@ for kk = 1:size(indv.range,2)
         noise_block = noise_block.';%column vector
         
         [h,h_taps,h_avg_pwr] = gen_ch_imp(fade_struct, sys_par,ii);
-        %[h,h_taps] = ZX_gen_ch_imp(fade_struct, sys_par,(ii-1)*(sys_par.tblock + fade_struct.ch_length));
-
-        %trans_block_FD = fft(trans_block,sys_par.tblock)/sqrt(sys_par.tblock);%column vector
-        
-        %H = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock); %column vector
-        %noise_block_FD=fft(noise_block,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
         
         y = h*trans_block + noise_block;
-        %y = h*trans_block;  % Test the algo is correct or not
-        Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
         
-        y_w = diag(w)*y;
-        Y_w = fft(y_w,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
-        
-        h_w = diag(w)*h;
-        
-        H = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
-        H_w = fft(h_w,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
         %Channel Estimation...
         if(DE_option.estimation_on == 1)
             
-            if(est_par.BEM.window==2)   % O-basis
-                y_O = y(reshape(observation.position.',1,[]));
-            else
-                y_O = y_w(reshape(observation.position.',1,[]));
-            end
+            y_O = y(reshape(observation.position.',1,[]));
             
             switch(est_par.type)
                 case(1)%LS
@@ -272,35 +255,15 @@ for kk = 1:size(indv.range,2)
                 case(3)%MMSE
                     [h_est, h_taps_est, c_est] = Estimator_MMSE(sys_par,A,y_O,snr.noise_pwr,observation,est_par,U,w,h_avg_pwr,Rc);
             end
+
+            dv.CH_MSE_count = dv.CH_MSE_count + trace((h_taps_est - h_taps)*(h_taps_est - h_taps)');
             
-            if(est_par.BEM.window==2)   % O-basis
-                h_taps_est_w = diag(w)*h_taps_est;
-                h_est_w = diag(w)*h_est;
-            else
-                h_taps_est_w = h_taps_est;
-                h_est_w = h_est;
-                h_est = diag(w)\h_est; 
-            end
-            
-            H_est = fft(h_est,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
-            H_est_w = fft(h_est_w,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock); 
-            
-            if(est_par.BEM.window==2)
-                dv.CH_MSE_count = dv.CH_MSE_count + trace((h_taps_est - h_taps)*(h_taps_est - h_taps)');
-            else
-                dv.CH_MSE_count = dv.CH_MSE_count + trace((h_taps_est - diag(w)*h_taps)*(h_taps_est - diag(w)*h_taps)');
-            end
             [h_approx,h_taps_approx,c] = BEM_approximation(h, fade_struct.ch_length, est_par.BEM.Q,est_par.BEM.type,w,est_par);
             dv.BEM_MSE_count = dv.BEM_MSE_count + trace((c_est - c)*(c_est-c)');
-            %dv.BEM_MSE_count = dv.BEM_MSE_count + trace((h_taps_est - h_taps_approx)*(h_taps_est - h_taps_approx)');
             
             %plot taps
             if(est_par.plot_taps == 1 && ii == est_par.plot_taps_blockindex)
-                if(est_par.BEM.window==2)
-                    plot_BEM_estimated_channel(sys_par,h_taps,h_taps_est,h_taps_approx);
-                else
-                    plot_BEM_estimated_channel(sys_par,diag(w)*h_taps,h_taps_est,h_taps_approx);
-                end
+                plot_BEM_estimated_channel(sys_par,h_taps,h_taps_est,h_taps_approx);
                 sgtitle(est_par.BEM.str(est_par.BEM.type) + " by " + est_par.type_str(est_par.type) + " Estimator ( fd = " + num2str(fade_struct.fd) + ", SNR = "+ num2str(snr.db) + " )");
             end
         end
@@ -311,15 +274,19 @@ for kk = 1:size(indv.range,2)
             switch(rx_par.type)  
                 case(1) %IBDFE_TI
                     if(DE_option.estimation_on == 1)
-                        [data.hat_dec2, data.hat_bit2] = IBDFE_TI(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w);
+                        [data.hat_dec2, data.hat_bit2] = IBDFE_TI(sys_par,tx_par,ts_par,rx_par,h_est,y,snr.noise_pwr,pilot,data);
                     end
-                    [data.hat_dec, data.hat_bit] = IBDFE_TI(sys_par,tx_par,ts_par,rx_par,H_w,Y_w,snr.noise_pwr,pilot,data,w);
+                    [data.hat_dec, data.hat_bit] = IBDFE_TI(sys_par,tx_par,ts_par,rx_par,h,y,snr.noise_pwr,pilot,data);
                 case(2)
-                    if(DE_option.estimation_on == 1)    % IBDFE_TV_T4C1
-                        [data.hat_dec2, data.hat_bit2]=IBDFE_TV_T4C1(sys_par,tx_par,ts_par,rx_par,H_est_w,Y_w,snr.noise_pwr,pilot,data,w,Y,H_est);
+                    if(DE_option.estimation_on == 1)    % IBDFE_TV
+                        [data.hat_dec2, data.hat_bit2]=IBDFE_TV(sys_par,tx_par,ts_par,rx_par,h_est,y,snr.noise_pwr,pilot,data,w);
                     end
-                    [data.hat_dec, data.hat_bit]=IBDFE_TV_T4C1(sys_par,tx_par,ts_par,rx_par,H_w,Y_w,snr.noise_pwr,pilot,data,w,Y,H);
-                    
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV(sys_par,tx_par,ts_par,rx_par,h,y,snr.noise_pwr,pilot,data,w);
+                case(3)
+                    if(DE_option.estimation_on == 1)    % MMSE_FD_LE
+                        [data.hat_dec2, data.hat_bit2]=IBDFE_TV(sys_par,tx_par,ts_par,rx_par,h_est,y,snr.noise_pwr,pilot,data,w);
+                    end
+                    [data.hat_dec, data.hat_bit]=IBDFE_TV(sys_par,tx_par,ts_par,rx_par,h,y,snr.noise_pwr,pilot,data,w);  
             end% end rx_par.type
 
             dv.sym_error_count_id(:,1) = dv.sym_error_count_id(:,1) + sum((data.hat_dec-data.dec_data)~=0,2);
@@ -327,11 +294,7 @@ for kk = 1:size(indv.range,2)
             if(DE_option.estimation_on == 1)
                 dv.sym_error_count_est(:,1) = dv.sym_error_count_est(:,1) + sum((data.hat_dec2-data.dec_data)~=0,2);
                 dv.bit_error_count_est(:,1) = dv.bit_error_count_est(:,1) + sum((data.hat_bit2-data.bit_data)~=0,2);
-            end
-            %if sum((data.hat_bit-data.bit_data)~=0,2) Test the algo is correct or not
-            %    error("!!")
-            %end
-            
+            end   
         end
     end % end ii=1:tx_par.nblock
     
@@ -359,8 +322,13 @@ save(filename,'indv','dv','sys_par','est_par','tx_par','rx_par','snr','fade_stru
 disp('------------------------------------------------');
 figure(100)
 semilogy(indv.range,dv.BER_ideal(end,:),'-o');
-xlabel('SNR');
+if(indv.option==1)
+    xlabel('SNR');
+else
+    xlabel('fd');
+end
 ylabel('BER');
+title(filename2)
 grid on;
 hold on;
 if(DE_option.estimation_on == 1)

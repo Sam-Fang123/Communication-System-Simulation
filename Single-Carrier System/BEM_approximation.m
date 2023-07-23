@@ -1,10 +1,7 @@
 function [h_approx,h_taps_approx,c] = BEM_approximation(h,channel_length, Q, type,w,est_par)
     
     N = size(h,1);
-    if(est_par.BEM.window==1)   % OW-basis
-      h = diag(w)*h;
-    end
-    
+  
     %transform h to discrete random process form ==> each column is a
     %random process of one tap
     h_taps = zeros(N, N);
@@ -22,9 +19,6 @@ function [h_approx,h_taps_approx,c] = BEM_approximation(h,channel_length, Q, typ
             U = BEM_GCE_Basis_Matrix(N,Q);
         case 3 %P-BEM approximation
             U = BEM_P_Basis_Matrix(N,Q);
-    end
-    if(est_par.BEM.window==1)
-        U = diag(w)*U;
     end
     U = orth(U);
     %least square approximation

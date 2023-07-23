@@ -1,8 +1,10 @@
 % 2022/5/4 modified to fit BEM frame
 %
 
-function [data_hat_dec data_hat_bit]=IBDFE_TI(sys_par,tx_par,ts_par,rx_par,H,Y,noise_pwr,pilot,data,w)
+function [data_hat_dec data_hat_bit]=IBDFE_TI(sys_par,tx_par,ts_par,rx_par,h,y,noise_pwr,pilot,data)
 
+Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
+H = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
 data_hat_dec = zeros(rx_par.iteration,sys_par.ndata);
 data_hat_bit = zeros(rx_par.iteration,sys_par.ndata*tx_par.nbits_per_sym);
 data_hat_const = zeros(1,sys_par.ndata);

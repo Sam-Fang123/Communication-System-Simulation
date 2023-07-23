@@ -1,7 +1,15 @@
 
 % ~2023/4/28
 
-function [data_hat_dec, data_hat_bit] = IBDFE_TV_T4C1(sys_par,tx_par,ts_par,rx_par,H,Y,noise_pwr,pilot,data,w,Y_original,H_original)
+function [data_hat_dec, data_hat_bit] = IBDFE_TV(sys_par,tx_par,ts_par,rx_par,h,y,noise_pwr,pilot,data,w)
+
+Y_original = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
+H_original = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
+
+y_w = diag(w)*y;
+h_w = diag(w)*h;
+Y_W = fft(y_w,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
+H_W = fft(h_w,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
 
 data_hat_dec = zeros(rx_par.iteration,sys_par.ndata);
 data_hat_bit = zeros(rx_par.iteration,sys_par.ndata*tx_par.nbits_per_sym);
@@ -15,10 +23,10 @@ for n=1:rx_par.iteration
         cor=0;
         coreff=0;
         
-        H_b = H.*rx_par.B_mtx;
+        H_b = H_W.*rx_par.B_mtx;
         [C]=coeff_MMSE_LE(sys_par,H_b,signal_pwr,noise_pwr,w,rx_par.B_mtx2); % ?? check B valid? or NaN
 
-        S_temp = C*Y;  % Y is a column vector (ok... here B is not involved. Thus, B being NaN is OK.)         
+        S_temp = C*Y_W;  % Y is a column vector (ok... here B is not involved. Thus, B being NaN is OK.)         
         hc = 1; % MMSE-LE criterion enforces this
     else
         signal_pwr=1;
@@ -48,7 +56,7 @@ for n=1:rx_par.iteration
             if(rx_par.IBDFE.D_FF_Full==1)
                 [C, B, beta]=coeff_IBDFE_T2C1(sys_par,H_original,signal_pwr,decision_pwr,noise_pwr,cor,coreff);
             else
-                [C, B, beta]=coeff_IBDFE_T3C1(sys_par,H_original,signal_pwr,decision_pwr,noise_pwr,cor,coreff,D_FF)
+                [C, B, beta]=coeff_IBDFE_T3C1(sys_par,H_original,signal_pwr,decision_pwr,noise_pwr,cor,coreff,rx_par.IBDFE.D_FF);
             end
         else       
             [C, B, beta]=coeff_IBDFE_T4C1(sys_par,H_original,signal_pwr,decision_pwr,noise_pwr,cor,coreff,rx_par.IBDFE.D_FF,rx_par.IBDFE.D_FB);
