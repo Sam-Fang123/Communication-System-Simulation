@@ -41,7 +41,7 @@ sys_par.random_seed = 0;
 %% Channel parameters 硄笵把计
 fade_struct.ch_length = sys_par.M;
 fade_struct.fading_flag = 1;  
-fade_struct.ch_model = 3; % 1: slow fading exponential PDP, 2: slow fading uniform PDP, 3: fast fading exponential PDP, 4:fast fading uniform PDP
+fade_struct.ch_model = 3; % 3: fast fading exponential PDP, 4:fast fading uniform PDP, for slow fading: set fd=0
 fade_struct.nrms = 10;
 
 fade_struct.fd = 0.1;% Doppler frequency
@@ -73,7 +73,7 @@ est_par.BLUE_iterative_times = 5;
 est_par.plot_taps = 0;%plot the taps or not
 est_par.plot_taps_blockindex = 1;
 
-%% ZP把计砞﹚
+%% Optimal把计砞﹚
 if(sys_par.ts_type==2) 
     sys_par.L = sys_par.M-1;
     est_par.l = sys_par.L;

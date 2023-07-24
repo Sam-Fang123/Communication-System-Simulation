@@ -29,6 +29,10 @@ if(rx_par.IBDFE.D_FF_Full==1&&rx_par.IBDFE.D_FB_Full==0)
     error('We dont have Full FF Filter and Banded FB Filter IBDFE');
 end
 
+if(sys_par.ndata<=0)
+    error('There is no data symbol in the transmitted block');
+end
+
     
 
     
