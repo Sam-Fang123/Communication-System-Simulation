@@ -83,21 +83,34 @@ switch(rx_par.type)
             filename2=filename2+"IBDFE TI using ";
         case(2)
             filename2=filename2+"IBDFE TV using ";
+        case(3)
+            if(rx_par.IBDFE.first_iteration_banded~=1)
+                filename2=filename2+"MMSE-FD-LE using ";
+            else
+                filename2=filename2+"Banded MMSE-FD-LE using ";
+            end
 end
 
 filename2 = filename2 + tx_par.mod_type_str(tx_par.mod_type) + ", ";
-filename2 = filename2 + num2str(rx_par.iteration) + "th iteration, fd=" + num2str(fade_struct.fd);
+if(rx_par.type~=3)
+    filename2 = filename2 + num2str(rx_par.iteration) + "th iteration, ";
+end
+filename2 = filename2 + "fd="+num2str(fade_struct.fd);
 if(rx_par.IBDFE.first_iteration_banded==1)
     filename2 = filename2 + " Q=" + num2str(rx_par.IBDFE.frist_banded_Q);
+else
+    filename2 = filename2 + " 1st full";
 end
-if(rx_par.IBDFE.D_FF_Full==1)
-        filename2 = filename2 + " D_F_F full";
-    else
-        filename2 = filename2 + " D_F_F=" + num2str(rx_par.IBDFE.D_FF);
+if(rx_par.type~=3)
+    if(rx_par.IBDFE.D_FF_Full==1)
+            filename2 = filename2 + " D_F_F full";
+        else
+            filename2 = filename2 + " D_F_F=" + num2str(rx_par.IBDFE.D_FF);
     end
     if(rx_par.IBDFE.D_FB_Full==1)
-        filename2 = filename2 + " D_F_B full";
-    else
-        filename2 = filename2 + " D_F_B=" + num2str(rx_par.IBDFE.D_FB);
+            filename2 = filename2 + " D_F_B full";
+        else
+            filename2 = filename2 + " D_F_B=" + num2str(rx_par.IBDFE.D_FB);
     end
 end
+

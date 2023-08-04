@@ -1,22 +1,21 @@
 %%Single Carrier System Adopting Basis Expansion Model
 %%2022/5/6 by Yi Cheng Lin
 %Assume signal power=1, channel total power = 1
-clc;
+%clc;
 clear all;
 tic; %timer
 %% Options(Channel Estimation & Detection)
 DE_option.estimation_on = 1;
 DE_option.detection_on = 1;
 DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
-DE_option.plot_ber = 1;
 %Type 0: Not Working
 %Type 1: Estimation Mode(No Detection)
 %Type 2: Detection Mode(Assume Perfect Channel Estimation, No Channel Estimation)
 %Type 3: Channel Estimation And Detection Both Working
-%% Time Domain Window parameter ®É°ìµøµ¡Âoªi¾¹
+%% Time Domain Window parameter æ™‚åŸŸè¦–çª—æ¿¾æ³¢å™¨
 td_window.str = ["No-windowing","MBAE-SOE","Tang"];
 td_window.type = 3;
-td_window.Q = 4;
+%td_window.Q = 4;
 %% System parameters(Frame structure)
 sys_par.ts_type_str = {'Non-optiaml','Optiaml'};
 sys_par.ts_type = 2;  % 1: Non-optiaml
@@ -39,7 +38,7 @@ sys_par.pilot_scheme = 1;
 
 sys_par.pilot_random_seed = 0;
 sys_par.random_seed = 0;
-%% Channel parameters ³q¹D°Ñ¼Æ
+%% Channel parameters é€šé“åƒæ•¸
 fade_struct.ch_length = sys_par.M;
 fade_struct.fading_flag = 1;  
 fade_struct.ch_model = 3; % 3: fast fading exponential PDP, 4:fast fading uniform PDP, for slow fading: set fd=0
@@ -47,10 +46,10 @@ fade_struct.nrms = 10;
 
 fade_struct.fd = 0.5;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
-%% SNR parameters(Noise) Âø°T
+%% SNR parameters(Noise) é›œè¨Š
 snr.db = 10;
 snr.noise_pwr=10^(-snr.db/10);
-%% Channel Estimator parameters(BEM) ³q¹D¦ô´ú
+%% Channel Estimator parameters(BEM) é€šé“ä¼°æ¸¬
 est_par.type_str = {'LS','BLUE','MMSE'};
 est_par.type = 3;
 
@@ -68,13 +67,13 @@ end
 
 est_par.BEM.Q = floor(est_par.BEM.I/2);
 
-est_par.l = 4;%parameter l determines the range of observation vector used for channel estimation(l>=0, l<=(P+M-1)/2 for SC system);
+%est_par.l = 4;%parameter l determines the range of observation vector used for channel estimation(l>=0, l<=(P+M-1)/2 for SC system);
 est_par.BLUE_iterative_times = 5;
 
 est_par.plot_taps = 0;%plot the taps or not
 est_par.plot_taps_blockindex = 1;
 
-%% Optimalªº°Ñ¼Æ³]©w
+%% Optimalçš„åƒæ•¸è¨­å®š
 if(sys_par.ts_type==2) 
     sys_par.L = sys_par.M-1;
     est_par.l = sys_par.L;
@@ -91,7 +90,7 @@ if(sys_par.ts_type==2)
     sys_par.bandwidth_efficiency = sys_par.ndata/sys_par.tblock*100;
 end
 
-%% Tx parameters ¶Ç°eºÝ°Ñ¼Æ
+%% Tx parameters å‚³é€ç«¯åƒæ•¸
 tx_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
 tx_par.mod_type = 2; % 1: BPSK
                      % 2: QPSK
@@ -101,8 +100,8 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 100; % Number of transmitted blocks
-%% Train parameters °V½m²Å¤¸°Ñ¼Æ
+tx_par.nblock= 10000; % Number of transmitted blocks
+%% Train parameters è¨“ç·´ç¬¦å…ƒåƒæ•¸
 ts_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
 ts_par.mod_type = 1; % 1: BPSK
                      % 2: QPSK
@@ -113,14 +112,14 @@ ts_par.nbits_per_sym = ts_par.mod_nbits_per_sym(ts_par.mod_type);
 ts_par.pts_mod_const=2^(ts_par.nbits_per_sym); % points in modulation constellation
 
 
-%% Rx parameter ±µ¦¬ºÝ°Ñ¼Æ
+%% Rx parameter æŽ¥æ”¶ç«¯åƒæ•¸
 % IBDFE (Scaling Factor removed and divide beta before slicing)
 rx_par.type_str={
     'IBDFE_TI';   % 1
     'IBDFE_TV';   % 2
     'MMSE_FD_LE'
     };
-rx_par.type = 3;
+rx_par.type = 2;
 
 %{
 Parameters for IBDFE ==> 
@@ -135,28 +134,28 @@ rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 
 rx_par.IBDFE.first_iteration_banded = 1;  % 1: IBDFE-TV 1st using Banded-MMSE-LE , 0: Full-MMSE-LE (usless on IBDFE-TI)
-rx_par.IBDFE.frist_banded_Q = 2;
+rx_par.IBDFE.frist_banded_Q = 4;
 
 rx_par.IBDFE.D_FF_Full = 0; % 1: Full matrix FF Filter
-rx_par.IBDFE.D_FB_Full = 0; % 1: Full matrix FB Filter
-rx_par.IBDFE.D_FF = 1;
+rx_par.IBDFE.D_FB_Full = 1; % 1: Full matrix FB Filter
+rx_par.IBDFE.D_FF = 4;
 rx_par.IBDFE.D_FB = 2;  
 
 td_window.Q = rx_par.IBDFE.frist_banded_Q*2;
 %Parameter for iterative equalizer;
 rx_par.iteration = 3;
 
-
-
 if(rx_par.type==3)
     rx_par.iteration = 1;
 end
+
 error_message(td_window,sys_par,fade_struct,tx_par,ts_par,rx_par)
-%% Independent variable ±±¨îÅÜ¦]
+
+%% Independent variable æŽ§åˆ¶è®Šå› 
 indv.str = ["SNR","fd"];
 indv.option = 1;
 indv.range = 0:4:24;
-%% Dependent variable À³ÅÜÅÜ¦]
+%% Dependent variable æ‡‰è®Šè®Šå› 
 %BER,SER
 
 dv.BER_ideal = zeros(rx_par.iteration,size(indv.range,2));
@@ -219,10 +218,8 @@ for kk = 1:size(indv.range,2)
     randn('state',sys_par.random_seed);
     dv.bit_error_count_id = zeros(size(dv.BER_ideal,1),1);
     dv.sym_error_count_id = zeros(size(dv.SER_ideal,1),1);
-    if(DE_option.estimation_on == 1)
-        dv.bit_error_count_est = zeros(size(dv.BER_est,1),1);
-        dv.sym_error_count_est = zeros(size(dv.SER_est,1),1);
-    end
+    dv.bit_error_count_est = zeros(size(dv.BER_est,1),1);
+    dv.sym_error_count_est = zeros(size(dv.SER_est,1),1);
     dv.BEM_MSE_count = 0;
     dv.CH_MSE_count = 0;
     
@@ -323,24 +320,18 @@ dv.run_time_str=[num2str(run_time.hour) ' hours and ' num2str(run_time.min) ' mi
 %% Save files
 save(filename,'indv','dv','sys_par','est_par','tx_par','rx_par','snr','fade_struct','td_window','pilot');
 disp('------------------------------------------------');
-if(DE_option.plot_ber==1)
-    figure(100)
-    if(DE_option.estimation_on == 1)
-        semilogy(indv.range,dv.BER_est(end,:),'-d');
-        grid on;
-        hold on;
-        semilogy(indv.range,dv.BER_ideal(end,:),'--d');
-        legend('Est','Ideal')
-    else
-        semilogy(indv.range,dv.BER_ideal(end,:),'--d');
-        legend('Ideal')
-    end
-    
-    if(indv.option==1)
-        xlabel('SNR');
-    else
-        xlabel('fd');
-    end
-    ylabel('BER');
-    title(filename2)
+figure(1)
+%semilogy(indv.range,dv.BER_ideal(end,:),'--o');
+if(DE_option.estimation_on == 1)
+    semilogy(indv.range,dv.BER_est(end,:),'-o');
 end
+if(indv.option==1)
+    xlabel('SNR');
+else
+    xlabel('fd');
+end
+ylabel('BER');
+title('IBDFE-TV, fd=0.5, QPSK, Est CSI(I=9), D_F_B full')
+grid on;
+hold on;
+legend('D_F_F=0','D_F_F=1','D_F_F=2','D_F_F=3','D_F_F=4')

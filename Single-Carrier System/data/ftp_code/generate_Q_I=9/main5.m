@@ -1,7 +1,7 @@
 %%Single Carrier System Adopting Basis Expansion Model
 %%2022/5/6 by Yi Cheng Lin
 %Assume signal power=1, channel total power = 1
-clc;
+%clc;
 clear all;
 tic; %timer
 %% Options(Channel Estimation & Detection)
@@ -13,7 +13,7 @@ DE_option.plot_ber = 1;
 %Type 1: Estimation Mode(No Detection)
 %Type 2: Detection Mode(Assume Perfect Channel Estimation, No Channel Estimation)
 %Type 3: Channel Estimation And Detection Both Working
-%% Time Domain Window parameter ®É°ìµøµ¡Âoªi¾¹
+%% Time Domain Window parameter æ™‚åŸŸè¦–çª—æ¿¾æ³¢å™¨
 td_window.str = ["No-windowing","MBAE-SOE","Tang"];
 td_window.type = 3;
 td_window.Q = 4;
@@ -39,7 +39,7 @@ sys_par.pilot_scheme = 1;
 
 sys_par.pilot_random_seed = 0;
 sys_par.random_seed = 0;
-%% Channel parameters ³q¹D°Ñ¼Æ
+%% Channel parameters é€šé“åƒæ•¸
 fade_struct.ch_length = sys_par.M;
 fade_struct.fading_flag = 1;  
 fade_struct.ch_model = 3; % 3: fast fading exponential PDP, 4:fast fading uniform PDP, for slow fading: set fd=0
@@ -47,10 +47,10 @@ fade_struct.nrms = 10;
 
 fade_struct.fd = 0.5;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
-%% SNR parameters(Noise) Âø°T
+%% SNR parameters(Noise) é›œè¨Š
 snr.db = 10;
 snr.noise_pwr=10^(-snr.db/10);
-%% Channel Estimator parameters(BEM) ³q¹D¦ô´ú
+%% Channel Estimator parameters(BEM) é€šé“ä¼°æ¸¬
 est_par.type_str = {'LS','BLUE','MMSE'};
 est_par.type = 3;
 
@@ -74,7 +74,7 @@ est_par.BLUE_iterative_times = 5;
 est_par.plot_taps = 0;%plot the taps or not
 est_par.plot_taps_blockindex = 1;
 
-%% Optimalªº°Ñ¼Æ³]©w
+%% Optimalçš„åƒæ•¸è¨­å®š
 if(sys_par.ts_type==2) 
     sys_par.L = sys_par.M-1;
     est_par.l = sys_par.L;
@@ -91,7 +91,7 @@ if(sys_par.ts_type==2)
     sys_par.bandwidth_efficiency = sys_par.ndata/sys_par.tblock*100;
 end
 
-%% Tx parameters ¶Ç°eºİ°Ñ¼Æ
+%% Tx parameters å‚³é€ç«¯åƒæ•¸
 tx_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
 tx_par.mod_type = 2; % 1: BPSK
                      % 2: QPSK
@@ -101,8 +101,8 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 100; % Number of transmitted blocks
-%% Train parameters °V½m²Å¤¸°Ñ¼Æ
+tx_par.nblock= 10000; % Number of transmitted blocks
+%% Train parameters è¨“ç·´ç¬¦å…ƒåƒæ•¸
 ts_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
 ts_par.mod_type = 1; % 1: BPSK
                      % 2: QPSK
@@ -113,7 +113,7 @@ ts_par.nbits_per_sym = ts_par.mod_nbits_per_sym(ts_par.mod_type);
 ts_par.pts_mod_const=2^(ts_par.nbits_per_sym); % points in modulation constellation
 
 
-%% Rx parameter ±µ¦¬ºİ°Ñ¼Æ
+%% Rx parameter æ¥æ”¶ç«¯åƒæ•¸
 % IBDFE (Scaling Factor removed and divide beta before slicing)
 rx_par.type_str={
     'IBDFE_TI';   % 1
@@ -135,7 +135,7 @@ rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 
 rx_par.IBDFE.first_iteration_banded = 1;  % 1: IBDFE-TV 1st using Banded-MMSE-LE , 0: Full-MMSE-LE (usless on IBDFE-TI)
-rx_par.IBDFE.frist_banded_Q = 2;
+rx_par.IBDFE.frist_banded_Q = 5;
 
 rx_par.IBDFE.D_FF_Full = 0; % 1: Full matrix FF Filter
 rx_par.IBDFE.D_FB_Full = 0; % 1: Full matrix FB Filter
@@ -152,11 +152,11 @@ if(rx_par.type==3)
     rx_par.iteration = 1;
 end
 error_message(td_window,sys_par,fade_struct,tx_par,ts_par,rx_par)
-%% Independent variable ±±¨îÅÜ¦]
+%% Independent variable æ§åˆ¶è®Šå› 
 indv.str = ["SNR","fd"];
 indv.option = 1;
 indv.range = 0:4:24;
-%% Dependent variable À³ÅÜÅÜ¦]
+%% Dependent variable æ‡‰è®Šè®Šå› 
 %BER,SER
 
 dv.BER_ideal = zeros(rx_par.iteration,size(indv.range,2));
@@ -326,13 +326,13 @@ disp('------------------------------------------------');
 if(DE_option.plot_ber==1)
     figure(100)
     if(DE_option.estimation_on == 1)
-        semilogy(indv.range,dv.BER_est(end,:),'-d');
+        semilogy(indv.range,dv.BER_est(end,:),'-x');
         grid on;
         hold on;
-        semilogy(indv.range,dv.BER_ideal(end,:),'--d');
-        legend('Est','Ideal')
+        %semilogy(indv.range,dv.BER_ideal(end,:),'--d');
+        %legend('Est','Ideal')
     else
-        semilogy(indv.range,dv.BER_ideal(end,:),'--d');
+        %semilogy(indv.range,dv.BER_ideal(end,:),'--d');
         legend('Ideal')
     end
     
@@ -342,5 +342,5 @@ if(DE_option.plot_ber==1)
         xlabel('fd');
     end
     ylabel('BER');
-    title(filename2)
+    %title(filename2)
 end
