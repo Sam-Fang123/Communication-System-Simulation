@@ -55,9 +55,10 @@ if(DE_option.detection_on == 1)
             filename = filename + "_D_FB_full";
         else
             filename = filename + "_D_FB=" + num2str(rx_par.IBDFE.D_FB);
-        end
-        
-        
+        end   
+    end
+    if(rx_par.type==4)
+        filename = filename + "_D="+ num2str(rx_par.IBDFE.frist_banded_Q);
     end
 end
 

@@ -1,5 +1,5 @@
 %%Single Carrier System Adopting Basis Expansion Model
-%%2022/5/6 by Yi Cheng Lin
+%%2023/7/28 by Fang Syuan-Siang
 %Assume signal power=1, channel total power = 1
 clc;
 clear all;
@@ -101,7 +101,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 100; % Number of transmitted blocks
+tx_par.nblock= 10000; % Number of transmitted blocks
 %% Train parameters °V½m²Å¤¸°Ñ¼Æ
 ts_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
 ts_par.mod_type = 1; % 1: BPSK
@@ -118,9 +118,10 @@ ts_par.pts_mod_const=2^(ts_par.nbits_per_sym); % points in modulation constellat
 rx_par.type_str={
     'IBDFE_TI';   % 1
     'IBDFE_TV';   % 2
-    'MMSE_FD_LE'
+    'MMSE_FD_LE'  % 3
+    'Schniter'    % 4
     };
-rx_par.type = 3;
+rx_par.type = 4;
 
 %{
 Parameters for IBDFE ==> 
@@ -135,14 +136,15 @@ rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 
 rx_par.IBDFE.first_iteration_banded = 1;  % 1: IBDFE-TV 1st using Banded-MMSE-LE , 0: Full-MMSE-LE (usless on IBDFE-TI)
-rx_par.IBDFE.frist_banded_Q = 2;
+rx_par.IBDFE.frist_banded_Q = 2;   % Q for Banded-MMSE-LE and Q(or D) for Schniter paper
+td_window.Q = rx_par.IBDFE.frist_banded_Q*2;
 
 rx_par.IBDFE.D_FF_Full = 0; % 1: Full matrix FF Filter
 rx_par.IBDFE.D_FB_Full = 0; % 1: Full matrix FB Filter
 rx_par.IBDFE.D_FF = 1;
 rx_par.IBDFE.D_FB = 2;  
 
-td_window.Q = rx_par.IBDFE.frist_banded_Q*2;
+
 %Parameter for iterative equalizer;
 rx_par.iteration = 3;
 
@@ -290,6 +292,11 @@ for kk = 1:size(indv.range,2)
                         [data.hat_dec2, data.hat_bit2]=IBDFE_TV(sys_par,tx_par,ts_par,rx_par,h_est,y,snr.noise_pwr,pilot,data,w);
                     end
                     [data.hat_dec, data.hat_bit]=IBDFE_TV(sys_par,tx_par,ts_par,rx_par,h,y,snr.noise_pwr,pilot,data,w);  
+                case(4)
+                    if(DE_option.estimation_on == 1)    % Schniter's Paper
+                        [data.hat_dec, data.hat_bit]=Schniter_Equalizer(sys_par,tx_par,ts_par,rx_par,h_est,y,snr.noise_pwr,pilot,data,w);
+                    end
+                    [data.hat_dec, data.hat_bit]=Schniter_Equalizer(sys_par,tx_par,ts_par,rx_par,h,y,snr.noise_pwr,pilot,data,w);
             end% end rx_par.type
 
             dv.sym_error_count_id(:,1) = dv.sym_error_count_id(:,1) + sum((data.hat_dec-data.dec_data)~=0,2);

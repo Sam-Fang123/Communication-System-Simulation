@@ -1,6 +1,6 @@
 function [C B beta]=coeff_IBDFE_T4C1(sys_par,H,signal_pwr,decision_pwr,noise_pwr,cor,coreff,D_FF,D_FB)
 
-F = fft(eye(sys_par.tblock))/sqrt(sys_par.tblock);
+
 windowed_noise_cov = diag(noise_pwr*ones(1,sys_par.tblock));
 
 index_set = 1:sys_par.tblock;

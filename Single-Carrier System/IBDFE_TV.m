@@ -1,5 +1,5 @@
 
-% ~2023/4/28
+%%2023/7/28 by Fang Syuan-Siang
 
 function [data_hat_dec, data_hat_bit] = IBDFE_TV(sys_par,tx_par,ts_par,rx_par,h,y,noise_pwr,pilot,data,w)
 
