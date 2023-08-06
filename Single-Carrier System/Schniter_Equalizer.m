@@ -19,11 +19,13 @@ H_W = H_W.*rx_par.B_mtx;
 C_beta = C_beta.*rx_par.B_mtx;
 s_bar = zeros(sys_par.tblock,1);
 diag_v = eye(sys_par.tblock);
-
+t_hat = zeros(sys_par.tblock,1);
+t_bar = F*s_bar;
 for ii=1:sys_par.tblock
-    t_bar = F*s_bar
     H_k = H_W(mod(ii-rx_par.IBDFE.frist_banded_Q-2+(1:2*rx_par.IBDFE.frist_banded_Q+1),sys_par.tblock)+1,:);
     C_k = C_beta(mod(ii-rx_par.IBDFE.frist_banded_Q-2+(1:2*rx_par.IBDFE.frist_banded_Q+1),sys_par.tblock)+1,:);
     g_k = (H_k*H_k' + noise_pwr*(C_k*C_k'))\(H_k*diag_v(:,ii));
-    
+    t_hat(ii) = t_bar(ii)+g_k'*(Y_W(mod(ii-rx_par.IBDFE.frist_banded_Q-2+(1:2*rx_par.IBDFE.frist_banded_Q+1),sys_par.tblock)+1)-H_k*t_bar);
 end
+1
+
