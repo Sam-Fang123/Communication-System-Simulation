@@ -13,9 +13,17 @@ y_w = diag(w)*y;
 h_w = diag(w)*h;
 Y_W = fft(y_w,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
 H_W = fft(h_w,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
-
 C_beta = F*diag(w)*F';
 
+H_W = H_W.*rx_par.B_mtx;
+C_beta = C_beta.*rx_par.B_mtx;
+s_bar = zeros(sys_par.tblock,1);
+diag_v = eye(sys_par.tblock);
+
 for ii=1:sys_par.tblock
+    t_bar = F*s_bar
     H_k = H_W(mod(ii-rx_par.IBDFE.frist_banded_Q-2+(1:2*rx_par.IBDFE.frist_banded_Q+1),sys_par.tblock)+1,:);
+    C_k = C_beta(mod(ii-rx_par.IBDFE.frist_banded_Q-2+(1:2*rx_par.IBDFE.frist_banded_Q+1),sys_par.tblock)+1,:);
+    g_k = (H_k*H_k' + noise_pwr*(C_k*C_k'))\(H_k*diag_v(:,ii));
+    
 end
