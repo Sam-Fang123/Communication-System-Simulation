@@ -101,7 +101,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 10000; % Number of transmitted blocks
+tx_par.nblock= 1; % Number of transmitted blocks
 %% Train parameters °V½m²Å¤¸°Ñ¼Æ
 ts_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
 ts_par.mod_type = 1; % 1: BPSK
@@ -294,7 +294,7 @@ for kk = 1:size(indv.range,2)
                     [data.hat_dec, data.hat_bit]=IBDFE_TV(sys_par,tx_par,ts_par,rx_par,h,y,snr.noise_pwr,pilot,data,w);  
                 case(4)
                     if(DE_option.estimation_on == 1)    % Schniter's Paper
-                        [data.hat_dec, data.hat_bit]=Schniter_Equalizer(sys_par,tx_par,ts_par,rx_par,h_est,y,snr.noise_pwr,pilot,data,w);
+                        [data.hat_dec2, data.hat_bit2]=Schniter_Equalizer(sys_par,tx_par,ts_par,rx_par,h_est,y,snr.noise_pwr,pilot,data,w);
                     end
                     [data.hat_dec, data.hat_bit]=Schniter_Equalizer(sys_par,tx_par,ts_par,rx_par,h,y,snr.noise_pwr,pilot,data,w);
             end% end rx_par.type
@@ -330,6 +330,7 @@ dv.run_time_str=[num2str(run_time.hour) ' hours and ' num2str(run_time.min) ' mi
 %% Save files
 save(filename,'indv','dv','sys_par','est_par','tx_par','rx_par','snr','fade_struct','td_window','pilot');
 disp('------------------------------------------------');
+%{
 if(DE_option.plot_ber==1)
     figure(100)
     if(DE_option.estimation_on == 1)
@@ -351,3 +352,23 @@ if(DE_option.plot_ber==1)
     ylabel('BER');
     title(filename2)
 end
+%}
+figure(1)
+semilogy(indv.range,dv.BER_est(:,:),'-d');
+grid on;
+hold on;
+legend('1st iter(Est CSI)','2nd iter(Est CSI)','3rd iter(Est CSI)','4th iter(Est CSI)');
+xlabel('SNR');
+ylabel('BER');
+title(filename2);
+
+figure(2)
+semilogy(indv.range,dv.BER_ideal(:,:),'-s');
+grid on;
+hold on;
+legend('1st iter(Ideal CSI)','2nd iter(Ideal CSI)','3rd iter(Ideal CSI)','4th iter(Ideal CSI)');
+xlabel('SNR');
+ylabel('BER');
+title(filename2);
+
+

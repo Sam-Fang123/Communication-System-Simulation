@@ -90,19 +90,26 @@ switch(rx_par.type)
             else
                 filename2=filename2+"Banded MMSE-FD-LE using ";
             end
+        case(4)
+            filename2=filename2+"Schniter Equalizer using ";
 end
 
 filename2 = filename2 + tx_par.mod_type_str(tx_par.mod_type) + ", ";
-if(rx_par.type~=3)
+if(rx_par.type==1||rx_par.type==2)
     filename2 = filename2 + num2str(rx_par.iteration) + "th iteration, ";
 end
 filename2 = filename2 + "fd="+num2str(fade_struct.fd);
-if(rx_par.IBDFE.first_iteration_banded==1)
-    filename2 = filename2 + " Q=" + num2str(rx_par.IBDFE.frist_banded_Q);
+if(rx_par.type~=4)
+    if(rx_par.IBDFE.first_iteration_banded==1)
+        filename2 = filename2 + " Q=" + num2str(rx_par.IBDFE.frist_banded_Q);
+    else
+        filename2 = filename2 + " 1st full";
+    end
 else
-    filename2 = filename2 + " 1st full";
+    filename2 = filename2 + " D=" + num2str(rx_par.IBDFE.frist_banded_Q);
 end
-if(rx_par.type~=3)
+
+if(rx_par.type==1||rx_par.type==2)
     if(rx_par.IBDFE.D_FF_Full==1)
             filename2 = filename2 + " D_F_F full";
         else
