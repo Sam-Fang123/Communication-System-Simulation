@@ -45,7 +45,7 @@ fade_struct.fading_flag = 1;
 fade_struct.ch_model = 3; % 3: fast fading exponential PDP, 4:fast fading uniform PDP, for slow fading: set fd=0
 fade_struct.nrms = 10;
 
-fade_struct.fd = 0.5;% Doppler frequency
+fade_struct.fd = 0.1;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 %% SNR parameters(Noise) 雜訊
 snr.db = 10;
@@ -101,7 +101,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 1; % Number of transmitted blocks
+tx_par.nblock= 10000; % Number of transmitted blocks
 %% Train parameters 訓練符元參數
 ts_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
 ts_par.mod_type = 1; % 1: BPSK
@@ -150,7 +150,7 @@ rx_par.iteration = 3;
 
 
 
-if(rx_par.type==3)
+if(rx_par.type==3||rx_par.type==4)
     rx_par.iteration = 1;
 end
 error_message(td_window,sys_par,fade_struct,tx_par,ts_par,rx_par)
