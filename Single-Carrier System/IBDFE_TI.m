@@ -1,7 +1,11 @@
 % 2022/5/4 modified to fit BEM frame
 %
 
-function [data_hat_dec data_hat_bit]=IBDFE_TI(sys_par,tx_par,ts_par,rx_par,h,y,noise_pwr,pilot,data)
+function [data_hat_dec, data_hat_bit]=IBDFE_TI(sys_par,tx_par,ts_par,rx_par,h,h_taps,y,noise_pwr,pilot,data)
+hh=[fliplr(h_taps) zeros(sys_par.tblock,sys_par.tblock-sys_par.M)];
+for m=1:sys_par.tblock
+    h(m,:)=circshift(hh(floor(sys_par.tblock/2),:),-sys_par.M+m,2);
+end% end m=1:Nsample
 
 Y = fft(y,sys_par.tblock)/sqrt(sys_par.tblock); %column vector
 H = fft(h,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
