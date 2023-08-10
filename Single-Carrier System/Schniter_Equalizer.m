@@ -14,7 +14,7 @@ H_W = fft(h_w,sys_par.tblock)*ifft(eye(sys_par.tblock),sys_par.tblock);
 C_beta = F*diag(w)*F';
 
 H_W = H_W.*rx_par.B_mtx;
-C_beta = C_beta.*rx_par.B_mtx;
+%C_beta = C_beta.*rx_par.B_mtx;
 % initialize (first iteration)
 I = eye(sys_par.tblock);
 s_bar = zeros(sys_par.tblock,1);

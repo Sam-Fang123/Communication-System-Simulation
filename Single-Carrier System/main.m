@@ -101,7 +101,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 100; % Number of transmitted blocks
+tx_par.nblock= 10; % Number of transmitted blocks
 %% Train parameters °V½m²Å¤¸°Ñ¼Æ
 ts_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
 ts_par.mod_type = 1; % 1: BPSK
@@ -136,7 +136,7 @@ rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 
 rx_par.IBDFE.first_iteration_banded = 1;  % 1: IBDFE-TV 1st using Banded-MMSE-LE , 0: Full-MMSE-LE (usless on IBDFE-TI)
-rx_par.IBDFE.frist_banded_Q = 5;   % Q for Banded-MMSE-LE and Q(or D) for Schniter paper
+rx_par.IBDFE.frist_banded_Q = 2   % Q for Banded-MMSE-LE and Q(or D) for Schniter paper
 td_window.Q = rx_par.IBDFE.frist_banded_Q*2;
 
 rx_par.IBDFE.D_FF_Full = 0; % 1: Full matrix FF Filter
