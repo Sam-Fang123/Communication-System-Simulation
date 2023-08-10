@@ -10,6 +10,7 @@ elseif(sys_par.ts_type==1)  %Non-Optimal
         error('Non-optimal should use same modulation type');
     end
 end
+
 if(rx_par.type~=1)
     if(rx_par.IBDFE.first_iteration_banded==1)
         if(td_window.type==1)
@@ -25,10 +26,13 @@ end
 if(rx_par.type==1&&td_window.type~=1)
     error('IBDFE-TI should not use window')
 end
-if(rx_par.type==4&&td_window.type==1)
-    error('Schniter Equalizer should not use window')
+if((rx_par.type==4||rx_par.type==5)&&td_window.type==1)
+    error('Schniter Equalizer should use window')
 end
 
+if(rx_par.type==5&&tx_par.mod_type~=1)
+    error('Schniter Equalizer should use BPSK')
+end
 
 if(rx_par.IBDFE.D_FF_Full==1&&rx_par.IBDFE.D_FB_Full==0)
     error('We dont have Full FF Filter and Banded FB Filter IBDFE');
@@ -37,6 +41,8 @@ end
 if(sys_par.ndata<=0)
     error('There is no data symbol in the transmitted block');
 end
+
+
 
     
 

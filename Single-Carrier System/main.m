@@ -93,7 +93,7 @@ end
 
 %% Tx parameters ¶Ç°eºÝ°Ñ¼Æ
 tx_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
-tx_par.mod_type = 2; % 1: BPSK
+tx_par.mod_type = 1; % 1: BPSK
                      % 2: QPSK
                      % 3: 16QAM
                    
@@ -119,9 +119,10 @@ rx_par.type_str={
     'IBDFE_TI';   % 1
     'IBDFE_TV';   % 2
     'MMSE_FD_LE'  % 3
-    'Schniter'    % 4
+    'Serial_LE'   % 4
+    'Schniter'    % 5
     };
-rx_par.type = 4;
+rx_par.type = 5;
 
 %{
 Parameters for IBDFE ==> 
@@ -136,7 +137,7 @@ rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 
 rx_par.IBDFE.first_iteration_banded = 1;  % 1: IBDFE-TV 1st using Banded-MMSE-LE , 0: Full-MMSE-LE (usless on IBDFE-TI)
-rx_par.IBDFE.frist_banded_Q = 2   % Q for Banded-MMSE-LE and Q(or D) for Schniter paper
+rx_par.IBDFE.frist_banded_Q = 2;  % Q for Banded-MMSE-LE and Q(or D) for Schniter paper
 td_window.Q = rx_par.IBDFE.frist_banded_Q*2;
 
 rx_par.IBDFE.D_FF_Full = 0; % 1: Full matrix FF Filter
@@ -145,8 +146,8 @@ rx_par.IBDFE.D_FF = 1;
 rx_par.IBDFE.D_FB = 2;  
 
 
-%Parameter for iterative equalizer;
-rx_par.iteration = 3;
+% Parameter for iterative equalizer;
+rx_par.iteration = 7;
 
 
 
@@ -293,10 +294,16 @@ for kk = 1:size(indv.range,2)
                     end
                     [data.hat_dec, data.hat_bit]=IBDFE_TV(sys_par,tx_par,ts_par,rx_par,h,y,snr.noise_pwr,pilot,data,w);  
                 case(4)
-                    if(DE_option.estimation_on == 1)    % Schniter's Paper
-                        [data.hat_dec2, data.hat_bit2]=Schniter_Equalizer(sys_par,tx_par,ts_par,rx_par,h_est,y,snr.noise_pwr,pilot,data,w);
+                    if(DE_option.estimation_on == 1)    % Serial_LE
+                        [data.hat_dec2, data.hat_bit2]=Serial_LE(sys_par,tx_par,ts_par,rx_par,h_est,y,snr.noise_pwr,pilot,data,w);
                     end
-                    [data.hat_dec, data.hat_bit]=Schniter_Equalizer(sys_par,tx_par,ts_par,rx_par,h,y,snr.noise_pwr,pilot,data,w);
+                    [data.hat_dec, data.hat_bit]=Serial_LE(sys_par,tx_par,ts_par,rx_par,h,y,snr.noise_pwr,pilot,data,w);
+                case(5)
+                    if(DE_option.estimation_on == 1)    % Schniter
+                        [data.hat_dec2, data.hat_bit2]=Schniter(sys_par,tx_par,ts_par,rx_par,h_est,y,snr.noise_pwr,pilot,data,w);
+                    end
+                    [data.hat_dec, data.hat_bit]=Schniter(sys_par,tx_par,ts_par,rx_par,h,y,snr.noise_pwr,pilot,data,w);
+                    
             end% end rx_par.type
 
             dv.sym_error_count_id(:,1) = dv.sym_error_count_id(:,1) + sum((data.hat_dec-data.dec_data)~=0,2);
@@ -332,25 +339,35 @@ save(filename,'indv','dv','sys_par','est_par','tx_par','rx_par','snr','fade_stru
 disp('------------------------------------------------');
 
 if(DE_option.plot_ber==1)
-    figure(100)
-    if(DE_option.estimation_on == 1)
-        semilogy(indv.range,dv.BER_est(end,:),'-d');
+    if(rx_par.type~=5)
+        figure(100)
+        if(DE_option.estimation_on == 1)
+            semilogy(indv.range,dv.BER_est(end,:),'-d');
+            grid on;
+            hold on;
+            semilogy(indv.range,dv.BER_ideal(end,:),'--d');
+            legend('Est','Ideal')
+        else
+            semilogy(indv.range,dv.BER_ideal(end,:),'--d');
+            legend('Ideal')
+        end
+
+        if(indv.option==1)
+            xlabel('SNR');
+        else
+            xlabel('fd');
+        end
+        ylabel('BER');
+        title(filename2)
+    else
+        figure(100)
+        semilogy(indv.range,dv.BER_est(:,:),'-d');
         grid on;
         hold on;
-        semilogy(indv.range,dv.BER_ideal(end,:),'--d');
-        legend('Est','Ideal')
-    else
-        semilogy(indv.range,dv.BER_ideal(end,:),'--d');
-        legend('Ideal')
-    end
-    
-    if(indv.option==1)
         xlabel('SNR');
-    else
-        xlabel('fd');
+        ylabel('BER');
+        title(filename2+'Est CSI')
     end
-    ylabel('BER');
-    title(filename2)
 end
 
 

@@ -57,7 +57,7 @@ if(DE_option.detection_on == 1)
             filename = filename + "_D_FB=" + num2str(rx_par.IBDFE.D_FB);
         end   
     end
-    if(rx_par.type==4)
+    if(rx_par.type==4||rx_par.type==5)
         filename = filename + "_D="+ num2str(rx_par.IBDFE.frist_banded_Q);
     end
 end
@@ -91,6 +91,8 @@ switch(rx_par.type)
                 filename2=filename2+"Banded MMSE-FD-LE using ";
             end
         case(4)
+            filename2=filename2+"Serial-LE using ";
+        case(5)
             filename2=filename2+"Schniter Equalizer using ";
 end
 
@@ -99,7 +101,7 @@ if(rx_par.type==1||rx_par.type==2)
     filename2 = filename2 + num2str(rx_par.iteration) + "th iteration, ";
 end
 filename2 = filename2 + "fd="+num2str(fade_struct.fd);
-if(rx_par.type~=4)
+if(rx_par.type~=4||rx_par.type~=5)
     if(rx_par.IBDFE.first_iteration_banded==1)
         filename2 = filename2 + " Q=" + num2str(rx_par.IBDFE.frist_banded_Q);
     else
