@@ -137,7 +137,7 @@ rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 
 rx_par.IBDFE.first_iteration_banded = 1;  % 1: IBDFE-TV 1st using Banded-MMSE-LE , 0: Full-MMSE-LE (usless on IBDFE-TI)
-rx_par.IBDFE.frist_banded_Q = 2;  % Q for Banded-MMSE-LE and Q(or D) for Schniter paper
+rx_par.IBDFE.frist_banded_Q = 1;  % Q for Banded-MMSE-LE and Q(or D) for Schniter paper
 td_window.Q = rx_par.IBDFE.frist_banded_Q*2;
 
 rx_par.IBDFE.D_FF_Full = 0; % 1: Full matrix FF Filter
