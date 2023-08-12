@@ -45,7 +45,7 @@ fade_struct.fading_flag = 1;
 fade_struct.ch_model = 3; % 3: fast fading exponential PDP, 4:fast fading uniform PDP, for slow fading: set fd=0
 fade_struct.nrms = 10;
 
-fade_struct.fd = 0.1;% Doppler frequency
+fade_struct.fd = 0.02;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 %% SNR parameters(Noise) 馒癟
 snr.db = 10;
@@ -93,7 +93,7 @@ end
 
 %% Tx parameters 肚癳狠把计
 tx_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
-tx_par.mod_type = 1; % 1: BPSK
+tx_par.mod_type = 3; % 1: BPSK
                      % 2: QPSK
                      % 3: 16QAM
                    
@@ -101,7 +101,7 @@ tx_par.mod_nbits_per_sym = [1 2 4 6]; % bit of mod type
 tx_par.nbits_per_sym = tx_par.mod_nbits_per_sym(tx_par.mod_type);
 tx_par.pts_mod_const=2^(tx_par.nbits_per_sym); % points in modulation constellation
 
-tx_par.nblock= 10; % Number of transmitted blocks
+tx_par.nblock= 10000; % Number of transmitted blocks
 %% Train parameters 癡絤才じ把计
 ts_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
 ts_par.mod_type = 1; % 1: BPSK
@@ -122,7 +122,7 @@ rx_par.type_str={
     'Serial_LE'   % 4
     'Schniter'    % 5
     };
-rx_par.type = 5;
+rx_par.type = 2;
 
 %{
 Parameters for IBDFE ==> 
@@ -141,9 +141,9 @@ rx_par.IBDFE.frist_banded_Q = 1;  % Q for Banded-MMSE-LE and Q(or D) for Schnite
 td_window.Q = rx_par.IBDFE.frist_banded_Q*2;
 
 rx_par.IBDFE.D_FF_Full = 0; % 1: Full matrix FF Filter
-rx_par.IBDFE.D_FB_Full = 0; % 1: Full matrix FB Filter
-rx_par.IBDFE.D_FF = 1;
-rx_par.IBDFE.D_FB = 2;  
+rx_par.IBDFE.D_FB_Full = 1; % 1: Full matrix FB Filter
+rx_par.IBDFE.D_FF = 0;
+rx_par.IBDFE.D_FB = 0;  
 
 
 % Parameter for iterative equalizer;

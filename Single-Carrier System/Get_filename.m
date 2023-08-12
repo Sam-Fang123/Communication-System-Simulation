@@ -74,7 +74,7 @@ filename = filename + "_N=" + num2str(sys_par.tblock);
 filename = filename + "_I=" + num2str(est_par.BEM.I);
 filename = filename + "_M=" + num2str(sys_par.M);
 filename = filename + "_Nblock=" + num2str(tx_par.nblock);
-filename = filename + "_BW=" + num2str(sys_par.bandwidth_efficiency);
+%filename = filename + "_BW=" + num2str(sys_par.bandwidth_efficiency);
 filename = filename + ".mat";
 
 filename2 = "";

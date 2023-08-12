@@ -1,24 +1,22 @@
 
 clc;
 clear;
-N=256;
-D1=1;
-D2=0;
-D3=0;
-N_I=3;
+N=256;  % Block size
+Q=2;    % Channel Banded BW
+D_FF=1; % FF Filter
+D_FB=2; % FB Filter
+N_I=3;  % Iteration number
 
-first_iter_full = N*log2(N) + (7*N^3+12*N^2-7*N)/6+1
-first_iter_banded = N*log2(N) + N*(10*D1^2+15*D1+2) - 6*D1+1
+IBDFE_TI = (10*N + N*log2(N) + 1)*N_I;
 
-iter_T1C1 = (3*N^2 + N*log2(N) + 5*N + 1)*(N_I-1);
-iter_T2C1 = ((19*N^3+12*N^2+11*N)/6 + 3 + N*log2(N))*(N_I-1);
-iter_T3C1 = ((N^2)*(4*D2+3) + N*(6 + (8*D2^3+60*D2^2+40*D2)/6 ) + N*log2(N) + 3)*(N_I-1);
-iter_T4C1 = ((N^2)*(2*D2+1) + N*(9 + (8*D2^3+60*D2^2+64*D2)/6 + 8*D2*D3 + 6*D3) + N*log2(N) + 3)*(N_I-1);
+first_iter_full = N*log2(N) + (4*N^3+9*N^2-N)/6;
+first_iter_banded = N*log2(N) + N*(10*Q^2+15*Q+2) - 6*Q+1;
 
-total_6 = first_iter_full + iter_T1C1
-total_7 = first_iter_full + iter_T2C1
-total_9 = first_iter_full + iter_T3C1
-TOTAL = first_iter_banded + iter_T4C1
-TOTAL2 = first_iter_banded + iter_T3C1
+iter_T1C1 = (4*N^2 + N*log2(N) + 6*N + 1)*(N_I-1);
+iter_T2C1 = ((5*N^3+15*N^2+7*N)/3 + 1 + N*log2(N))*(N_I-1);
+iter_T3C1 = ((N^2)*(4*D_FF+4) + N*(5 + (4*D_FF^3+42*D_FF^2+32*D_FF)/3 ) + N*log2(N) + 1)*(N_I-1);
+iter_T4C1 = ((N^2)*(2*D_FF+1) + N*(9 + (4*D_FF^3+54*D_FF^2+50*D_FF)/3 + 8*(D_FF^2)*D_FB + 8*D_FB + 12*D_FF*D_FB) + N*log2(N) + 1)*(N_I-1);
+
+
 
 
