@@ -45,7 +45,7 @@ fade_struct.fading_flag = 1;
 fade_struct.ch_model = 3; % 3: fast fading exponential PDP, 4:fast fading uniform PDP, for slow fading: set fd=0
 fade_struct.nrms = 10;
 
-fade_struct.fd = 0.02;% Doppler frequency
+fade_struct.fd = 0.1;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 %% SNR parameters(Noise) 雜訊
 snr.db = 10;
@@ -93,7 +93,7 @@ end
 
 %% Tx parameters 傳送端參數
 tx_par.mod_type_str={'BPSK','QPSK','16QAM','64QAM'};
-tx_par.mod_type = 3; % 1: BPSK
+tx_par.mod_type = 2; % 1: BPSK
                      % 2: QPSK
                      % 3: 16QAM
                    
@@ -137,13 +137,13 @@ rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
 
 rx_par.IBDFE.first_iteration_banded = 1;  % 1: IBDFE-TV 1st using Banded-MMSE-LE , 0: Full-MMSE-LE (usless on IBDFE-TI)
-rx_par.IBDFE.frist_banded_Q = 1;  % Q for Banded-MMSE-LE and Q(or D) for Schniter paper
+rx_par.IBDFE.frist_banded_Q = 2;  % Q for Banded-MMSE-LE and Q(or D) for Schniter paper
 td_window.Q = rx_par.IBDFE.frist_banded_Q*2;
 
 rx_par.IBDFE.D_FF_Full = 0; % 1: Full matrix FF Filter
-rx_par.IBDFE.D_FB_Full = 1; % 1: Full matrix FB Filter
-rx_par.IBDFE.D_FF = 0;
-rx_par.IBDFE.D_FB = 0;  
+rx_par.IBDFE.D_FB_Full = 0; % 1: Full matrix FB Filter
+rx_par.IBDFE.D_FF = 1;
+rx_par.IBDFE.D_FB = 1;  
 
 
 % Parameter for iterative equalizer;
