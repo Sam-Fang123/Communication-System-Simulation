@@ -7,8 +7,8 @@ tic; %timer
 %% Options(Channel Estimation & Detection)
 DE_option.estimation_on = 1;
 DE_option.detection_on = 1;
-DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 DE_option.plot_ber = 1;
+DE_option.type = DE_option.estimation_on + DE_option.detection_on*2;
 %Type 0: Not Working
 %Type 1: Estimation Mode(No Detection)
 %Type 2: Detection Mode(Assume Perfect Channel Estimation, No Channel Estimation)
@@ -23,11 +23,11 @@ sys_par.ts_type = 2;  % 1: Non-optiaml
                       % 2: Optiaml
 sys_par.cpzp_type_str = {'CP','ZP'};    % Only use for Optimal pilot
 sys_par.cpzp_type = 2;  % 1: CP
-                      % 2: ZP
+                        % 2: ZP
 sys_par.equal_power = 0;    % 1: On
 
-sys_par.tblock = 256; %Blocksize
-sys_par.M = 5;%CP length + 1: M
+sys_par.tblock = 256;  %Blocksize
+sys_par.M = 5;         %CP length + 1: M
 
 sys_par.P = 14;%pilot cluster length: P+1, P is even
 sys_par.G = 6;%cluster number: G
@@ -42,9 +42,9 @@ sys_par.random_seed = 0;
 %% Channel parameters 硄笵把计
 fade_struct.ch_length = sys_par.M;
 fade_struct.fading_flag = 1;  
-fade_struct.ch_model = 3; % 3: fast fading exponential PDP, 4:fast fading uniform PDP, for slow fading: set fd=0
+fade_struct.ch_model = 3; % 3: fast fading exponential PDP, 
+                          % 4:fast fading uniform PDP, for slow fading: set fd=0
 fade_struct.nrms = 10;
-
 fade_struct.fd = 0.1;% Doppler frequency
 fade_struct.nor_fd = fade_struct.fd/sys_par.tblock;
 %% SNR parameters(Noise) 馒癟
@@ -58,6 +58,12 @@ est_par.BEM.str = ["CE-BEM","GCE-BEM","P-BEM"];
 est_par.BEM.typenum = size(est_par.BEM.str,2);
 est_par.BEM.type = 2;
 
+est_par.l = 4;%parameter l determines the range of observation vector used for channel estimation(l>=0, l<=(P+M-1)/2 for SC system);
+est_par.BLUE_iterative_times = 5;
+
+est_par.plot_taps = 0;%plot the taps or not
+est_par.plot_taps_blockindex = 1;
+
 if(fade_struct.fd>=0.1&&fade_struct.fd<=0.2)
     est_par.BEM.I = 5;
 elseif(fade_struct.fd==0.02)
@@ -65,14 +71,7 @@ elseif(fade_struct.fd==0.02)
 else
     est_par.BEM.I = 9;
 end
-
 est_par.BEM.Q = floor(est_par.BEM.I/2);
-
-est_par.l = 4;%parameter l determines the range of observation vector used for channel estimation(l>=0, l<=(P+M-1)/2 for SC system);
-est_par.BLUE_iterative_times = 5;
-
-est_par.plot_taps = 0;%plot the taps or not
-est_par.plot_taps_blockindex = 1;
 
 %% Optimal把计砞﹚
 if(sys_par.ts_type==2) 
@@ -124,14 +123,6 @@ rx_par.type_str={
     };
 rx_par.type = 2;
 
-%{
-Parameters for IBDFE ==> 
-Correlation Type for IBDFE_TV_T1C1: 1.Genie-Aided 2.TS 3.Proposed
-Correlation Type for IBDFE_TV_T2C1: 1.Genie-Aided 2.TS 3.Proposed
-Correlation Type for IBDFE_TV_T3C1: 1.Genie-Aided 2.TS 3.Proposed
-Correlation Type for IBDFE_TI: 1.Genie-Aided 2.TS 3.Proposed 4.Original
-                               5.Tomasin with Threshold
-%}
 rx_par.IBDFE.cor_type_str={'GA cor','EST cor td', 'EST cor fd', 'TI cor_noth', 'TI cor_th'};% correlation coefficient
 rx_par.IBDFE.cor_type = 3;
 rx_par.IBDFE.eta = 1;%For and Correlation Estimator using TS(type 2) and type 3
@@ -143,18 +134,13 @@ td_window.Q = rx_par.IBDFE.frist_banded_Q*2;
 rx_par.IBDFE.D_FF_Full = 0; % 1: Full matrix FF Filter
 rx_par.IBDFE.D_FB_Full = 0; % 1: Full matrix FB Filter
 rx_par.IBDFE.D_FF = 1;
-rx_par.IBDFE.D_FB = 1;  
-
-
+rx_par.IBDFE.D_FB = 2;  
 % Parameter for iterative equalizer;
-rx_par.iteration = 7;
-
-
-
+rx_par.iteration = 3;
 if(rx_par.type==3||rx_par.type==4)
     rx_par.iteration = 1;
 end
-error_message(td_window,sys_par,fade_struct,tx_par,ts_par,rx_par)
+error_message(td_window,sys_par,fade_struct,tx_par,ts_par,rx_par,est_par)
 %% Independent variable 北跑
 indv.str = ["SNR","fd"];
 indv.option = 1;
