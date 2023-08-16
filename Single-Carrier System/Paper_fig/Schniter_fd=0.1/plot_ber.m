@@ -1,5 +1,5 @@
 
-load('D&E-mode_indv=SNR_Tang_ZP_Optiaml_GCE-BEM_MMSE_Schniter_D=1_BPSK_fd=0.1_N=256_I=5_M=5_Nblock=3000.mat')
+load('D&E-mode_indv=SNR_Tang_ZP_Optiaml_GCE-BEM_MMSE_Schniter_D=1_BPSK_fd=0.1_N=256_I=5_M=5_Nblock=10000.mat')
 figure(1)
 semilogy(indv.range,dv.BER_est(1,:),'-d');
 xlabel('SNR (dB)');
@@ -37,7 +37,7 @@ semilogy(indv.range,dv.BER_ideal(8,:),'-+');
 semilogy(indv.range,dv.BER_ideal(9,:),'-<');
 semilogy(indv.range,dv.BER_ideal(10,:),'-p');
 legend('1st iter','2nd iter','3rd iter','4th iter','5th iter','6th iter','7th iter','8th iter','9th iter','10th iter')
-title('BPSK BER using Perfect CSI (Normalized Doppler Frequency = 0.1), Schniter''s paper equalizer')
+title('BPSK BER using Perfect CSI (Normalized Doppler Frequency = 0.1), Schniter''s paper equalizer, D=1')
 xlim([0 indv.range(end)]);
 ylim([10^-6 1]);
 xticks(indv.range)
